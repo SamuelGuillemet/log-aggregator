@@ -1,0 +1,9 @@
+node_modules/
+dist/
+release/
+.env
+.env.local
+.log-aggregator/
+*.log
+!sample-logs/**/*.log
+**/tsconfig.tsbuildinfo
