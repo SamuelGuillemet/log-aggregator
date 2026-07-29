@@ -1,0 +1,25 @@
+{
+  "name": "@log-aggregator/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "pnpm --filter @log-aggregator/shared build && tsc -p tsconfig.json",
+    "dev": "tsx --conditions=development src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run src",
+    "typecheck": "pnpm --filter @log-aggregator/shared build && tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@log-aggregator/shared": "workspace:*",
+    "chokidar": "^5.0.0",
+    "ws": "^8.21.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.23.1",
+    "vitest": "^4.1.10"
+  }
+}
