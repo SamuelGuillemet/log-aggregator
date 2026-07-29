@@ -27,7 +27,6 @@ await cp(
     { recursive: true },
 );
 
-await writePackagedMatrix();
 await writePackageJson();
 await writeLauncherScripts();
 
