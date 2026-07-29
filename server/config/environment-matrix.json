@@ -1,0 +1,12 @@
+[
+  {
+    "environment": "LOCAL",
+    "country": "SAMPLE",
+    "code": "LOCAL_SAMPLE",
+    "host": "LOCALHOST",
+    "shares": [
+      "../../sample-logs/local-share-a",
+      "../../sample-logs/local-share-b"
+    ]
+  }
+]

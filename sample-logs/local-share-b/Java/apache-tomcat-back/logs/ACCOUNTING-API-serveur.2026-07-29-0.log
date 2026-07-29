@@ -1,0 +1,1 @@
+2026-07-29 10:00:03,300 ERROR [worker-2] accounting.PaymentJob - Payment gateway timeout requestId=REQ-LOCAL-4 transactionId=TX-404

@@ -1,0 +1,12 @@
+{
+  "name": "default",
+  "filePattern": "^.+-(serveur|fwk)\\.\\d{4}-\\d{2}-\\d{2}-\\d+\\.log$",
+  "linePattern": "^(?<timestamp>\\d{4}-\\d{2}-\\d{2}[ T]\\d{2}:\\d{2}:\\d{2}(?:[,.]\\d{3})?)\\s+(?<level>TRACE|DEBUG|INFO|WARN|ERROR|FATAL)\\s+(?:\\[(?<thread>[^\\]]+)\\]\\s+)?(?:(?<logger>[\\w.$-]+)\\s+-\\s+)?(?<message>.*)$",
+  "groups": {
+    "timestamp": "timestamp",
+    "level": "level",
+    "thread": "thread",
+    "logger": "logger",
+    "message": "message"
+  }
+}
