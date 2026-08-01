@@ -19,9 +19,8 @@ interface SourceSelectorProps {
 }
 
 export function SourceSelector({ sendMessage }: SourceSelectorProps) {
-  const { clear, connected, sources } = useLogStore(
+  const { connected, sources } = useLogStore(
     useShallow((state) => ({
-      clear: state.clear,
       connected: state.connected,
       sources: state.sources,
     })),
@@ -35,6 +34,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
   );
   const countries = options.countriesByEnvironment[selection.environment] ?? [];
   const project = selection.project.trim();
+  const streaming = sources.length > 0;
   const canStartStream = Boolean(
     connected &&
       selection.environment &&
@@ -44,12 +44,14 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
   );
 
   function updateSelection(nextSelection: Partial<SourceSelection>) {
-    clear();
+    if (streaming) {
+      return;
+    }
+
     setSelection(nextSelection);
   }
 
   function startStream() {
-    clear();
     sendMessage({
       type: "subscribe",
       payload: { ...selection, project },
@@ -57,7 +59,6 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
   }
 
   function stopStream() {
-    clear();
     sendMessage({ type: "unsubscribe" });
   }
 
@@ -73,6 +74,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
         <Label className="gap-1 grid text-muted-foreground text-xs">
           <span>Environment</span>
           <Select
+            disabled={streaming}
             value={selection.environment}
             onValueChange={(environment) => updateSelection({ environment })}
           >
@@ -91,6 +93,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
         <Label className="gap-1 grid text-muted-foreground text-xs">
           <span>Country</span>
           <Select
+            disabled={streaming}
             value={selection.country}
             onValueChange={(country) => updateSelection({ country })}
           >
@@ -116,6 +119,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
           <Input
             aria-label="Project name"
             autoComplete="off"
+            disabled={streaming}
             placeholder="ACCOUNTING-API"
             spellCheck={false}
             value={selection.project}
@@ -128,6 +132,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
           <span>Date</span>
           <Input
             aria-label="Log date"
+            disabled={streaming}
             type="date"
             value={selection.date}
             onChange={(event) =>
@@ -138,6 +143,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
         <Label className="gap-1 grid text-muted-foreground text-xs">
           <span>Side</span>
           <Select
+            disabled={streaming}
             value={selection.tier}
             onValueChange={(tier) =>
               updateSelection({ tier: tier as SourceSelection["tier"] })
@@ -156,25 +162,27 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
           </Select>
         </Label>
         <div className="flex gap-1.5 max-[759px]:pt-1">
-          <Button
-            type="button"
-            disabled={!canStartStream}
-            onClick={startStream}
-            title="Start log streaming for this project"
-          >
-            <Play size={16} />
-            Start stream
-          </Button>
-          <Button
-            variant="outline"
-            type="button"
-            disabled={sources.length === 0}
-            onClick={stopStream}
-            title="Stop current log stream"
-          >
-            <Square size={16} />
-            Stop stream
-          </Button>
+          {streaming ? (
+            <Button
+              variant="outline"
+              type="button"
+              onClick={stopStream}
+              title="Stop current log stream"
+            >
+              <Square size={16} />
+              Stop stream
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              disabled={!canStartStream}
+              onClick={startStream}
+              title="Start log streaming for this project"
+            >
+              <Play size={16} />
+              Start stream
+            </Button>
+          )}
         </div>
       </div>
     </section>

@@ -34,21 +34,18 @@ export interface ResolvedLogDirectory {
   date: string;
   tier: ApplicationTier;
   path: string;
-  filePattern: string;
 }
 
 export interface LogSource {
   id: string;
   name: string;
   directory: string;
-  parser: string;
   enabled: boolean;
   environment?: string;
   country?: string;
   project?: string;
   date?: string;
   tier?: ApplicationTier;
-  filePattern?: string;
 }
 
 export interface SourceSelection {
@@ -66,6 +63,7 @@ export interface SourceOptions {
 }
 
 export interface LogEvent {
+  [field: string]: string | undefined;
   id: string;
   timestamp: string;
   receivedAt: string;
@@ -78,17 +76,55 @@ export interface LogEvent {
   logger?: string;
   message: string;
   raw: string;
-  parser: string;
 }
 
-export interface StatsSnapshot {
-  eventsPerSecond: number;
-  warnings: number;
-  errors: number;
-  activeInstances: number;
-  watchedFiles: number;
-  parserFailures: number;
-  memoryUsageMb: number;
+export interface LogFieldDefinition {
+  id: string;
+  label: string;
+  field: string;
+  width: number;
+  hideable: boolean;
+}
+
+export interface LogFieldGroup {
+  id: string;
+  label: string;
+  fields: LogFieldDefinition[];
+}
+
+export interface LogTableColumn extends LogFieldDefinition {
+  groupId: string;
+  groupLabel: string;
+}
+
+export interface LogTableSchema {
+  columns: LogTableColumn[];
+}
+
+export interface LogCursor {
+  id: string;
+  timestamp: string;
+  receivedAt: string;
+  filePath: string;
+}
+
+export interface LogPageRequest {
+  before?: LogCursor;
+  until?: string;
+  limit?: number;
+}
+
+export interface LogPage {
+  append: "top" | "bottom";
+  events: LogEvent[];
+  hasMore: boolean;
+}
+
+export interface LogSnapshot {
+  events: LogEvent[];
+  sources: LogSource[];
+  schema: LogTableSchema;
+  hasMore: boolean;
 }
 
 export interface LogFilter {
@@ -102,8 +138,6 @@ export interface LogFilter {
 export type ClientMessage =
   | { type: "subscribe"; payload: SourceSelection }
   | { type: "unsubscribe" }
-  | { type: "pause" }
-  | { type: "resume" }
   | { type: "filter"; payload: Partial<LogFilter> }
   | { type: "ping" };
 
@@ -111,14 +145,9 @@ export type ServerMessage =
   | { type: "connected"; payload: { options: SourceOptions } }
   | {
       type: "snapshot";
-      payload: {
-        events: LogEvent[];
-        stats: StatsSnapshot;
-        sources: LogSource[];
-      };
+      payload: LogSnapshot;
     }
   | { type: "log"; payload: LogEvent }
-  | { type: "stats"; payload: StatsSnapshot }
   | { type: "disconnected"; payload: { reason?: string } }
   | { type: "error"; payload: { message: string; details?: string } }
   | { type: "pong"; payload: { timestamp: string } };

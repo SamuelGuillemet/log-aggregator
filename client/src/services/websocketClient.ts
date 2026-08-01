@@ -1,5 +1,7 @@
 import type { ClientMessage, ServerMessage } from "@log-aggregator/shared";
 
+const DEFAULT_WS_URL = "ws://127.0.0.1:3000/ws";
+
 type MessageListener = (message: ServerMessage) => void;
 type StatusListener = (connected: boolean) => void;
 
@@ -10,8 +12,7 @@ export class LogWebSocketClient {
   private shouldReconnect = false;
 
   constructor(
-    private readonly url = import.meta.env.VITE_WS_URL ??
-      getDefaultWebSocketUrl(),
+    private readonly url = import.meta.env.VITE_SERVER_WS_URL ?? DEFAULT_WS_URL,
     private readonly onMessage: MessageListener,
     private readonly onStatus: StatusListener,
   ) {}
@@ -80,14 +81,4 @@ export class LogWebSocketClient {
       this.connect();
     }, this.reconnectDelayMs);
   }
-}
-
-function getDefaultWebSocketUrl(): string {
-  const { hostname, host, protocol } = window.location;
-
-  if (hostname === "127.0.0.1" || hostname === "localhost") {
-    return `${protocol === "https:" ? "wss" : "ws"}://${host}/ws`;
-  }
-
-  return "ws://127.0.0.1:3000/ws";
 }

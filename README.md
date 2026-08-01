@@ -95,11 +95,11 @@ Each selected environment/country entry expands every share into the selected ap
 
 The current matrix contains the requirement examples plus a `LOCAL/SAMPLE` fixture entry for development on this machine. Relative shares in the JSON file are resolved from the JSON file directory.
 
-Parser configuration lives in [server/config/default-parser.json](server/config/default-parser.json). You can point the backend to another parser file with `LOG_AGGREGATOR_PARSER_FILE`.
+Parser configuration lives in [server/config/default-parser.json](server/config/default-parser.json). You can point the backend to another parser file with `LOG_AGGREGATOR_PARSER_FILE`. Parser config defines the line pattern and captured groups; supported log file names are fixed in the backend.
 
 ## Supported Log Files
 
-The watcher processes files matching the `filePattern` in [server/config/default-parser.json](server/config/default-parser.json). The default pattern is:
+The watcher processes selected project/date files with these backend-supported names:
 
 - `APPLI-serveur.YYYY-MM-DD-N.log`
 - `APPLI-fwk.YYYY-MM-DD-N.log`
@@ -110,7 +110,7 @@ The default parser accepts lines shaped like:
 2026-07-29 10:15:30,123 INFO [main] accounting.Service - Message requestId=REQ-42 sessionId=SID-7 transactionId=TX-9
 ```
 
-Malformed lines are converted into warning events instead of stopping the stream.
+Lines without timestamps are appended to the previous event from the same file, which keeps multiline stack traces attached to the log entry that produced them.
 
 ## Deferred
 

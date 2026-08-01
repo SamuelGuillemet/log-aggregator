@@ -51,23 +51,7 @@ describe("sourceResolver", () => {
       date: "2026-07-29",
       tier: "front",
       path: "/tmp/dev-share/Java/apache-tomcat-front/logs",
-      filePattern: "^billing-api-(serveur|fwk)\\.2026-07-29-\\d+\\.log$",
     });
-    expect(
-      new RegExp(directories[0].filePattern).test(
-        "billing-api-serveur.2026-07-29-0.log",
-      ),
-    ).toBe(true);
-    expect(
-      new RegExp(directories[0].filePattern).test(
-        "billing-api-fwk.2026-07-29-0.log",
-      ),
-    ).toBe(true);
-    expect(
-      new RegExp(directories[0].filePattern).test(
-        "billing-api-fwk.2026-07-28-0.log",
-      ),
-    ).toBe(false);
     expect(directories[1].path).toBe(
       String.raw`\\server\logappli$\Java\apache-tomcat-front\logs`,
     );
@@ -85,13 +69,11 @@ describe("sourceResolver", () => {
     expect(sources).toHaveLength(1);
     expect(sources[0]).toMatchObject({
       enabled: true,
-      parser: "default",
       environment: "PROD",
       country: "FRANCE",
       project: "billing-api",
       date: "2026-07-29",
       tier: "back",
-      filePattern: "^billing-api-(serveur|fwk)\\.2026-07-29-\\d+\\.log$",
     });
   });
 });

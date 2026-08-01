@@ -275,7 +275,6 @@ Examples:
 
 ```
 log
-stats
 connected
 disconnected
 error

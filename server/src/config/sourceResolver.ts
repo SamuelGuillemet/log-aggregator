@@ -85,7 +85,6 @@ export function resolveLogDirectories(
         date,
         tier,
         path: appendTomcatLogPath(share, tier),
-        filePattern: createLogFilePattern(project, date),
       };
     }),
   );
@@ -99,27 +98,17 @@ export function resolveLogSources(
     id: directory.id,
     name: `${directory.environment}/${directory.country}/${directory.tier}/${basename(directory.share)}`,
     directory: directory.path,
-    parser: "default",
     enabled: true,
     environment: directory.environment,
     country: directory.country,
     project: directory.project,
     date: directory.date,
-    filePattern: directory.filePattern,
     tier: directory.tier,
   }));
 }
 
-function createLogFilePattern(project: string, date: string): string {
-  return String.raw`^${escapeRegExp(project)}-(serveur|fwk)\.${date}-\d+\.log$`;
-}
-
 function normalizeDate(value: string): string {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : "";
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 }
 
 function appendTomcatLogPath(share: string, tier: "back" | "front"): string {

@@ -5,16 +5,15 @@ import { fileURLToPath } from "node:url";
 import type { EnvironmentMatrixEntry } from "@log-aggregator/shared";
 
 export interface ParserConfig {
-  name: string;
-  filePattern: string;
   linePattern: string;
-  groups: {
-    timestamp: string;
-    level: string;
-    thread?: string;
-    logger?: string;
-    message: string;
-  };
+  groups: ParserGroups;
+}
+
+export interface ParserGroups {
+  [field: string]: string | undefined;
+  timestamp: string;
+  level: string;
+  message: string;
 }
 
 const packageRoot = path.resolve(
@@ -26,11 +25,7 @@ const defaultMatrixPath = path.join(
   "config",
   "environment-matrix.json",
 );
-const defaultParserPath = path.join(
-  packageRoot,
-  "config",
-  "default-parser.json",
-);
+const defaultParserPath = path.join(packageRoot, "config", "parser.json");
 
 export function loadEnvironmentMatrix(
   filePath = process.env.LOG_AGGREGATOR_MATRIX_FILE ?? defaultMatrixPath,

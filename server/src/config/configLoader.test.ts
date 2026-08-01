@@ -19,10 +19,10 @@ describe("configLoader", () => {
   it("loads the default parser JSON", () => {
     const config = loadParserConfig();
 
-    expect(config.name).toBe("default");
+    expect(config.groups.timestamp).toBe("timestamp");
     expect(
-      new RegExp(config.filePattern).test(
-        "BILLING-API-serveur.2026-07-29-0.log",
+      new RegExp(config.linePattern).test(
+        "2026-07-29 10:15:30|INFO|REQ-42|ACCOUNTING-API|app.Logger|ok",
       ),
     ).toBe(true);
   });
