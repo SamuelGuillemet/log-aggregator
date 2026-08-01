@@ -1,9 +1,12 @@
 import type {
   LogEvent,
+  LogFilter,
+  LogHistoryQuery,
+  LogPage,
+  LogSnapshot,
   LogSource,
   SourceOptions,
   SourceSelection,
-  StatsSnapshot,
 } from "@log-aggregator/shared";
 
 import {
@@ -15,11 +18,17 @@ import {
   resolveLogSources,
 } from "../config/sourceResolver.js";
 import { EventBus } from "../events/EventBus.js";
-import { DefaultLogParser } from "../parsers/DefaultLogParser.js";
-import type { LogParser } from "../parsers/Parser.js";
-import { StatisticsEngine } from "../statistics/StatisticsEngine.js";
+import { Parser } from "../parsers/Parser.js";
 import { TailReader } from "../tail/TailReader.js";
-import { WatchManager } from "../watchers/WatchManager.js";
+import {
+  type WatchChangeOptions,
+  WatchManager,
+} from "../watchers/WatchManager.js";
+import { LogContinuationTracker } from "./LogContinuationTracker.js";
+import { LogEventBuffer } from "./LogEventBuffer.js";
+import { defaultLogFilter } from "./logFilter.js";
+import { getLogEventPage } from "./logPagination.js";
+import { createLogTableSchema } from "./logSchema.js";
 
 const maxRecentEvents = Number(
   process.env.LOG_AGGREGATOR_BUFFER_SIZE ?? 10_000,
@@ -29,18 +38,15 @@ export class LogAggregatorService {
   readonly eventBus = new EventBus();
 
   private readonly matrix = loadEnvironmentMatrix();
-  private readonly parser: LogParser = new DefaultLogParser(loadParserConfig());
-  private readonly stats = new StatisticsEngine();
+  private readonly parser = new Parser(loadParserConfig());
   private readonly tailReader = new TailReader();
-  private readonly recentEvents: LogEvent[] = [];
+  private readonly eventBuffer = new LogEventBuffer(maxRecentEvents);
+  private readonly continuationTracker = new LogContinuationTracker();
+  private readonly schema = createLogTableSchema(this.parser.getFieldGroups());
   private activeSources: LogSource[] = [];
   private readonly watchManager = new WatchManager({
-    filePattern: this.parser.getFilePattern(),
-    onFileChanged: (source, filePath) => this.processFile(source, filePath),
-    onWatchedFilesChanged: (count) => {
-      this.stats.setWatchedFiles(count);
-      this.eventBus.emit("stats", this.stats.snapshot());
-    },
+    onFileChanged: (source, filePath, options) =>
+      this.processFile(source, filePath, options),
     onError: (message, details) =>
       this.eventBus.emit("error", { message, details }),
   });
@@ -49,67 +55,78 @@ export class LogAggregatorService {
     return getSourceOptions(this.matrix);
   }
 
-  getSnapshot(): {
-    events: LogEvent[];
-    stats: StatsSnapshot;
-    sources: LogSource[];
-  } {
+  getSnapshot(filter: LogFilter = defaultLogFilter): LogSnapshot {
+    const page = this.getEventPage(filter);
+
     return {
-      events: this.recentEvents,
-      stats: this.stats.snapshot(),
+      events: page.events,
+      hasMore: page.hasMore,
+      schema: this.schema,
       sources: this.activeSources,
     };
   }
 
+  getEventPage(
+    filter: LogFilter = defaultLogFilter,
+    request: LogHistoryQuery = {},
+  ): LogPage {
+    return getLogEventPage(this.eventBuffer.getEvents(), filter, request);
+  }
+
   async selectSources(selection: SourceSelection): Promise<void> {
     this.activeSources = resolveLogSources(this.matrix, selection);
-    this.recentEvents.length = 0;
+    this.eventBuffer.clear();
+    this.continuationTracker.clear();
     this.tailReader.reset();
-    this.stats.reset(this.activeSources);
     await this.watchManager.watchSources(this.activeSources);
-    this.eventBus.emit("stats", this.stats.snapshot());
   }
 
   async stop(): Promise<void> {
     this.activeSources = [];
-    this.recentEvents.length = 0;
+    this.eventBuffer.clear();
+    this.continuationTracker.clear();
     this.tailReader.reset();
-    this.stats.reset();
     await this.watchManager.stop();
-    this.eventBus.emit("stats", this.stats.snapshot());
   }
 
   private async processFile(
     source: LogSource,
     filePath: string,
+    options: WatchChangeOptions,
   ): Promise<void> {
-    if (!this.parser.supports(filePath)) {
-      return;
-    }
-
     const lines = await this.tailReader.readAppendedLines(filePath);
 
     for (const line of lines) {
-      const result = this.parser.parseLine(line, { source, filePath });
+      const event = this.parser.parseLine(line, { source, filePath });
 
-      if (result.parserFailure) {
-        this.stats.recordParserFailure();
+      if (!event) {
+        const updatedEvent = this.continuationTracker.appendLine(
+          source,
+          filePath,
+          line,
+        );
+
+        if (updatedEvent && options.broadcast) {
+          this.eventBus.emit("log", updatedEvent);
+        } else {
+          console.warn(
+            `Line appended to unknown log event for ${filePath}: ${line}`,
+          );
+        }
+
+        continue;
       }
 
-      this.recordEvent(result.event);
+      this.continuationTracker.remember(source, filePath, event);
+      this.recordEvent(event, options);
     }
-
-    this.eventBus.emit("stats", this.stats.snapshot());
   }
 
-  private recordEvent(event: LogEvent): void {
-    this.recentEvents.push(event);
+  private recordEvent(event: LogEvent, options: WatchChangeOptions): void {
+    this.eventBuffer.add(event);
 
-    if (this.recentEvents.length > maxRecentEvents) {
-      this.recentEvents.splice(0, this.recentEvents.length - maxRecentEvents);
+    if (options.broadcast) {
+      this.eventBus.emit("log", event);
     }
-
-    this.stats.recordEvent(event);
-    this.eventBus.emit("log", event);
   }
 }

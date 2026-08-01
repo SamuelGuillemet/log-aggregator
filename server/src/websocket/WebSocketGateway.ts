@@ -1,11 +1,20 @@
 import type { Server } from "node:http";
-import type { ClientMessage, ServerMessage } from "@log-aggregator/shared";
+import type {
+  ClientMessage,
+  LogFilter,
+  ServerMessage,
+} from "@log-aggregator/shared";
 import { WebSocket, WebSocketServer } from "ws";
 
 import type { LogAggregatorService } from "../services/LogAggregatorService.js";
+import {
+  defaultLogFilter,
+  matchesLogFilter,
+  mergeLogFilter,
+} from "../services/logFilter.js";
 
 interface ClientState {
-  paused: boolean;
+  filter: LogFilter;
 }
 
 export class WebSocketGateway {
@@ -20,10 +29,9 @@ export class WebSocketGateway {
     this.server.on("connection", (socket) => this.handleConnection(socket));
 
     this.service.eventBus.on("log", (event) =>
-      this.broadcast({ type: "log", payload: event }, (state) => !state.paused),
-    );
-    this.service.eventBus.on("stats", (stats) =>
-      this.broadcast({ type: "stats", payload: stats }),
+      this.broadcast({ type: "log", payload: event }, (state) =>
+        matchesLogFilter(event, state.filter),
+      ),
     );
     this.service.eventBus.on("error", (error) =>
       this.broadcast({ type: "error", payload: error }),
@@ -37,7 +45,7 @@ export class WebSocketGateway {
   }
 
   private handleConnection(socket: WebSocket): void {
-    this.clients.set(socket, { paused: false });
+    this.clients.set(socket, { filter: defaultLogFilter });
     this.send(socket, {
       type: "connected",
       payload: { options: this.service.getOptions() },
@@ -81,7 +89,7 @@ export class WebSocketGateway {
       await this.service.selectSources(message.payload);
       this.send(socket, {
         type: "snapshot",
-        payload: this.service.getSnapshot(),
+        payload: this.service.getSnapshot(state.filter),
       });
       return;
     }
@@ -90,21 +98,16 @@ export class WebSocketGateway {
       await this.service.stop();
       this.send(socket, {
         type: "snapshot",
-        payload: this.service.getSnapshot(),
+        payload: this.service.getSnapshot(state.filter),
       });
       return;
     }
 
-    if (message.type === "pause") {
-      state.paused = true;
-      return;
-    }
-
-    if (message.type === "resume") {
-      state.paused = false;
+    if (message.type === "filter") {
+      state.filter = mergeLogFilter(state.filter, message.payload);
       this.send(socket, {
         type: "snapshot",
-        payload: this.service.getSnapshot(),
+        payload: this.service.getSnapshot(state.filter),
       });
       return;
     }

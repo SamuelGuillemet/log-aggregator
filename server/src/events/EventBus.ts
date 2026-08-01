@@ -1,8 +1,7 @@
-import type { LogEvent, StatsSnapshot } from "@log-aggregator/shared";
+import type { LogEvent } from "@log-aggregator/shared";
 
 export type EventBusPayloads = {
   log: LogEvent;
-  stats: StatsSnapshot;
   error: { message: string; details?: string };
 };
 
