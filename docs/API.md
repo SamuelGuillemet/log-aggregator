@@ -94,7 +94,7 @@ Request older logs before the oldest displayed event:
     "regex": false,
     "caseSensitive": false
   },
-  "before": {
+  "beforeCursor": {
     "id": "event-id",
     "timestamp": "2026-07-29T10:15:30.123Z",
     "receivedAt": "2026-07-29T10:15:31.000Z",
@@ -115,7 +115,7 @@ Request logs down to a timestamp:
     "regex": false,
     "caseSensitive": false
   },
-  "until": "2026-07-29T10:00:00.000Z",
+  "fromTimestamp": "2026-07-29T10:00:00.000",
   "limit": 1000
 }
 ```
@@ -126,4 +126,4 @@ Response:
 { "append": "bottom", "events": [], "hasMore": false }
 ```
 
-Shared TypeScript protocol types live in [shared/src/types.ts](../shared/src/types.ts).
+Shared TypeScript protocol types live under [shared/src](../shared/src).

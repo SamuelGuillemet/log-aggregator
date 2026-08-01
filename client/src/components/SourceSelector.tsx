@@ -64,11 +64,11 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
 
   return (
     <section
-      className="gap-2 grid min-[1100px]:grid-cols-[minmax(280px,0.85fr)_minmax(420px,1.15fr)] bg-card/75 p-2 border border-[#b8b1a2]/75 rounded-lg"
+      className="gap-2 grid min-[1100px]:grid-cols-[minmax(280px,0.85fr)_minmax(420px,1.15fr)] p-2 rounded-lg atelier-card"
       aria-label="Source selection"
     >
       <div className="gap-2 grid grid-cols-1 min-[760px]:grid-cols-2">
-        <div className="min-[760px]:col-span-2 font-bold text-[#7b3025] text-xs uppercase">
+        <div className="min-[760px]:col-span-2 text-primary atelier-section-title">
           Location
         </div>
         <Label className="gap-1 grid text-muted-foreground text-xs">
@@ -111,7 +111,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
         </Label>
       </div>
       <div className="items-end gap-2 grid grid-cols-1 min-[760px]:grid-cols-[minmax(180px,1fr)_150px_140px_auto]">
-        <div className="min-[760px]:col-span-4 font-bold text-[#7b3025] text-xs uppercase">
+        <div className="min-[760px]:col-span-4 text-primary atelier-section-title">
           Project stream
         </div>
         <Label className="gap-1 grid text-muted-foreground text-xs">
@@ -120,7 +120,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
             aria-label="Project name"
             autoComplete="off"
             disabled={streaming}
-            placeholder="ACCOUNTING-API"
+            placeholder="Project name"
             spellCheck={false}
             value={selection.project}
             onChange={(event) =>

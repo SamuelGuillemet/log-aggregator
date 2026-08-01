@@ -30,7 +30,7 @@ The app includes a local fixture source. In the dashboard, select:
 - Country: `SAMPLE`
 - App: `Back`
 
-Then click `Watch`.
+Then click `Start stream`.
 
 To simulate live logs, append a line to one of the fixture files:
 
@@ -62,7 +62,7 @@ The practical release shape is split in two pieces:
 Build the local runner with:
 
 ```bash
-pnpm package:local
+pnpm package
 ```
 
 This creates `release/log-aggregator-local.tar.gz`. When `zip` is installed, it also creates `release/log-aggregator-local.zip` for Windows-friendly downloads. Extract the archive, then run:
@@ -95,7 +95,7 @@ Each selected environment/country entry expands every share into the selected ap
 
 The current matrix contains the requirement examples plus a `LOCAL/SAMPLE` fixture entry for development on this machine. Relative shares in the JSON file are resolved from the JSON file directory.
 
-Parser configuration lives in [server/config/default-parser.json](server/config/default-parser.json). You can point the backend to another parser file with `LOG_AGGREGATOR_PARSER_FILE`. Parser config defines the line pattern and captured groups; supported log file names are fixed in the backend.
+Parser configuration lives in [server/config/parser.json](server/config/parser.json). You can point the backend to another parser file with `LOG_AGGREGATOR_PARSER_FILE`. Parser config defines the line pattern and captured groups; supported log file names are fixed in the backend.
 
 ## Supported Log Files
 

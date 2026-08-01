@@ -1,10 +1,10 @@
 import type {
   LogFilter,
+  LogHistoryQuery,
   LogPage,
-  LogPageRequest,
 } from "@log-aggregator/shared";
 
-export interface LogPageQuery extends LogPageRequest {
+export interface LogPageQuery extends LogHistoryQuery {
   filter: LogFilter;
 }
 

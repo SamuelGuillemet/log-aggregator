@@ -38,10 +38,12 @@ describe("Parser", () => {
       sourceName: source.name,
       timestamp: "2026-07-29T10:15:30.123",
       level: "INFO",
-      requestId: "REQ-42",
-      application: "ACCOUNTING-API",
-      logger: "accounting.Service",
       message: "Created invoice",
+      fields: {
+        requestId: "REQ-42",
+        application: "ACCOUNTING-API",
+        logger: "accounting.Service",
+      },
     });
   });
 

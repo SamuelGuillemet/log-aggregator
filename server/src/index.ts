@@ -3,7 +3,7 @@ import {
   type IncomingMessage,
   type ServerResponse,
 } from "node:http";
-import type { LogFilter, LogPageRequest } from "@log-aggregator/shared";
+import type { LogFilter, LogHistoryQuery } from "@log-aggregator/shared";
 
 import { LogAggregatorService } from "./services/LogAggregatorService.js";
 import { defaultLogFilter, mergeLogFilter } from "./services/logFilter.js";
@@ -79,7 +79,7 @@ async function sendLogPage(
   response: ServerResponse,
 ): Promise<void> {
   try {
-    const body = (await readJsonBody(request)) as LogPageRequest & {
+    const body = (await readJsonBody(request)) as LogHistoryQuery & {
       filter?: Partial<LogFilter>;
     };
     const filter = body.filter

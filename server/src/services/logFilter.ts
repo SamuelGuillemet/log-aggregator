@@ -16,7 +16,7 @@ export function mergeLogFilter(
 }
 
 export function filterLogEvents(
-  events: LogEvent[],
+  events: readonly LogEvent[],
   filter: LogFilter,
 ): LogEvent[] {
   return events.filter((event) => matchesLogFilter(event, filter));
@@ -58,21 +58,13 @@ function matchesLevel(level: LogLevel, levels: LogLevel[]): boolean {
 }
 
 function getSearchableText(event: LogEvent): string {
-  const metadataFields = new Set([
-    "filePath",
-    "id",
-    "raw",
-    "receivedAt",
-    "sourceId",
-  ]);
-
-  return Object.entries(event)
-    .filter(
-      ([field, value]) =>
-        typeof value === "string" && !metadataFields.has(field),
-    )
-    .map(([, value]) => value)
-    .join(" ");
+  return [
+    event.timestamp,
+    event.sourceName,
+    event.level,
+    event.message,
+    ...Object.values(event.fields),
+  ].join(" ");
 }
 
 function containsText(

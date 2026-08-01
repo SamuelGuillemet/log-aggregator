@@ -14,12 +14,13 @@ const event: LogEvent = {
   sourceId: "source-1",
   sourceName: "DEV/FRANCE/back/share-a",
   filePath: "/logs/ACCOUNTING-API-serveur.2026-07-29-0.log",
-  instance: "share-a",
   level: "ERROR",
-  thread: "main",
-  logger: "accounting.Service",
   message: "Created invoice requestId=REQ-42",
   raw: "raw",
+  fields: {
+    logger: "accounting.Service",
+    thread: "main",
+  },
 };
 
 describe("logFilter", () => {

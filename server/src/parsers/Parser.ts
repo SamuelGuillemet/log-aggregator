@@ -32,17 +32,16 @@ export class Parser {
     const message = match.groups[this.config.groups.message] ?? "";
 
     return {
-      ...fields,
       id: randomUUID(),
       timestamp: normalizeTimestamp(match.groups[this.config.groups.timestamp]),
       receivedAt: new Date().toISOString(),
       sourceId: context.source.id,
       sourceName: context.source.name,
       filePath: context.filePath,
-      instance: context.source.name,
       level: normalizeLevel(match.groups[this.config.groups.level]),
       message,
       raw: line,
+      fields,
     };
   }
 
@@ -103,7 +102,16 @@ function getFieldLabel(field: string): string {
   return field
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
+    .split(" ")
+    .filter(Boolean)
+    .map(formatLabelWord)
+    .join(" ");
+}
+
+function formatLabelWord(word: string): string {
+  return word.toLowerCase() === "id"
+    ? "ID"
+    : `${word[0].toUpperCase()}${word.slice(1)}`;
 }
 
 function getFieldWidth(_field: string): number {

@@ -33,7 +33,7 @@ export const useSourceStore = create<SourceStore>()(
         country: "",
         date: defaultLogDate,
         environment: "",
-        project: "ACCOUNTING-API",
+        project: "",
         tier: "back",
       },
       setSelection: (selection) =>
