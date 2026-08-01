@@ -45,6 +45,7 @@ export class LogHistoryBuffer {
     );
 
     let page: LogEvent[] = [];
+    let hasMore = false;
 
     if (query?.type === "cursor") {
       const limit = clampLimit(query.limit);
@@ -55,6 +56,7 @@ export class LogHistoryBuffer {
       if (cursorIndex >= 0) {
         // Return events after the cursor.
         page = events.slice(cursorIndex + 1, cursorIndex + 1 + limit);
+        hasMore = cursorIndex + 1 + page.length < events.length;
       }
     } else if (query?.type === "timestamp") {
       const timestamp = new Date(query.fromTimestamp).getTime();
@@ -66,19 +68,22 @@ export class LogHistoryBuffer {
       if (startIndex >= 0) {
         // Return all events from most recent to the timestamp
         page = events.slice(0, startIndex + 1);
+        hasMore = startIndex + 1 < events.length;
       } else {
         // If no events are found before the timestamp, return all events.
         page = events.slice();
+        hasMore = false;
       }
     } else {
       // Return the most recent events if no query is provided.
       page = events.slice(0, defaultPageSize);
+      hasMore = events.length > page.length;
     }
 
     return {
       append: "bottom",
       events: page,
-      hasMore: events.length > page.length,
+      hasMore,
     };
   }
 

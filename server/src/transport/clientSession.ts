@@ -15,6 +15,7 @@ export interface ClientSession {
   id: string;
   filter: LogFilter;
   service: LogAggregatorService;
+  stopStreaming: () => Promise<void>;
   socket: WebSocket;
 }
 
@@ -27,19 +28,28 @@ export function createClientSession(
     filter: defaultLogFilter,
     service,
     socket,
+    stopStreaming: async () => {
+      await service.shutdown();
+    },
   };
 }
 
 export function bindSessionStreaming(session: ClientSession): void {
-  session.service.onLog((event) => {
+  const unsubscribeLog = session.service.onLog((event) => {
     if (eventMatchesFilter(event, session.filter)) {
       sendMessage(session.socket, { payload: event, type: "log" });
     }
   });
 
-  session.service.onError((error) => {
+  const unsubscribeError = session.service.onError((error) => {
     sendMessage(session.socket, { payload: error, type: "error" });
   });
+
+  session.stopStreaming = async () => {
+    unsubscribeLog();
+    unsubscribeError();
+    await session.service.shutdown();
+  };
 }
 
 export function sendSnapshot(session: ClientSession): void {
@@ -98,5 +108,5 @@ export async function handleClientMessage(
 }
 
 export async function closeSession(session: ClientSession): Promise<void> {
-  await session.service.shutdown();
+  await session.stopStreaming();
 }

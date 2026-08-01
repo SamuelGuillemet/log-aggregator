@@ -33,9 +33,14 @@ export function getSourceOptions(
     countriesByEnvironment: Object.fromEntries(
       Object.entries(countriesByEnvironment)
         .toSorted(([left], [right]) => left.localeCompare(right))
-        .map(([environment, countries]) => [environment, countries]),
+        .map(([environment, countries]) => [
+          environment,
+          [...countries].toSorted((left, right) => left.localeCompare(right)),
+        ]),
     ),
-    environments: [...new Set(matrix.map((entry) => entry.environment))],
+    environments: [
+      ...new Set(matrix.map((entry) => entry.environment)),
+    ].toSorted((left, right) => left.localeCompare(right)),
     tiers,
   };
 }

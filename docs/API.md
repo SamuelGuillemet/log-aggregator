@@ -95,7 +95,6 @@ interface LogEvent {
   filePath: string;
   level: LogLevel;
   message: string;
-  raw: string;
   fields: Record<string, string>;
 }
 ```
@@ -142,16 +141,18 @@ Matching behavior:
 ```ts
 interface LogCursor {
   id: string;
-  timestamp: string;
-  receivedAt: string;
-  filePath: string;
 }
 
-interface LogHistoryQuery {
-  beforeCursor?: LogCursor;
-  fromTimestamp?: string;
-  limit?: number;
-}
+type LogHistoryQuery =
+  | {
+      type: "timestamp";
+      fromTimestamp: string;
+    }
+  | {
+      type: "cursor";
+      beforeCursor: LogCursor;
+      limit: number;
+    };
 
 interface LogPage {
   append: "top" | "bottom";
@@ -182,7 +183,7 @@ Pagination behavior:
 All HTTP responses include these CORS headers:
 
 - `Access-Control-Allow-Origin: *`
-- `Access-Control-Allow-Headers: content-type`
+- `Access-Control-Allow-Headers: content-type,x-log-client-id`
 - `Access-Control-Allow-Methods: GET,POST,OPTIONS`
 
 ### `OPTIONS *`
@@ -197,30 +198,28 @@ Request body:
 
 ```json
 {
-  "filter": {
-    "levels": [],
-    "text": "requestId=REQ-42",
-    "regex": false,
-    "caseSensitive": false
-  },
+  "type": "cursor",
   "beforeCursor": {
-    "id": "0b6f402f-4b28-44d1-b61d-57ce1e1a3f2a",
-    "timestamp": "2026-07-29T10:15:30.123",
-    "receivedAt": "2026-07-29T10:15:31.000Z",
-    "filePath": "/logs/ACCOUNTING-API-serveur.2026-07-29-0.log"
+    "id": "0b6f402f-4b28-44d1-b61d-57ce1e1a3f2a"
   },
-  "fromTimestamp": "2026-07-29T10:00:00.000",
   "limit": 50
+}
+```
+
+or
+
+```json
+{
+  "type": "timestamp",
+  "fromTimestamp": "2026-07-29T10:00:00.000"
 }
 ```
 
 Request rules:
 
-- `filter` is optional; omitted fields fall back to the default filter
-- `beforeCursor` is optional; when present, only strictly older events are returned
-- `fromTimestamp` is optional; when present, only events at or after the timestamp are returned
-- `limit` is optional and clamped to the range `1..1000`
-- `beforeCursor` and `fromTimestamp` can be combined
+- the request header `x-log-client-id` is required to resolve the per-client filter/session context
+- for `type: "cursor"`, `beforeCursor.id` is required and `limit` is required (clamped to `1..1000`)
+- for `type: "timestamp"`, `fromTimestamp` is required
 
 Response `200`:
 
