@@ -8,7 +8,7 @@ export type ClientMessage =
   | { type: "ping" };
 
 export type ServerMessage =
-  | { type: "connected"; payload: { options: SourceOptions } }
+  | { type: "connected"; payload: { clientId: string; options: SourceOptions } }
   | {
       type: "snapshot";
       payload: LogSnapshot;

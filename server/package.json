@@ -9,8 +9,7 @@
     "typecheck": "tsc --noEmit --pretty false",
 
     "dev": "tsx watch --conditions=development src/index.ts",
-    "start": "node dist/index.js",
-    "test": "vitest run src"
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@log-aggregator/shared": "workspace:*",
@@ -20,7 +19,6 @@
   "devDependencies": {
     "@types/node": "^26.1.2",
     "@types/ws": "^8.18.1",
-    "tsx": "^4.23.1",
-    "vitest": "^4.1.10"
+    "tsx": "^4.23.1"
   }
 }

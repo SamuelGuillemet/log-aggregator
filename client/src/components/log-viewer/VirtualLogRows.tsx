@@ -101,7 +101,7 @@ export function VirtualLogRows({
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation();
-                      void navigator.clipboard?.writeText(row.original.raw);
+                      void navigator.clipboard?.writeText(row.original.message);
                     }}
                     title="Copy full log message"
                   >

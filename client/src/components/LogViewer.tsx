@@ -5,7 +5,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useDeferredValue, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useLogStore } from "@/stores/logStore";
@@ -14,7 +14,6 @@ import { LogLevelBadge } from "./log-viewer/LogLevelBadge";
 import { LogTableHeader } from "./log-viewer/LogTableHeader";
 import { LogViewerToolbar } from "./log-viewer/LogViewerToolbar";
 import { getLogEventFieldValue } from "./log-viewer/logEventFields";
-import { compareLogEventsNewestFirst } from "./log-viewer/logEventSorting";
 import { useExpandedRows } from "./log-viewer/useExpandedRows";
 import { useLogPageLoader } from "./log-viewer/useLogPageLoader";
 import { useLogTableLayout } from "./log-viewer/useLogTableLayout";
@@ -22,10 +21,11 @@ import { useScrollAreaWidth } from "./log-viewer/useScrollAreaWidth";
 import { VirtualLogRows } from "./log-viewer/VirtualLogRows";
 
 export function LogViewer() {
-  const { appendLogPage, events, filter, hasMore, schema, setError } =
+  const { appendLogPage, clientId, events, filter, hasMore, schema, setError } =
     useLogStore(
       useShallow((state) => ({
         appendLogPage: state.appendLogPage,
+        clientId: state.clientId,
         events: state.events,
         filter: state.filter,
         hasMore: state.hasMore,
@@ -34,11 +34,7 @@ export function LogViewer() {
       })),
     );
   const activeSchema = schema ?? fallbackSchema;
-  const deferredEvents = useDeferredValue(events);
-  const sortedEvents = useMemo(
-    () => [...deferredEvents].sort(compareLogEventsNewestFirst),
-    [deferredEvents],
-  );
+
   const columns = useMemo<ColumnDef<LogEvent>[]>(
     () =>
       activeSchema.columns.map((column) => ({
@@ -70,7 +66,7 @@ export function LogViewer() {
   } = useLogTableLayout(activeSchema, Boolean(schema));
   const { expandedRows, toggleExpanded } = useExpandedRows();
   const parentRef = useRef<HTMLDivElement>(null);
-  const oldestEvent = sortedEvents.at(-1);
+  const oldestEvent = events.at(-1);
   const {
     handleScroll,
     loadingOlder,
@@ -80,6 +76,7 @@ export function LogViewer() {
     untilInput,
   } = useLogPageLoader({
     appendLogPage,
+    clientId,
     filter,
     hasMore,
     oldestEvent,
@@ -89,7 +86,7 @@ export function LogViewer() {
   const table = useReactTable({
     columnResizeMode: "onChange",
     columns,
-    data: sortedEvents,
+    data: events,
     enableColumnResizing: true,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (event) => event.id,

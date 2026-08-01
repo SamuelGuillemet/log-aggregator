@@ -13,12 +13,12 @@ import {
 } from "react";
 
 import { fetchLogPage } from "@/services/logApiClient";
-import { toLogCursor } from "./logEventSorting";
 
 const pageSize = 50;
 
 interface UseLogPageLoaderOptions {
   appendLogPage: (page: LogPage) => void;
+  clientId: string | undefined;
   filter: LogFilter;
   hasMore: boolean;
   oldestEvent: LogEvent | undefined;
@@ -28,6 +28,7 @@ interface UseLogPageLoaderOptions {
 
 export function useLogPageLoader({
   appendLogPage,
+  clientId,
   filter,
   hasMore,
   oldestEvent,
@@ -49,7 +50,7 @@ export function useLogPageLoader({
     if (element.scrollHeight <= element.clientHeight + 4) {
       void loadOlderEvents();
     }
-  }, [hasMore, oldestEvent, parentRef]);
+  }, [hasMore, oldestEvent, parentRef, loadOlderEvents]);
 
   useEffect(() => {
     bottomLoadArmedRef.current = true;
@@ -76,7 +77,11 @@ export function useLogPageLoader({
       return;
     }
 
-    await loadPage({ beforeCursor: toLogCursor(oldestEvent), limit: pageSize });
+    await loadPage({
+      type: "cursor",
+      beforeCursor: { id: oldestEvent.id },
+      limit: pageSize,
+    });
   }
 
   function loadUntilTimestamp() {
@@ -86,7 +91,14 @@ export function useLogPageLoader({
       return;
     }
 
-    void loadPage({ fromTimestamp: timestamp, limit: 1_000 });
+    void loadPage({ fromTimestamp: timestamp, type: "timestamp" }).then(() => {
+      setUntilInput("");
+
+      // Scroll to the end of the log list after loading the page.
+      setTimeout(() => {
+        parentRef.current?.scrollTo({ top: parentRef.current.scrollHeight });
+      }, 0);
+    });
   }
 
   async function loadPage(request: LogHistoryQuery) {
@@ -94,11 +106,16 @@ export function useLogPageLoader({
       return;
     }
 
+    if (!clientId) {
+      setError("Log stream is disconnected");
+      return;
+    }
+
     loadingOlderRef.current = true;
     setLoadingOlder(true);
 
     try {
-      appendLogPage(await fetchLogPage({ ...request, filter }));
+      appendLogPage(await fetchLogPage(clientId, { ...request }));
     } catch {
       setError("Failed to load older logs");
     } finally {

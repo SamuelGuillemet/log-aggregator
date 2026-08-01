@@ -1,6 +1,5 @@
 import type { ClientMessage, ServerMessage } from "@log-aggregator/shared";
-
-const DEFAULT_WS_URL = "ws://127.0.0.1:3000/ws";
+import { WS_URL } from "@/constants/url";
 
 type MessageListener = (message: ServerMessage) => void;
 type StatusListener = (connected: boolean) => void;
@@ -12,7 +11,6 @@ export class LogWebSocketClient {
   private shouldReconnect = false;
 
   constructor(
-    private readonly url = import.meta.env.VITE_SERVER_WS_URL ?? DEFAULT_WS_URL,
     private readonly onMessage: MessageListener,
     private readonly onStatus: StatusListener,
   ) {}
@@ -21,7 +19,7 @@ export class LogWebSocketClient {
     this.disconnect(false);
     this.shouldReconnect = true;
 
-    const socket = new WebSocket(this.url);
+    const socket = new WebSocket(WS_URL);
     this.socket = socket;
     socket.addEventListener("open", () => {
       this.reconnectDelayMs = 500;

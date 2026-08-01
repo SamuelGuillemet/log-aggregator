@@ -4,9 +4,16 @@
     "country": "SAMPLE",
     "code": "LOCAL_SAMPLE",
     "host": "LOCALHOST",
+    "shares": ["../sample-logs/local-share-a", "../sample-logs/local-share-b"]
+  },
+  {
+    "environment": "LOCAL",
+    "country": "PERF",
+    "code": "LOCAL_PERF",
+    "host": "LOCALHOST",
     "shares": [
-      "../../sample-logs/local-share-a",
-      "../../sample-logs/local-share-b"
+      "../sample-logs/perf-cluster/perf-share-a",
+      "../sample-logs/perf-cluster/perf-share-b"
     ]
   }
 ]

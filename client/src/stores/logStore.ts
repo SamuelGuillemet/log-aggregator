@@ -13,11 +13,11 @@ export const defaultFilter: LogFilter = {
   caseSensitive: false,
   levels: [],
   regex: false,
-  sourceIds: [],
   text: "",
 };
 
 interface LogStore {
+  clientId: string | undefined;
   connected: boolean;
   events: LogEvent[];
   hasMore: boolean;
@@ -33,6 +33,7 @@ interface LogStore {
 }
 
 export const useLogStore = create<LogStore>((set) => ({
+  clientId: undefined,
   connected: false,
   events: [],
   hasMore: false,
@@ -48,6 +49,10 @@ export const useLogStore = create<LogStore>((set) => ({
     })),
   handleServerMessage: (message) =>
     set((state) => {
+      if (message.type === "connected") {
+        return { clientId: message.payload.clientId };
+      }
+
       if (message.type === "snapshot") {
         return {
           error: undefined,
@@ -72,12 +77,13 @@ export const useLogStore = create<LogStore>((set) => ({
 
         return {
           error: undefined,
-          events: [...state.events, message.payload].slice(-10_000),
+          events: mergeEvents(state.events, [message.payload], "top"),
         };
       }
 
       if (message.type === "disconnected") {
         return {
+          clientId: undefined,
           connected: false,
           error: message.payload.reason,
           sources: [],
@@ -90,7 +96,8 @@ export const useLogStore = create<LogStore>((set) => ({
 
       return state;
     }),
-  setConnected: (connected) => set({ connected }),
+  setConnected: (connected) =>
+    set(connected ? { connected } : { clientId: undefined, connected }),
   setError: (error) => set({ error }),
   setFilter: (filter) =>
     set((state) => ({ filter: { ...state.filter, ...filter } })),
@@ -110,7 +117,12 @@ function mergeEvents(
   const eventsById = new Map(currentEvents.map((event) => [event.id, event]));
   const newEvents = incomingEvents.filter((event) => !eventsById.has(event.id));
 
-  return append === "top"
-    ? [...newEvents, ...currentEvents]
-    : [...currentEvents, ...newEvents];
+  const newList =
+    append === "top"
+      ? [...newEvents, ...currentEvents]
+      : [...currentEvents, ...newEvents];
+
+  return newList.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
 }

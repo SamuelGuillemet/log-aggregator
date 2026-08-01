@@ -1,17 +1,16 @@
-import type {
-  LogFilter,
-  LogHistoryQuery,
-  LogPage,
-} from "@log-aggregator/shared";
+import type { LogHistoryQuery, LogPage } from "@log-aggregator/shared";
+import { API_URL } from "@/constants/url";
 
-export interface LogPageQuery extends LogHistoryQuery {
-  filter: LogFilter;
-}
-
-export async function fetchLogPage(query: LogPageQuery): Promise<LogPage> {
-  const response = await fetch(`${getApiBaseUrl()}/api/logs`, {
+export async function fetchLogPage(
+  clientId: string,
+  query: LogHistoryQuery,
+): Promise<LogPage> {
+  const response = await fetch(`${API_URL}/api/logs`, {
     body: JSON.stringify(query),
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "x-log-client-id": clientId,
+    },
     method: "POST",
   });
 
@@ -20,31 +19,4 @@ export async function fetchLogPage(query: LogPageQuery): Promise<LogPage> {
   }
 
   return (await response.json()) as LogPage;
-}
-
-function getApiBaseUrl(): string {
-  const configuredApiUrl = import.meta.env.VITE_API_URL as string | undefined;
-
-  if (configuredApiUrl) {
-    return trimTrailingSlash(configuredApiUrl);
-  }
-
-  const configuredWebSocketUrl = import.meta.env.VITE_WS_URL as
-    | string
-    | undefined;
-
-  if (configuredWebSocketUrl) {
-    try {
-      const url = new URL(configuredWebSocketUrl);
-      url.protocol = url.protocol === "wss:" ? "https:" : "http:";
-
-      return url.origin;
-    } catch {}
-  }
-
-  return "http://127.0.0.1:3000";
-}
-
-function trimTrailingSlash(value: string): string {
-  return value.endsWith("/") ? value.slice(0, -1) : value;
 }

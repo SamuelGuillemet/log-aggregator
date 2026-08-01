@@ -19,22 +19,23 @@ export interface LogEvent {
   filePath: string;
   level: LogLevel;
   message: string;
-  raw: string;
   fields: Record<string, string>;
 }
 
 export interface LogCursor {
   id: string;
-  timestamp: string;
-  receivedAt: string;
-  filePath: string;
 }
 
-export interface LogHistoryQuery {
-  beforeCursor?: LogCursor;
-  fromTimestamp?: string;
-  limit?: number;
-}
+export type LogHistoryQuery =
+  | {
+      type: "timestamp";
+      fromTimestamp: string;
+    }
+  | {
+      type: "cursor";
+      beforeCursor: LogCursor;
+      limit: number;
+    };
 
 export interface LogPage {
   append: "top" | "bottom";
@@ -50,7 +51,6 @@ export interface LogSnapshot {
 }
 
 export interface LogFilter {
-  sourceIds: string[];
   levels: LogLevel[];
   text: string;
   regex: boolean;

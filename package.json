@@ -7,12 +7,13 @@
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm --parallel --stream -r run dev",
+    "perf:logs": "node scripts/dev/generate-perf-logs.mjs",
+    "perf:logs:live": "node scripts/dev/generate-live-perf-logs.mjs",
     "lint": "biome check .",
     "format": "biome format --write .",
     "check": "biome check --write .",
     "package": "node scripts/packager.mjs",
     "doctor": "npx react-doctor@latest",
-    "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {

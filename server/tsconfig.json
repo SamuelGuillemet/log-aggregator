@@ -7,12 +7,12 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
 
-    "lib": ["ES2022"],
+    "lib": ["ES2025"],
 
     "types": ["node"],
 
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "src.old"
   },
 
   "references": [
@@ -21,5 +21,5 @@
     }
   ],
 
-  "include": ["src"]
+  "include": ["src.old"]
 }
