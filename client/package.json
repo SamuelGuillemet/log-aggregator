@@ -4,26 +4,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter @log-aggregator/shared build && tsc -p tsconfig.json --noEmit && vite build",
-    "check": "biome check --write src/",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit --pretty false",
     "dev": "vite --host 127.0.0.1",
-    "doctor": "npx react-doctor@latest",
-    "format": "biome format --write src/",
-    "lint": "biome check src/",
     "preview": "vite preview --host 127.0.0.1",
-    "typecheck": "pnpm --filter @log-aggregator/shared build && tsc -p tsconfig.json --noEmit --pretty false"
+    "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/outfit": "^5.3.0",
     "@log-aggregator/shared": "workspace:*",
     "@radix-ui/react-select": "^2.3.7",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.9",
-    "@fontsource-variable/fraunces": "^5.2.9",
-    "@fontsource-variable/outfit": "^5.2.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.27.0",
+    "lucide-react": "^1.28.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwind-merge": "^3.6.0",
@@ -33,12 +30,12 @@
     "@babel/core": "^8.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.4",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
     "babel-plugin-react-compiler": "^1.0.0",
-    "shadcn": "^4.13.0",
+    "shadcn": "^4.16.1",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.1.5"
+    "vite": "^8.2.0"
   }
 }
