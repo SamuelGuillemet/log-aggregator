@@ -54,9 +54,9 @@ export interface LogSource {
 export interface SourceSelection {
   environment: string;
   country: string;
+  tier: ApplicationTier;
   project: string;
   date: string;
-  tier: ApplicationTier;
 }
 
 export interface SourceOptions {

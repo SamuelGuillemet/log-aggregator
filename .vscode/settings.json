@@ -1,5 +1,6 @@
 {
   "editor.codeActionsOnSave": {
+    "source.removeUnused.ts": "always",
     "source.organizeImports.biome": "always",
     "source.fixAll.biome": "always",
     "source.addMissingImports.ts": "always"
@@ -36,5 +37,4 @@
     "path": "/bin/bash"
   },
   "js/ts.tsdk.path": "node_modules/typescript/lib"
-  // "js/ts.experimental.useTsgo": true
 }
