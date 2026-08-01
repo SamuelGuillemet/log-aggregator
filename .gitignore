@@ -7,3 +7,4 @@ release/
 *.log
 !sample-logs/**/*.log
 **/tsconfig.tsbuildinfo
+**/perf-cluster/

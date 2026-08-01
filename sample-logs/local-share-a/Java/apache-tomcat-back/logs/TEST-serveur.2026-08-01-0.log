@@ -1,0 +1,480 @@
+2026-07-27 03:49:41.085|INFO||BANK-TRANSFER|com.zaxxer.hikari.pool.HikariPool|HikariPool-5 - Added connection oracle.jdbc.driver.T4CConnection@373c0f1a
+2026-07-27 03:49:41.090|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Start completed.
+2026-07-27 03:49:41.930|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-27 03:49:41.998|WARN||BANK-TRANSFER|org.hibernate.orm.jdbc|HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
+2026-07-27 03:49:42.012|INFO||BANK-TRANSFER|o.hibernate.orm.connections.pooling|HHH10001005: Database info:
+	Database JDBC URL [jdbc:oracle:thin:@oradf401-scan.cm-cic.fr:1521/CIBDPCR]
+	Database driver: Oracle JDBC driver
+	Database dialect: OracleDialect
+	Database version: 19.31
+	Default catalog/schema: undefined/RE7_PL
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 10
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-27 03:49:42.780|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.bank_transfer.entity.back.TransactionSepaHeader.updateDate.
+2026-07-27 03:49:42.854|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.id.StoredProcedureErrorId.errorDate.
+2026-07-27 03:49:42.857|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.StoredProcedureError.errorDate.
+2026-07-27 03:49:47.420|INFO||BANK-TRANSFER|org.hibernate.orm.core|HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-27 03:49:47.441|INFO||BANK-TRANSFER|o.s.o.j.LocalContainerEntityManagerFactoryBean|Initialized JPA EntityManagerFactory for persistence unit 'back'
+2026-07-27 03:49:47.606|INFO||BANK-TRANSFER|o.s.d.j.r.q.QueryEnhancerFactories|Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-27 03:49:51.331|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-27 03:49:51.589|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-27 03:49:53.158|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-27 03:49:53.971|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-27 03:49:53.977|WARN||BANK-TRANSFER|o.s.b.w.s.s.SpringBootServletInitializer$WarDeploymentApplicationContextFactory$1|Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'getMaxAttempts' defined in class path resource [com/eisec/bank_transfer/configuration/BankTransferConfiguration.class]: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+2026-07-27 03:49:53.984|INFO||BANK-TRANSFER|o.s.o.j.LocalContainerEntityManagerFactoryBean|Closing JPA EntityManagerFactory for persistence unit 'back'
+2026-07-27 03:49:53.991|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Shutdown initiated...
+2026-07-27 03:49:54.002|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Shutdown completed.
+2026-07-27 03:49:54.018|INFO||BANK-TRANSFER|o.s.b.a.l.ConditionEvaluationReportLogger|
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-07-27 03:49:54.073|ERROR||BANK-TRANSFER|o.s.boot.SpringApplication|Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'getMaxAttempts' defined in class path resource [com/eisec/bank_transfer/configuration/BankTransferConfiguration.class]: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:657)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:489)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1362)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1194)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:565)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:525)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:371)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:331)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:196)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1218)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1184)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1121)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:994)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:621)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:756)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:445)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:321)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.run(SpringBootServletInitializer.java:205)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.createRootApplicationContext(SpringBootServletInitializer.java:181)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.onStartup(SpringBootServletInitializer.java:109)
+	at org.springframework.web.SpringServletContainerInitializer.onStartup(SpringServletContainerInitializer.java:171)
+	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:4416)
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164)
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:564)
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:663)
+	at org.apache.catalina.startup.HostConfig.deployWAR(HostConfig.java:923)
+	at org.apache.catalina.startup.HostConfig$DeployWar.run(HostConfig.java:1839)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:183)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiateWithFactoryMethod(SimpleInstantiationStrategy.java:72)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:152)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:653)
+	... 34 common frames omitted
+Caused by: java.lang.NullPointerException: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration.getMaxAttempts(BankTransferConfiguration.java:26)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$0.CGLIB$getMaxAttempts$1(<generated>)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$FastClass$$1.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258)
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:398)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$0.getMaxAttempts(<generated>)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:155)
+	... 37 common frames omitted
+2026-07-27 13:01:24.555|INFO||BANK-TRANSFER|c.e.b.c.BankTransferApplication|Starting BankTransferApplication v1.6.65 using Java 17.0.15 with PID 2864 (D:\EISEC\java\apache-tomcat-back\webapps\bank-transfer-api\WEB-INF\classes started by MTLC_R7_PL_DF in D:\EISEC\java\apache_tomcat_reference\bin)
+2026-07-27 13:01:24.556|DEBUG||BANK-TRANSFER|c.e.b.c.BankTransferApplication|Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-07-27 13:01:24.557|INFO||BANK-TRANSFER|c.e.b.c.BankTransferApplication|No active profile set, falling back to 1 default profile: "default"
+2026-07-27 13:01:25.903|INFO||BANK-TRANSFER|o.h.validator.internal.util.Version|HV000001: Hibernate Validator 9.0.1.Final
+2026-07-27 13:01:28.451|INFO||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-27 13:01:29.199|INFO||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|Finished Spring Data repository scanning in 721 ms. Found 38 JPA repository interfaces.
+2026-07-27 13:01:32.509|INFO||BANK-TRANSFER|o.s.b.w.c.s.WebApplicationContextInitializer|Root WebApplicationContext: initialization completed in 7821 ms
+2026-07-27 13:01:34.069|INFO||BANK-TRANSFER|org.hibernate.orm.jpa|HHH008540: Processing PersistenceUnitInfo [name: back]
+2026-07-27 13:01:34.314|INFO||BANK-TRANSFER|org.hibernate.orm.core|HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-07-27 13:01:36.118|INFO||BANK-TRANSFER|o.s.o.j.p.SpringPersistenceUnitInfo|No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-27 13:01:36.213|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Starting...
+2026-07-27 13:01:36.882|INFO||BANK-TRANSFER|com.zaxxer.hikari.pool.HikariPool|HikariPool-5 - Added connection oracle.jdbc.driver.T4CConnection@3d95b9f1
+2026-07-27 13:01:36.886|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Start completed.
+2026-07-27 13:01:37.609|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-27 13:01:37.660|WARN||BANK-TRANSFER|org.hibernate.orm.jdbc|HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
+2026-07-27 13:01:37.667|INFO||BANK-TRANSFER|o.hibernate.orm.connections.pooling|HHH10001005: Database info:
+	Database JDBC URL [jdbc:oracle:thin:@oradf401-scan.cm-cic.fr:1521/CIBDPCR]
+	Database driver: Oracle JDBC driver
+	Database dialect: OracleDialect
+	Database version: 19.31
+	Default catalog/schema: undefined/RE7_PL
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 10
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-27 13:01:38.344|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.bank_transfer.entity.back.TransactionSepaHeader.updateDate.
+2026-07-27 13:01:38.410|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.id.StoredProcedureErrorId.errorDate.
+2026-07-27 13:01:38.413|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.StoredProcedureError.errorDate.
+2026-07-28 03:49:41.085|INFO||BANK-TRANSFER|com.zaxxer.hikari.pool.HikariPool|HikariPool-5 - Added connection oracle.jdbc.driver.T4CConnection@373c0f1a
+2026-07-28 03:49:41.090|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Start completed.
+2026-07-28 03:49:41.930|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-28 03:49:41.998|WARN||BANK-TRANSFER|org.hibernate.orm.jdbc|HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
+2026-07-28 03:49:42.012|INFO||BANK-TRANSFER|o.hibernate.orm.connections.pooling|HHH10001005: Database info:
+	Database JDBC URL [jdbc:oracle:thin:@oradf401-scan.cm-cic.fr:1521/CIBDPCR]
+	Database driver: Oracle JDBC driver
+	Database dialect: OracleDialect
+	Database version: 19.31
+	Default catalog/schema: undefined/RE7_PL
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 10
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-28 03:49:42.780|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.bank_transfer.entity.back.TransactionSepaHeader.updateDate.
+2026-07-28 03:49:42.854|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.id.StoredProcedureErrorId.errorDate.
+2026-07-28 03:49:42.857|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.StoredProcedureError.errorDate.
+2026-07-28 03:49:47.420|INFO||BANK-TRANSFER|org.hibernate.orm.core|HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-28 03:49:47.441|INFO||BANK-TRANSFER|o.s.o.j.LocalContainerEntityManagerFactoryBean|Initialized JPA EntityManagerFactory for persistence unit 'back'
+2026-07-28 03:49:47.606|INFO||BANK-TRANSFER|o.s.d.j.r.q.QueryEnhancerFactories|Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-28 03:49:51.331|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-28 03:49:51.589|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-28 03:49:53.158|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-28 03:49:53.971|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-28 03:49:53.977|WARN||BANK-TRANSFER|o.s.b.w.s.s.SpringBootServletInitializer$WarDeploymentApplicationContextFactory$1|Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'getMaxAttempts' defined in class path resource [com/eisec/bank_transfer/configuration/BankTransferConfiguration.class]: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+2026-07-28 03:49:53.984|INFO||BANK-TRANSFER|o.s.o.j.LocalContainerEntityManagerFactoryBean|Closing JPA EntityManagerFactory for persistence unit 'back'
+2026-07-28 03:49:53.991|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Shutdown initiated...
+2026-07-28 03:49:54.002|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Shutdown completed.
+2026-07-28 03:49:54.018|INFO||BANK-TRANSFER|o.s.b.a.l.ConditionEvaluationReportLogger|
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-07-28 03:49:54.073|ERROR||BANK-TRANSFER|o.s.boot.SpringApplication|Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'getMaxAttempts' defined in class path resource [com/eisec/bank_transfer/configuration/BankTransferConfiguration.class]: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:657)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:489)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1362)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1194)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:565)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:525)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:371)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:331)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:196)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1218)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1184)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1121)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:994)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:621)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:756)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:445)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:321)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.run(SpringBootServletInitializer.java:205)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.createRootApplicationContext(SpringBootServletInitializer.java:181)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.onStartup(SpringBootServletInitializer.java:109)
+	at org.springframework.web.SpringServletContainerInitializer.onStartup(SpringServletContainerInitializer.java:171)
+	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:4416)
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164)
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:564)
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:663)
+	at org.apache.catalina.startup.HostConfig.deployWAR(HostConfig.java:923)
+	at org.apache.catalina.startup.HostConfig$DeployWar.run(HostConfig.java:1839)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:183)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiateWithFactoryMethod(SimpleInstantiationStrategy.java:72)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:152)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:653)
+	... 34 common frames omitted
+Caused by: java.lang.NullPointerException: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration.getMaxAttempts(BankTransferConfiguration.java:26)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$0.CGLIB$getMaxAttempts$1(<generated>)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$FastClass$$1.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258)
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:398)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$0.getMaxAttempts(<generated>)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:155)
+	... 37 common frames omitted
+2026-07-28 13:01:24.555|INFO||BANK-TRANSFER|c.e.b.c.BankTransferApplication|Starting BankTransferApplication v1.6.65 using Java 17.0.15 with PID 2864 (D:\EISEC\java\apache-tomcat-back\webapps\bank-transfer-api\WEB-INF\classes started by MTLC_R7_PL_DF in D:\EISEC\java\apache_tomcat_reference\bin)
+2026-07-28 13:01:24.556|DEBUG||BANK-TRANSFER|c.e.b.c.BankTransferApplication|Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-07-28 13:01:24.557|INFO||BANK-TRANSFER|c.e.b.c.BankTransferApplication|No active profile set, falling back to 1 default profile: "default"
+2026-07-28 13:01:25.903|INFO||BANK-TRANSFER|o.h.validator.internal.util.Version|HV000001: Hibernate Validator 9.0.1.Final
+2026-07-28 13:01:28.451|INFO||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-28 13:01:29.199|INFO||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|Finished Spring Data repository scanning in 721 ms. Found 38 JPA repository interfaces.
+2026-07-28 13:01:32.509|INFO||BANK-TRANSFER|o.s.b.w.c.s.WebApplicationContextInitializer|Root WebApplicationContext: initialization completed in 7821 ms
+2026-07-28 13:01:34.069|INFO||BANK-TRANSFER|org.hibernate.orm.jpa|HHH008540: Processing PersistenceUnitInfo [name: back]
+2026-07-28 13:01:34.314|INFO||BANK-TRANSFER|org.hibernate.orm.core|HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-07-28 13:01:36.118|INFO||BANK-TRANSFER|o.s.o.j.p.SpringPersistenceUnitInfo|No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-28 13:01:36.213|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Starting...
+2026-07-28 13:01:36.882|INFO||BANK-TRANSFER|com.zaxxer.hikari.pool.HikariPool|HikariPool-5 - Added connection oracle.jdbc.driver.T4CConnection@3d95b9f1
+2026-07-28 13:01:36.886|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Start completed.
+2026-07-28 13:01:37.609|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-28 13:01:37.660|WARN||BANK-TRANSFER|org.hibernate.orm.jdbc|HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
+2026-07-28 13:01:37.667|INFO||BANK-TRANSFER|o.hibernate.orm.connections.pooling|HHH10001005: Database info:
+	Database JDBC URL [jdbc:oracle:thin:@oradf401-scan.cm-cic.fr:1521/CIBDPCR]
+	Database driver: Oracle JDBC driver
+	Database dialect: OracleDialect
+	Database version: 19.31
+	Default catalog/schema: undefined/RE7_PL
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 10
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-28 13:01:38.344|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.bank_transfer.entity.back.TransactionSepaHeader.updateDate.
+2026-07-28 13:01:38.410|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.id.StoredProcedureErrorId.errorDate.
+2026-07-28 13:01:38.413|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.StoredProcedureError.errorDate.
+2026-07-29 03:49:41.085|INFO||BANK-TRANSFER|com.zaxxer.hikari.pool.HikariPool|HikariPool-5 - Added connection oracle.jdbc.driver.T4CConnection@373c0f1a
+2026-07-29 03:49:41.090|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Start completed.
+2026-07-29 03:49:41.930|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-29 03:49:41.998|WARN||BANK-TRANSFER|org.hibernate.orm.jdbc|HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
+2026-07-29 03:49:42.012|INFO||BANK-TRANSFER|o.hibernate.orm.connections.pooling|HHH10001005: Database info:
+	Database JDBC URL [jdbc:oracle:thin:@oradf401-scan.cm-cic.fr:1521/CIBDPCR]
+	Database driver: Oracle JDBC driver
+	Database dialect: OracleDialect
+	Database version: 19.31
+	Default catalog/schema: undefined/RE7_PL
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 10
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-29 03:49:42.780|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.bank_transfer.entity.back.TransactionSepaHeader.updateDate.
+2026-07-29 03:49:42.854|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.id.StoredProcedureErrorId.errorDate.
+2026-07-29 03:49:42.857|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.StoredProcedureError.errorDate.
+2026-07-29 03:49:47.420|INFO||BANK-TRANSFER|org.hibernate.orm.core|HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-29 03:49:47.441|INFO||BANK-TRANSFER|o.s.o.j.LocalContainerEntityManagerFactoryBean|Initialized JPA EntityManagerFactory for persistence unit 'back'
+2026-07-29 03:49:47.606|INFO||BANK-TRANSFER|o.s.d.j.r.q.QueryEnhancerFactories|Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-29 03:49:51.331|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-29 03:49:51.589|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-29 03:49:53.158|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-29 03:49:53.971|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-29 03:49:53.977|WARN||BANK-TRANSFER|o.s.b.w.s.s.SpringBootServletInitializer$WarDeploymentApplicationContextFactory$1|Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'getMaxAttempts' defined in class path resource [com/eisec/bank_transfer/configuration/BankTransferConfiguration.class]: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+2026-07-29 03:49:53.984|INFO||BANK-TRANSFER|o.s.o.j.LocalContainerEntityManagerFactoryBean|Closing JPA EntityManagerFactory for persistence unit 'back'
+2026-07-29 03:49:53.991|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Shutdown initiated...
+2026-07-29 03:49:54.002|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Shutdown completed.
+2026-07-29 03:49:54.018|INFO||BANK-TRANSFER|o.s.b.a.l.ConditionEvaluationReportLogger|
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-07-29 03:49:54.073|ERROR||BANK-TRANSFER|o.s.boot.SpringApplication|Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'getMaxAttempts' defined in class path resource [com/eisec/bank_transfer/configuration/BankTransferConfiguration.class]: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:657)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:489)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1362)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1194)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:565)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:525)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:371)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:331)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:196)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1218)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1184)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1121)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:994)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:621)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:756)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:445)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:321)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.run(SpringBootServletInitializer.java:205)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.createRootApplicationContext(SpringBootServletInitializer.java:181)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.onStartup(SpringBootServletInitializer.java:109)
+	at org.springframework.web.SpringServletContainerInitializer.onStartup(SpringServletContainerInitializer.java:171)
+	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:4416)
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164)
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:564)
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:663)
+	at org.apache.catalina.startup.HostConfig.deployWAR(HostConfig.java:923)
+	at org.apache.catalina.startup.HostConfig$DeployWar.run(HostConfig.java:1839)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:183)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiateWithFactoryMethod(SimpleInstantiationStrategy.java:72)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:152)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:653)
+	... 34 common frames omitted
+Caused by: java.lang.NullPointerException: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration.getMaxAttempts(BankTransferConfiguration.java:26)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$0.CGLIB$getMaxAttempts$1(<generated>)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$FastClass$$1.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258)
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:398)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$0.getMaxAttempts(<generated>)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:155)
+	... 37 common frames omitted
+2026-07-29 13:01:24.555|INFO||BANK-TRANSFER|c.e.b.c.BankTransferApplication|Starting BankTransferApplication v1.6.65 using Java 17.0.15 with PID 2864 (D:\EISEC\java\apache-tomcat-back\webapps\bank-transfer-api\WEB-INF\classes started by MTLC_R7_PL_DF in D:\EISEC\java\apache_tomcat_reference\bin)
+2026-07-29 13:01:24.556|DEBUG||BANK-TRANSFER|c.e.b.c.BankTransferApplication|Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-07-29 13:01:24.557|INFO||BANK-TRANSFER|c.e.b.c.BankTransferApplication|No active profile set, falling back to 1 default profile: "default"
+2026-07-29 13:01:25.903|INFO||BANK-TRANSFER|o.h.validator.internal.util.Version|HV000001: Hibernate Validator 9.0.1.Final
+2026-07-29 13:01:28.451|INFO||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-29 13:01:29.199|INFO||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|Finished Spring Data repository scanning in 721 ms. Found 38 JPA repository interfaces.
+2026-07-29 13:01:32.509|INFO||BANK-TRANSFER|o.s.b.w.c.s.WebApplicationContextInitializer|Root WebApplicationContext: initialization completed in 7821 ms
+2026-07-29 13:01:34.069|INFO||BANK-TRANSFER|org.hibernate.orm.jpa|HHH008540: Processing PersistenceUnitInfo [name: back]
+2026-07-29 13:01:34.314|INFO||BANK-TRANSFER|org.hibernate.orm.core|HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-07-29 13:01:36.118|INFO||BANK-TRANSFER|o.s.o.j.p.SpringPersistenceUnitInfo|No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-29 13:01:36.213|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Starting...
+2026-07-29 13:01:36.882|INFO||BANK-TRANSFER|com.zaxxer.hikari.pool.HikariPool|HikariPool-5 - Added connection oracle.jdbc.driver.T4CConnection@3d95b9f1
+2026-07-29 13:01:36.886|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Start completed.
+2026-07-29 13:01:37.609|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-29 13:01:37.660|WARN||BANK-TRANSFER|org.hibernate.orm.jdbc|HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
+2026-07-29 13:01:37.667|INFO||BANK-TRANSFER|o.hibernate.orm.connections.pooling|HHH10001005: Database info:
+	Database JDBC URL [jdbc:oracle:thin:@oradf401-scan.cm-cic.fr:1521/CIBDPCR]
+	Database driver: Oracle JDBC driver
+	Database dialect: OracleDialect
+	Database version: 19.31
+	Default catalog/schema: undefined/RE7_PL
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 10
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-29 13:01:38.344|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.bank_transfer.entity.back.TransactionSepaHeader.updateDate.
+2026-07-29 13:01:38.410|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.id.StoredProcedureErrorId.errorDate.
+2026-07-29 13:01:38.413|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.StoredProcedureError.errorDate.
+2026-07-30 03:49:41.085|INFO||BANK-TRANSFER|com.zaxxer.hikari.pool.HikariPool|HikariPool-5 - Added connection oracle.jdbc.driver.T4CConnection@373c0f1a
+2026-07-30 03:49:41.090|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Start completed.
+2026-07-30 03:49:41.930|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-30 03:49:41.998|WARN||BANK-TRANSFER|org.hibernate.orm.jdbc|HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
+2026-07-30 03:49:42.012|INFO||BANK-TRANSFER|o.hibernate.orm.connections.pooling|HHH10001005: Database info:
+	Database JDBC URL [jdbc:oracle:thin:@oradf401-scan.cm-cic.fr:1521/CIBDPCR]
+	Database driver: Oracle JDBC driver
+	Database dialect: OracleDialect
+	Database version: 19.31
+	Default catalog/schema: undefined/RE7_PL
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 10
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-30 03:49:42.780|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.bank_transfer.entity.back.TransactionSepaHeader.updateDate.
+2026-07-30 03:49:42.854|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.id.StoredProcedureErrorId.errorDate.
+2026-07-30 03:49:42.857|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.StoredProcedureError.errorDate.
+2026-07-30 03:49:47.420|INFO||BANK-TRANSFER|org.hibernate.orm.core|HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-30 03:49:47.441|INFO||BANK-TRANSFER|o.s.o.j.LocalContainerEntityManagerFactoryBean|Initialized JPA EntityManagerFactory for persistence unit 'back'
+2026-07-30 03:49:47.606|INFO||BANK-TRANSFER|o.s.d.j.r.q.QueryEnhancerFactories|Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-30 03:49:51.331|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-30 03:49:51.589|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-30 03:49:53.158|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-30 03:49:53.971|DEBUG||BANK-TRANSFER|org.hibernate.SQL|select re1_0.GRPREF_ID,re1_0.GRPREF_TYPE,re1_0.REF_CDE,re1_0.REF_LGE,re1_0.REF_LIB1,re1_0.REF_LIB2 from REFERENTIEL_ENTREPRISE re1_0 where re1_0.GRPREF_ID=? and re1_0.GRPREF_TYPE=? and re1_0.REF_LGE=? and re1_0.REF_CDE=?
+2026-07-30 03:49:53.977|WARN||BANK-TRANSFER|o.s.b.w.s.s.SpringBootServletInitializer$WarDeploymentApplicationContextFactory$1|Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'getMaxAttempts' defined in class path resource [com/eisec/bank_transfer/configuration/BankTransferConfiguration.class]: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+2026-07-30 03:49:53.984|INFO||BANK-TRANSFER|o.s.o.j.LocalContainerEntityManagerFactoryBean|Closing JPA EntityManagerFactory for persistence unit 'back'
+2026-07-30 03:49:53.991|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Shutdown initiated...
+2026-07-30 03:49:54.002|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Shutdown completed.
+2026-07-30 03:49:54.018|INFO||BANK-TRANSFER|o.s.b.a.l.ConditionEvaluationReportLogger|
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-07-30 03:49:54.073|ERROR||BANK-TRANSFER|o.s.boot.SpringApplication|Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'getMaxAttempts' defined in class path resource [com/eisec/bank_transfer/configuration/BankTransferConfiguration.class]: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:657)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:489)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1362)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1194)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:565)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:525)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:371)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:331)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:196)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1218)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1184)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1121)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:994)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:621)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:756)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:445)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:321)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.run(SpringBootServletInitializer.java:205)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.createRootApplicationContext(SpringBootServletInitializer.java:181)
+	at org.springframework.boot.web.servlet.support.SpringBootServletInitializer.onStartup(SpringBootServletInitializer.java:109)
+	at org.springframework.web.SpringServletContainerInitializer.onStartup(SpringServletContainerInitializer.java:171)
+	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:4416)
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164)
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:564)
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:663)
+	at org.apache.catalina.startup.HostConfig.deployWAR(HostConfig.java:923)
+	at org.apache.catalina.startup.HostConfig$DeployWar.run(HostConfig.java:1839)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [java.lang.String]: Factory method 'getMaxAttempts' threw exception with message: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:183)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiateWithFactoryMethod(SimpleInstantiationStrategy.java:72)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:152)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:653)
+	... 34 common frames omitted
+Caused by: java.lang.NullPointerException: Cannot invoke "com.eisec.fwk.entity.back.ReferentielEntreprise.getRefLibOne()" because the return value of "com.eisec.fwk.repositories.back.ReferentielEntrepriseRepository.findByGrprefIdAndGrprefTypeAndRefLgeAndRefCde(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer)" is null
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration.getMaxAttempts(BankTransferConfiguration.java:26)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$0.CGLIB$getMaxAttempts$1(<generated>)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$FastClass$$1.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258)
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:398)
+	at com.eisec.bank_transfer.configuration.BankTransferConfiguration$$SpringCGLIB$$0.getMaxAttempts(<generated>)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:155)
+	... 37 common frames omitted
+2026-07-30 13:01:24.555|INFO||BANK-TRANSFER|c.e.b.c.BankTransferApplication|Starting BankTransferApplication v1.6.65 using Java 17.0.15 with PID 2864 (D:\EISEC\java\apache-tomcat-back\webapps\bank-transfer-api\WEB-INF\classes started by MTLC_R7_PL_DF in D:\EISEC\java\apache_tomcat_reference\bin)
+2026-07-30 13:01:24.556|DEBUG||BANK-TRANSFER|c.e.b.c.BankTransferApplication|Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-07-30 13:01:24.557|INFO||BANK-TRANSFER|c.e.b.c.BankTransferApplication|No active profile set, falling back to 1 default profile: "default"
+2026-07-30 13:01:25.903|INFO||BANK-TRANSFER|o.h.validator.internal.util.Version|HV000001: Hibernate Validator 9.0.1.Final
+2026-07-30 13:01:28.451|INFO||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-30 13:01:29.199|INFO||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|Finished Spring Data repository scanning in 721 ms. Found 38 JPA repository interfaces.
+2026-07-30 13:01:32.509|INFO||BANK-TRANSFER|o.s.b.w.c.s.WebApplicationContextInitializer|Root WebApplicationContext: initialization completed in 7821 ms
+2026-07-30 13:01:34.069|INFO||BANK-TRANSFER|org.hibernate.orm.jpa|HHH008540: Processing PersistenceUnitInfo [name: back]
+2026-07-30 13:01:34.314|INFO||BANK-TRANSFER|org.hibernate.orm.core|HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-07-30 13:01:36.118|INFO||BANK-TRANSFER|o.s.o.j.p.SpringPersistenceUnitInfo|No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-30 13:01:36.213|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Starting...
+2026-07-30 13:01:36.882|INFO||BANK-TRANSFER|com.zaxxer.hikari.pool.HikariPool|HikariPool-5 - Added connection oracle.jdbc.driver.T4CConnection@3d95b9f1
+2026-07-30 13:01:36.886|INFO||BANK-TRANSFER|com.zaxxer.hikari.HikariDataSource|HikariPool-5 - Start completed.
+2026-07-30 13:01:37.609|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-30 13:01:37.660|WARN||BANK-TRANSFER|org.hibernate.orm.jdbc|HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
+2026-07-30 13:01:37.667|INFO||BANK-TRANSFER|o.hibernate.orm.connections.pooling|HHH10001005: Database info:
+	Database JDBC URL [jdbc:oracle:thin:@oradf401-scan.cm-cic.fr:1521/CIBDPCR]
+	Database driver: Oracle JDBC driver
+	Database dialect: OracleDialect
+	Database version: 19.31
+	Default catalog/schema: undefined/RE7_PL
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 10
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-30 13:01:38.344|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.bank_transfer.entity.back.TransactionSepaHeader.updateDate.
+2026-07-30 13:01:38.410|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.id.StoredProcedureErrorId.errorDate.
+2026-07-30 13:01:38.413|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.StoredProcedureError.errorDate.
+2026-07-30 13:02:38.413|WARN||BANK-TRANSFER|org.hibernate.orm.deprecation|HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at com.eisec.fwk.entity.back.StoredProcedureError.errorDate. E3EE3
+2026-07-30 13:03:28.451|INFO||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-30 13:03:28.451|DEBUG||BANK-TRANSFER|o.s.d.r.c.RepositoryConfigurationDelegate|TEST
+

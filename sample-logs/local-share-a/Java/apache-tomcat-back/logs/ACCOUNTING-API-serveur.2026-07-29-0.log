@@ -13,3 +13,5 @@
 2026-07-29 10:00:00,000 INFO [main] accounting.Bootstrap - Back service started requestId=REQ-LOCAL-1 sessionId=SESSION-A
 2026-07-29 10:00:00,000 INFO [main] accounting.Bootstrap - Back service started requestId=REQ-LOCAL-1 sessionId=SESSION-A
 2026-07-29 10:00:00,000 INFO [main] accounting.Bootstrap - Back service started requestId=REQ-LOCAL-1 sessionId=SESSION-A
+2026-07-29 12:05:00,000 INFO [worker-3] accounting.Demo - Live event requestId=REQ-LIVE-1
+2026-07-29 12:06:00,000 INFO [worker-3] accounting.dz.Demo - Live event requestId=REQ-LIVE-9

@@ -10,7 +10,6 @@ function getBaseFieldValue(event: LogEvent, field: string): string | undefined {
     id: event.id,
     level: event.level,
     message: event.message,
-    raw: event.raw,
     receivedAt: event.receivedAt,
     sourceId: event.sourceId,
     sourceName: event.sourceName,

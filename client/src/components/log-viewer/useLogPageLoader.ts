@@ -7,18 +7,19 @@ import type {
 import {
   type RefObject,
   type UIEvent,
+  useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
 
 import { fetchLogPage } from "@/services/logApiClient";
-import { toLogCursor } from "./logEventSorting";
 
 const pageSize = 50;
 
 interface UseLogPageLoaderOptions {
   appendLogPage: (page: LogPage) => void;
+  clientId: string | undefined;
   filter: LogFilter;
   hasMore: boolean;
   oldestEvent: LogEvent | undefined;
@@ -28,6 +29,7 @@ interface UseLogPageLoaderOptions {
 
 export function useLogPageLoader({
   appendLogPage,
+  clientId,
   filter,
   hasMore,
   oldestEvent,
@@ -39,6 +41,61 @@ export function useLogPageLoader({
   const bottomLoadArmedRef = useRef(true);
   const loadingOlderRef = useRef(false);
 
+  const loadPage = useCallback(
+    async (request: LogHistoryQuery) => {
+      if (loadingOlderRef.current) {
+        return;
+      }
+
+      if (!clientId) {
+        setError("Log stream is disconnected");
+        return;
+      }
+
+      loadingOlderRef.current = true;
+      setLoadingOlder(true);
+
+      try {
+        appendLogPage(await fetchLogPage(clientId, { ...request }));
+      } catch {
+        setError("Failed to load older logs");
+      } finally {
+        loadingOlderRef.current = false;
+        setLoadingOlder(false);
+      }
+    },
+    [appendLogPage, clientId, setError],
+  );
+
+  const loadOlderEvents = useCallback(async () => {
+    if (!hasMore || !oldestEvent) {
+      return;
+    }
+
+    await loadPage({
+      type: "cursor",
+      beforeCursor: { id: oldestEvent.id },
+      limit: pageSize,
+    });
+  }, [hasMore, loadPage, oldestEvent]);
+
+  const loadUntilTimestamp = useCallback(() => {
+    const timestamp = parseUntilInput(untilInput);
+
+    if (!timestamp) {
+      return;
+    }
+
+    void loadPage({ fromTimestamp: timestamp, type: "timestamp" }).then(() => {
+      setUntilInput("");
+
+      // Scroll to the end of the log list after loading the page.
+      setTimeout(() => {
+        parentRef.current?.scrollTo({ top: parentRef.current.scrollHeight });
+      }, 0);
+    });
+  }, [loadPage, parentRef, untilInput]);
+
   useEffect(() => {
     const element = parentRef.current;
 
@@ -49,63 +106,30 @@ export function useLogPageLoader({
     if (element.scrollHeight <= element.clientHeight + 4) {
       void loadOlderEvents();
     }
-  }, [hasMore, oldestEvent, parentRef]);
+  }, [hasMore, oldestEvent, parentRef, loadOlderEvents]);
 
   useEffect(() => {
     bottomLoadArmedRef.current = true;
   }, [filter]);
 
-  function handleScroll(event: UIEvent<HTMLDivElement>) {
-    const target = event.currentTarget;
-    const distanceToBottom =
-      target.scrollHeight - target.scrollTop - target.clientHeight;
+  const handleScroll = useCallback(
+    (event: UIEvent<HTMLDivElement>) => {
+      const target = event.currentTarget;
+      const distanceToBottom =
+        target.scrollHeight - target.scrollTop - target.clientHeight;
 
-    if (distanceToBottom > 360) {
-      bottomLoadArmedRef.current = true;
-      return;
-    }
+      if (distanceToBottom > 360) {
+        bottomLoadArmedRef.current = true;
+        return;
+      }
 
-    if (distanceToBottom < 180 && bottomLoadArmedRef.current) {
-      bottomLoadArmedRef.current = false;
-      void loadOlderEvents();
-    }
-  }
-
-  async function loadOlderEvents() {
-    if (!hasMore || !oldestEvent) {
-      return;
-    }
-
-    await loadPage({ beforeCursor: toLogCursor(oldestEvent), limit: pageSize });
-  }
-
-  function loadUntilTimestamp() {
-    const timestamp = parseUntilInput(untilInput);
-
-    if (!timestamp) {
-      return;
-    }
-
-    void loadPage({ fromTimestamp: timestamp, limit: 1_000 });
-  }
-
-  async function loadPage(request: LogHistoryQuery) {
-    if (loadingOlderRef.current) {
-      return;
-    }
-
-    loadingOlderRef.current = true;
-    setLoadingOlder(true);
-
-    try {
-      appendLogPage(await fetchLogPage({ ...request, filter }));
-    } catch {
-      setError("Failed to load older logs");
-    } finally {
-      loadingOlderRef.current = false;
-      setLoadingOlder(false);
-    }
-  }
+      if (distanceToBottom < 180 && bottomLoadArmedRef.current) {
+        bottomLoadArmedRef.current = false;
+        void loadOlderEvents();
+      }
+    },
+    [loadOlderEvents],
+  );
 
   return {
     handleScroll,

@@ -14,24 +14,10 @@ export interface EnvironmentMatrixEntry {
   shares: string[];
 }
 
-export interface ResolvedLogDirectory {
-  id: string;
-  environment: string;
-  country: string;
-  code: string;
-  host: string;
-  share: string;
-  project: string;
-  date: string;
-  tier: ApplicationTier;
-  path: string;
-}
-
 export interface LogSource {
   id: string;
   name: string;
   directory: string;
-  enabled: boolean;
   environment?: string;
   country?: string;
   project?: string;
