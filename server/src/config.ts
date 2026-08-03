@@ -10,7 +10,6 @@ export interface ParserConfig {
 }
 
 export interface ServerConfig {
-  bufferSize: number;
   matrix: EnvironmentMatrixEntry[];
   parser: ParserConfig;
 }
@@ -28,7 +27,6 @@ export async function loadConfig(): Promise<ServerConfig> {
   );
 
   return {
-    bufferSize: Number(process.env.LOG_AGGREGATOR_BUFFER_SIZE ?? 10_000),
     matrix: await readJsonFile<EnvironmentMatrixEntry[]>(matrixFile),
     parser: await readJsonFile<ParserConfig>(parserFile),
   };

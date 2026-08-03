@@ -15,7 +15,7 @@ import {
 
 import { fetchLogPage } from "@/services/logApiClient";
 
-const pageSize = 50;
+const pageSize = 200;
 
 interface UseLogPageLoaderOptions {
   appendLogPage: (page: LogPage) => void;

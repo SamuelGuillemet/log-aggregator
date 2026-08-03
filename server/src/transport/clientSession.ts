@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
 
-import type { ClientMessage, LogFilter } from "@log-aggregator/shared";
+import type { ClientMessage, LogEvent, LogFilter } from "@log-aggregator/shared";
 import type { RawData, WebSocket } from "ws";
 
 import type { LogAggregatorService } from "../application/logAggregatorService.js";
 import {
+  createEventMatcher,
   defaultLogFilter,
-  eventMatchesFilter,
   mergeLogFilter,
 } from "../domain/history.js";
 import { rawDataToString, sendMessage } from "./messageCodec.js";
@@ -14,6 +14,7 @@ import { rawDataToString, sendMessage } from "./messageCodec.js";
 export interface ClientSession {
   id: string;
   filter: LogFilter;
+  filterMatcher: (event: LogEvent) => boolean;
   service: LogAggregatorService;
   stopStreaming: () => Promise<void>;
   socket: WebSocket;
@@ -26,6 +27,7 @@ export function createClientSession(
   return {
     id: randomUUID(),
     filter: defaultLogFilter,
+    filterMatcher: createEventMatcher(defaultLogFilter),
     service,
     socket,
     stopStreaming: async () => {
@@ -36,7 +38,7 @@ export function createClientSession(
 
 export function bindSessionStreaming(session: ClientSession): void {
   const unsubscribeLog = session.service.onLog((event) => {
-    if (eventMatchesFilter(event, session.filter)) {
+    if (session.filterMatcher(event)) {
       sendMessage(session.socket, { payload: event, type: "log" });
     }
   });
@@ -82,6 +84,7 @@ export async function handleClientMessage(
       }
 
       session.filter = mergeLogFilter(session.filter, message.payload);
+      session.filterMatcher = createEventMatcher(session.filter);
       sendSnapshot(session);
     },
     ping: () => {

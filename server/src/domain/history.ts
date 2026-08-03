@@ -19,30 +19,38 @@ export const defaultLogFilter: LogFilter = {
 
 export class LogHistoryBuffer {
   private readonly events: LogEvent[] = [];
-
-  constructor(private readonly maxSize: number) {}
+  private readonly eventsById = new Map<string, LogEvent>();
+  private isSorted = true;
 
   add(event: LogEvent): void {
-    this.events.push(event);
+    const existing = this.eventsById.get(event.id);
 
-    this.events.sort(compareLogEventsNewestFirst);
+    if (existing) {
+      if (existing !== event) {
+        Object.assign(existing, event);
+      }
 
-    while (this.events.length > this.maxSize) {
-      this.events.shift();
+      return;
     }
+
+    this.events.push(event);
+    this.eventsById.set(event.id, event);
+    this.isSorted = false;
   }
 
   clear(): void {
     this.events.length = 0;
+    this.eventsById.clear();
+    this.isSorted = true;
   }
 
   getPage(
     query: LogHistoryQuery | undefined,
     filter: Partial<LogFilter> | undefined,
   ): LogPage {
-    const events = this.events.filter((event) =>
-      eventMatchesFilter(event, filter),
-    );
+    this.ensureSorted();
+    const matchesEvent = createEventMatcher(filter);
+    const events = this.events.filter(matchesEvent);
 
     let page: LogEvent[] = [];
     let hasMore = false;
@@ -101,6 +109,15 @@ export class LogHistoryBuffer {
       sources,
     };
   }
+
+  private ensureSorted(): void {
+    if (this.isSorted) {
+      return;
+    }
+
+    this.events.sort(compareLogEventsNewestFirst);
+    this.isSorted = true;
+  }
 }
 
 export function mergeLogFilter(
@@ -119,32 +136,41 @@ export function eventMatchesFilter(
   event: LogEvent,
   filter: Partial<LogFilter> | undefined,
 ): boolean {
+  return createEventMatcher(filter)(event);
+}
+
+export function createEventMatcher(
+  filter: Partial<LogFilter> | undefined,
+): (event: LogEvent) => boolean {
   const normalizedFilter = {
     ...defaultLogFilter,
     ...filter,
     levels: filter?.levels ?? [],
   };
-
-  if (
-    normalizedFilter.levels.length > 0 &&
-    !normalizedFilter.levels.includes(event.level)
-  ) {
-    return false;
-  }
+  const hasLevelFilter = normalizedFilter.levels.length > 0;
 
   if (!normalizedFilter.text) {
-    return true;
+    return (event) =>
+      !hasLevelFilter || normalizedFilter.levels.includes(event.level);
   }
 
   const matchesText = createTextMatcher(normalizedFilter);
 
-  return [
-    event.timestamp,
-    event.sourceName,
-    event.level,
-    event.message,
-    ...Object.values(event.fields),
-  ].some(matchesText);
+  return (event) => {
+    if (hasLevelFilter && !normalizedFilter.levels.includes(event.level)) {
+      return false;
+    }
+
+    const fullText = [
+      event.timestamp,
+      event.sourceName,
+      event.level,
+      event.message,
+      ...Object.values(event.fields),
+    ].join(" ");
+
+    return matchesText(fullText);
+  };
 }
 
 function createTextMatcher(filter: LogFilter): (value: string) => boolean {
