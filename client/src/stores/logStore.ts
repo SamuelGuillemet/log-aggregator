@@ -119,7 +119,9 @@ function mergeEvents(
   }
 
   const existingIds = new Set(currentEvents.map((event) => event.id));
-  const newEvents = incomingEvents.filter((event) => !existingIds.has(event.id));
+  const newEvents = incomingEvents.filter(
+    (event) => !existingIds.has(event.id),
+  );
 
   if (newEvents.length === 0) {
     return currentEvents;

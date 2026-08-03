@@ -17,6 +17,12 @@ export function LogTableHeader({
       className="top-0 z-20 sticky flex bg-muted-foreground min-h-9 font-bold text-primary-foreground text-xs"
       style={{ width: `${tableWidth}px` }}
     >
+      {/* Space for colored border */}
+      <div className="w-1 shrink-0" />
+      {/* Space for checkbox */}
+      <div className="w-7 shrink-0" />
+      {/* Space for eye icon */}
+      <div className="w-8 shrink-0" />
       {table.getHeaderGroups().map((headerGroup) =>
         headerGroup.headers.map((header) => (
           <div
