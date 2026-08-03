@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@log-aggregator/shared": "workspace:*",
-    "chokidar": "^5.0.0",
     "ws": "^8.21.1"
   },
   "devDependencies": {

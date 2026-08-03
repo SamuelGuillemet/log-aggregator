@@ -114,15 +114,50 @@ function mergeEvents(
   incomingEvents: LogEvent[],
   append: "top" | "bottom",
 ): LogEvent[] {
-  const eventsById = new Map(currentEvents.map((event) => [event.id, event]));
-  const newEvents = incomingEvents.filter((event) => !eventsById.has(event.id));
+  if (incomingEvents.length === 0) {
+    return currentEvents;
+  }
 
-  const newList =
-    append === "top"
-      ? [...newEvents, ...currentEvents]
-      : [...currentEvents, ...newEvents];
+  const existingIds = new Set(currentEvents.map((event) => event.id));
+  const newEvents = incomingEvents.filter((event) => !existingIds.has(event.id));
 
-  return newList.sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-  );
+  if (newEvents.length === 0) {
+    return currentEvents;
+  }
+
+  if (append === "top") {
+    return mergeSortedDesc(newEvents, currentEvents);
+  }
+
+  return mergeSortedDesc(currentEvents, newEvents);
+}
+
+function mergeSortedDesc(left: LogEvent[], right: LogEvent[]): LogEvent[] {
+  const merged: LogEvent[] = [];
+  let leftIndex = 0;
+  let rightIndex = 0;
+
+  while (leftIndex < left.length && rightIndex < right.length) {
+    if (compareNewestFirst(left[leftIndex], right[rightIndex]) <= 0) {
+      merged.push(left[leftIndex]);
+      leftIndex += 1;
+    } else {
+      merged.push(right[rightIndex]);
+      rightIndex += 1;
+    }
+  }
+
+  if (leftIndex < left.length) {
+    merged.push(...left.slice(leftIndex));
+  }
+
+  if (rightIndex < right.length) {
+    merged.push(...right.slice(rightIndex));
+  }
+
+  return merged;
+}
+
+function compareNewestFirst(left: LogEvent, right: LogEvent): number {
+  return Date.parse(right.timestamp) - Date.parse(left.timestamp);
 }

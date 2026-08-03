@@ -8,16 +8,16 @@ const repositoryRoot = path.resolve(
 );
 
 const args = parseArgs(process.argv.slice(2));
-const appCount = clampInteger(args.apps, 100, 100, 10_000);
+const appCount = clampInteger(args.apps, 100, 1, 10_000);
 const dateCount = clampInteger(args.dates, 4, 1, 10);
-const linesPerFile = clampInteger(args.lines, 25, 1, 5_000);
+const linesPerFile = clampInteger(args.lines, 25, 1, 20_000);
 const outputRoot = path.resolve(
   repositoryRoot,
   args.output ?? "sample-logs/perf-cluster",
 );
 
-const shares = ["perf-share-a", "perf-share-b"];
-const tiers = ["back", "front"];
+const shares = ["perf-share-a", "perf-share-b", "perf-share-c"];
+const tiers = ["back"];
 const dates = buildDates(dateCount);
 const apps = buildApps(appCount);
 
@@ -111,7 +111,7 @@ function buildDates(dateCount) {
 
 function buildLogContent(app, date, linesPerFile, tier) {
   const levels = ["INFO", "DEBUG", "WARN", "ERROR"];
-  const loggerName = `${app.toLowerCase().replace(/-/g, ".")}.${tier}.Service`;
+  const loggerName = `${app.toLowerCase().replaceAll("-", ".")}.${tier}.Service`;
 
   const lines = Array.from({ length: linesPerFile }, (_, index) => {
     const hour = String((8 + index) % 24).padStart(2, "0");
@@ -122,9 +122,49 @@ function buildLogContent(app, date, linesPerFile, tier) {
     const requestId = `${app}-REQ-${String(index + 1).padStart(4, "0")}`;
     const sessionId = `${app}-SID-${String((index % 250) + 1).padStart(4, "0")}`;
     const transactionId = `${app}-TX-${date.replaceAll("-", "")}-${String(index + 1).padStart(4, "0")}`;
+    const timestamp = `${date} ${hour}:${minute}:${second},${millisecond}`;
 
-    return `${date} ${hour}:${minute}:${second},${millisecond} ${level} [worker-${(index % 8) + 1}] ${loggerName} - Perf event ${index + 1} requestId=${requestId} sessionId=${sessionId} transactionId=${transactionId}`;
+    return buildLogEntry({
+      app,
+      index,
+      level,
+      loggerName,
+      requestId,
+      sessionId,
+      tier,
+      timestamp,
+      transactionId,
+    });
   });
 
   return `${lines.join("\n")}\n`;
+}
+
+function buildLogEntry({
+  app,
+  index,
+  level,
+  loggerName,
+  requestId,
+  sessionId,
+  tier,
+  timestamp,
+  transactionId,
+}) {
+  const message = `${timestamp} ${level} [worker-${(index % 8) + 1}] ${loggerName} - Perf event ${index + 1} requestId=${requestId} sessionId=${sessionId} transactionId=${transactionId}`;
+
+  if (level !== "ERROR") {
+    return message;
+  }
+
+  return [
+    `${message} failure=java.lang.IllegalStateException`,
+    `java.lang.IllegalStateException: Failed to process transaction ${transactionId} for ${app}`,
+    `\tat com.example.${tier}.Service.handleRequest(Service.java:${120 + (index % 30)})`,
+    `\tat com.example.${tier}.Service.persist(Service.java:${180 + (index % 25)})`,
+    `\tat com.example.${tier}.Repository.save(Repository.java:${60 + (index % 20)})`,
+    `Caused by: java.net.SocketTimeoutException: Read timed out`,
+    `\tat java.base/sun.nio.ch.NioSocketImpl.timedRead(NioSocketImpl.java:${270 + (index % 15)})`,
+    `\tat java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:${320 + (index % 15)})`,
+  ].join("\n");
 }

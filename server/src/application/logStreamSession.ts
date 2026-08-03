@@ -1,4 +1,7 @@
-import { open, readFile, stat } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { open, stat } from "node:fs/promises";
+import { performance } from "node:perf_hooks";
+import { createInterface } from "node:readline";
 
 import type { LogEvent, LogSource } from "@log-aggregator/shared";
 
@@ -33,11 +36,31 @@ export class LogStreamSession {
     filePath: string,
     emitLive: boolean,
   ): Promise<void> {
-    const content = await readFile(filePath, "utf8");
-    const fileStats = await stat(filePath);
+    const startedAt = performance.now();
+    const readStream = createReadStream(filePath, { encoding: "utf8" });
+    const reader = createInterface({
+      crlfDelay: Number.POSITIVE_INFINITY,
+      input: readStream,
+    });
+    let lineCount = 0;
 
-    this.processContent(source, filePath, content, emitLive);
+    try {
+      for await (const line of reader) {
+        lineCount += 1;
+        this.processLine(source, filePath, line, emitLive);
+      }
+    } finally {
+      reader.close();
+      readStream.destroy();
+    }
+
+    const fileStats = await stat(filePath);
     this.positions.set(filePath, fileStats.size);
+
+    const durationMs = performance.now() - startedAt;
+    console.info(
+      `[timing] stream.processWholeFile file=${filePath} lines=${lineCount} bytes=${fileStats.size} ms=${durationMs.toFixed(1)}`,
+    );
   }
 
   async processTail(
@@ -45,6 +68,7 @@ export class LogStreamSession {
     filePath: string,
     emitLive: boolean,
   ): Promise<void> {
+    const startedAt = performance.now();
     const fileStats = await stat(filePath);
     const previousPosition = this.positions.get(filePath) ?? 0;
     const start = fileStats.size >= previousPosition ? previousPosition : 0;
@@ -59,8 +83,18 @@ export class LogStreamSession {
     try {
       const buffer = Buffer.alloc(fileStats.size - start);
       await fileHandle.read(buffer, 0, buffer.length, start);
-      this.processContent(source, filePath, buffer.toString("utf8"), emitLive);
+      const processedLines = this.processContent(
+        source,
+        filePath,
+        buffer.toString("utf8"),
+        emitLive,
+      );
       this.positions.set(filePath, fileStats.size);
+
+      const durationMs = performance.now() - startedAt;
+      console.info(
+        `[timing] stream.processTail file=${filePath} bytes=${buffer.length} lines=${processedLines} ms=${durationMs.toFixed(1)}`,
+      );
     } finally {
       await fileHandle.close();
     }
@@ -71,10 +105,14 @@ export class LogStreamSession {
     filePath: string,
     content: string,
     emitLive: boolean,
-  ): void {
-    for (const line of splitLogLines(content)) {
+  ): number {
+    const lines = splitLogLines(content);
+
+    for (const line of lines) {
       this.processLine(source, filePath, line, emitLive);
     }
+
+    return lines.length;
   }
 
   private processLine(

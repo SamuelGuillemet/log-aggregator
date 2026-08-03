@@ -16,8 +16,8 @@ const outputRoot = path.resolve(
 );
 const date = args.date ?? todayUtcDate();
 
-const shares = ["perf-share-a", "perf-share-b"];
-const tiers = ["back", "front"];
+const shares = ["perf-share-a", "perf-share-b", "perf-share-c"];
+const tiers = ["back"];
 const apps = buildApps(appCount);
 const levelCycle = ["INFO", "DEBUG", "WARN", "ERROR"];
 const tickByApp = new Map();
@@ -62,6 +62,7 @@ async function writeTick() {
 
   try {
     const now = new Date();
+    now.setDate(now.getDate() + 1); // Add 1 day to simulate future logs
 
     for (const share of shares) {
       for (const tier of tiers) {

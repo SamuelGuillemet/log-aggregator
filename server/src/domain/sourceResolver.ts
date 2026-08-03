@@ -80,7 +80,7 @@ export function resolveSources(
         project,
         directory,
         id: buildSourceId(entry, project, shareIndex, selection.tier),
-        name: `${entry.environment}/${entry.country}/${selection.tier}/${basename(sharePath)}`,
+        name: `[${entry.code}] ${sharePath}`,
       } satisfies LogSource;
     });
   });
