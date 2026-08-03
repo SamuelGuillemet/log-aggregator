@@ -1,5 +1,3 @@
-import type { FSWatcher } from "node:fs";
-import { watch as fsWatch } from "node:fs";
 import { performance } from "node:perf_hooks";
 
 import type {
@@ -13,6 +11,7 @@ import type {
   SourceOptions,
   SourceSelection,
 } from "@log-aggregator/shared";
+import { type FSWatcher, watch } from "chokidar";
 
 import type { ParserConfig } from "../config.js";
 import { LogHistoryBuffer } from "../domain/history.js";
@@ -51,7 +50,7 @@ export class LogAggregatorService {
   private readonly parser: LogLineParser;
   private readonly streamSession: LogStreamSession;
   private sources: LogSource[] = [];
-  private readonly watchers = new Map<string, FSWatcher>();
+  private watcher: FSWatcher | undefined;
   private readonly watchedFiles = new Set<string>();
 
   constructor(private readonly options: LogAggregatorServiceOptions) {
@@ -139,10 +138,9 @@ export class LogAggregatorService {
   }
 
   private async stopWatcher(): Promise<void> {
-    for (const watcher of this.watchers.values()) {
-      watcher.close();
-    }
-    this.watchers.clear();
+    const watcher = this.watcher;
+    this.watcher = undefined;
+    await watcher?.close();
   }
 
   private async loadExistingSource(
@@ -176,27 +174,20 @@ export class LogAggregatorService {
       return;
     }
 
-    for (const filePath of this.watchedFiles) {
-      try {
-        const watcher = fsWatch(filePath, (eventType) => {
-          if (eventType === "change") {
-            void this.processLiveFile(filePath);
-          } else if (eventType === "rename") {
-            // File was deleted or renamed
-            this.dropFileState(filePath);
-          }
-        });
+    // Watch individual files instead of directories
+    const watcher = watch([...this.watchedFiles], {
+      ignoreInitial: true,
+      awaitWriteFinish: {
+        stabilityThreshold: 1000,
+        pollInterval: 200,
+      },
+    });
 
-        watcher.on("error", (error) => {
-          this.emitError(`Watcher error for ${filePath}`, error);
-          this.watchers.delete(filePath);
-        });
+    watcher.on("change", (filePath) => void this.processLiveFile(filePath));
+    watcher.on("unlink", (filePath) => this.dropFileState(filePath));
+    watcher.on("error", (error) => this.emitError("Watcher error", error));
 
-        this.watchers.set(filePath, watcher);
-      } catch (error) {
-        this.emitError(`Failed to watch ${filePath}`, error);
-      }
-    }
+    this.watcher = watcher;
   }
 
   private async processLiveFile(filePath: string): Promise<void> {
@@ -247,13 +238,6 @@ export class LogAggregatorService {
     const source = findSourceForFile(filePath, this.sources);
     this.pendingLiveFiles.delete(filePath);
     this.liveFileTasks.delete(filePath);
-
-    const watcher = this.watchers.get(filePath);
-    if (watcher) {
-      watcher.close();
-      this.watchers.delete(filePath);
-    }
-    this.watchedFiles.delete(filePath);
 
     if (source) {
       this.streamSession.removeFileState(source, filePath);

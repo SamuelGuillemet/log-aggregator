@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 
-import type { ClientMessage, LogEvent, LogFilter } from "@log-aggregator/shared";
+import type {
+  ClientMessage,
+  LogEvent,
+  LogFilter,
+} from "@log-aggregator/shared";
 import type { RawData, WebSocket } from "ws";
 
 import type { LogAggregatorService } from "../application/logAggregatorService.js";

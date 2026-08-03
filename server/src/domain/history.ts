@@ -132,13 +132,6 @@ export function mergeLogFilter(
   };
 }
 
-export function eventMatchesFilter(
-  event: LogEvent,
-  filter: Partial<LogFilter> | undefined,
-): boolean {
-  return createEventMatcher(filter)(event);
-}
-
 export function createEventMatcher(
   filter: Partial<LogFilter> | undefined,
 ): (event: LogEvent) => boolean {
