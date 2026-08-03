@@ -7,10 +7,10 @@ import { LogAggregatorService } from "../application/logAggregatorService.js";
 import type { ServerConfig } from "../config.js";
 import {
   bindSessionStreaming,
+  type ClientSession,
   closeSession,
   createClientSession,
   handleClientMessage,
-  type ClientSession,
   sendSnapshot,
 } from "./clientSession.js";
 import { sendMessage } from "./messageCodec.js";
@@ -71,7 +71,9 @@ export function attachWsGateway(
     closeAll: async () => {
       const activeClients = [...clients.values()];
 
-      await Promise.all(activeClients.map((client) => closeClient(client.id, clients)));
+      await Promise.all(
+        activeClients.map((client) => closeClient(client.id, clients)),
+      );
 
       for (const client of activeClients) {
         client.socket.close();

@@ -78,7 +78,10 @@ async function writeTick() {
           const nextTick = (tickByApp.get(app) ?? 0) + 1;
           tickByApp.set(app, nextTick);
 
-          const filePath = path.join(logDirectory, `${app}-serveur.${date}-0.log`);
+          const filePath = path.join(
+            logDirectory,
+            `${app}-serveur.${date}-0.log`,
+          );
           const line = buildLogLine(app, tier, now, nextTick, levelCycle);
           await appendFile(filePath, `${line}\n`, "utf8");
         }
@@ -150,8 +153,9 @@ function clampInteger(rawValue, fallback, min, max) {
 }
 
 function buildApps(appCount) {
-  return Array.from({ length: appCount }, (_, index) =>
-    `APP-${String(index + 1).padStart(3, "0")}`,
+  return Array.from(
+    { length: appCount },
+    (_, index) => `APP-${String(index + 1).padStart(3, "0")}`,
   );
 }
 

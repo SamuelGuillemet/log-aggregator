@@ -14,10 +14,10 @@ import { LogLevelBadge } from "./log-viewer/LogLevelBadge";
 import { LogTableHeader } from "./log-viewer/LogTableHeader";
 import { LogViewerToolbar } from "./log-viewer/LogViewerToolbar";
 import { getLogEventFieldValue } from "./log-viewer/logEventFields";
-import { useExpandedRows } from "./log-viewer/useExpandedRows";
 import { useLogPageLoader } from "./log-viewer/useLogPageLoader";
 import { useLogTableLayout } from "./log-viewer/useLogTableLayout";
 import { useScrollAreaWidth } from "./log-viewer/useScrollAreaWidth";
+import { useSelectedRows } from "./log-viewer/useSelectedRows";
 import { VirtualLogRows } from "./log-viewer/VirtualLogRows";
 
 export function LogViewer() {
@@ -64,7 +64,7 @@ export function LogViewer() {
     setColumnSizing,
     setColumnVisibility,
   } = useLogTableLayout(activeSchema, Boolean(schema));
-  const { expandedRows, toggleExpanded } = useExpandedRows();
+  const { clearSelection, selectedRows, toggleSelected } = useSelectedRows();
   const parentRef = useRef<HTMLDivElement>(null);
   const oldestEvent = events.at(-1);
   const {
@@ -106,10 +106,8 @@ export function LogViewer() {
   const extraTableWidth = Math.max(0, tableWidth - baseTableWidth);
   const virtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: (index) =>
-      expandedRows.has(rows[index]?.original.id ?? "") ? 170 : 36,
+    estimateSize: () => 29,
     getScrollElement: () => parentRef.current,
-    measureElement: (element) => element.getBoundingClientRect().height,
     overscan: 12,
   });
 
@@ -123,14 +121,17 @@ export function LogViewer() {
       aria-label="Live logs"
     >
       <LogViewerToolbar
+        clearSelection={clearSelection}
         columnOrder={columnOrder}
         columnVisibility={columnVisibility}
+        events={events}
         hasMore={hasMore}
         loadingOlder={loadingOlder}
         loadOlderEvents={loadOlderEvents}
         loadUntilTimestamp={loadUntilTimestamp}
         moveColumn={moveColumn}
         schemaById={schemaById}
+        selectedRows={selectedRows}
         setUntilInput={setUntilInput}
         table={table}
         untilInput={untilInput}
@@ -139,7 +140,7 @@ export function LogViewer() {
       <div
         ref={parentRef}
         onScroll={handleScroll}
-        className="relative bg-card/90 h-full min-h-0 overflow-auto"
+        className="relative bg-card/90 h-full min-h-0 overflow-x-hidden overflow-y-auto"
       >
         <div style={{ minWidth: `${tableWidth}px` }}>
           <LogTableHeader
@@ -148,12 +149,11 @@ export function LogViewer() {
             tableWidth={tableWidth}
           />
           <VirtualLogRows
-            expandedRows={expandedRows}
             getRenderWidth={getRenderWidth}
-            measureElement={virtualizer.measureElement}
             rows={rows}
+            selectedRows={selectedRows}
             tableWidth={tableWidth}
-            toggleExpanded={toggleExpanded}
+            toggleSelected={toggleSelected}
             virtualItems={virtualizer.getVirtualItems()}
             virtualSize={virtualizer.getTotalSize()}
           />
