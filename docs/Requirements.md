@@ -76,7 +76,7 @@ The application runs entirely on the developer's machine and monitors one or mor
 - TypeScript
 - Fastify (preferred)
 - ws (WebSocket server)
-- chokidar (filesystem watcher)
+- fs.watch (native filesystem watcher)
 
 ---
 

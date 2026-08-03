@@ -5,7 +5,7 @@ Local-first log aggregation for clustered application logs. The current implemen
 ## Stack
 
 - pnpm workspaces
-- Node.js native HTTP, TypeScript, ws, chokidar
+- Node.js native HTTP, TypeScript, ws, fs.watch
 - React, Vite, shadcn/ui-style components, Zustand, TanStack Table, TanStack Virtual, TailwindCSS
 
 ## Install
