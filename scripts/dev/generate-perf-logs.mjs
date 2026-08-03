@@ -38,15 +38,23 @@ for (const share of shares) {
 
     for (const date of dates) {
       for (const app of apps) {
-        const filePath = path.join(logDirectory, `${app}-serveur.${date}-0.log`);
-        await writeFile(filePath, buildLogContent(app, date, linesPerFile, tier));
+        const filePath = path.join(
+          logDirectory,
+          `${app}-serveur.${date}-0.log`,
+        );
+        await writeFile(
+          filePath,
+          buildLogContent(app, date, linesPerFile, tier),
+        );
         createdFiles += 1;
       }
     }
   }
 }
 
-console.info(`Perf logs generated in ${path.relative(repositoryRoot, outputRoot)}`);
+console.info(
+  `Perf logs generated in ${path.relative(repositoryRoot, outputRoot)}`,
+);
 console.info(`Apps: ${appCount}`);
 console.info(`Dates: ${dates.join(", ")}`);
 console.info(`Files: ${createdFiles}`);
@@ -87,8 +95,9 @@ function clampInteger(rawValue, fallback, min, max) {
 }
 
 function buildApps(appCount) {
-  return Array.from({ length: appCount }, (_, index) =>
-    `APP-${String(index + 1).padStart(3, "0")}`,
+  return Array.from(
+    { length: appCount },
+    (_, index) => `APP-${String(index + 1).padStart(3, "0")}`,
   );
 }
 
@@ -97,11 +106,13 @@ function buildDates(dateCount) {
   const now = new Date();
 
   for (let index = 0; index < dateCount; index += 1) {
-    const date = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() - index,
-    ));
+    const date = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - index,
+      ),
+    );
 
     dates.push(date.toISOString().slice(0, 10));
   }
