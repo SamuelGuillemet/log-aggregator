@@ -13,7 +13,10 @@ import { fallbackSchema } from "./log-viewer/fallbackSchema";
 import { LogLevelBadge } from "./log-viewer/LogLevelBadge";
 import { LogTableHeader } from "./log-viewer/LogTableHeader";
 import { LogViewerToolbar } from "./log-viewer/LogViewerToolbar";
-import { getLogEventFieldValue } from "./log-viewer/logEventFields";
+import {
+  getLogEventFieldValue,
+  getSourceDisplayValue,
+} from "./log-viewer/logEventFields";
 import { useLogPageLoader } from "./log-viewer/useLogPageLoader";
 import { useLogTableLayout } from "./log-viewer/useLogTableLayout";
 import { useScrollAreaWidth } from "./log-viewer/useScrollAreaWidth";
@@ -38,13 +41,25 @@ export function LogViewer() {
   const columns = useMemo<ColumnDef<LogEvent>[]>(
     () =>
       activeSchema.columns.map((column) => ({
-        accessorFn: (event) => getLogEventFieldValue(event, column.field),
-        cell: (cell) =>
-          column.id === "level" ? (
-            <LogLevelBadge level={String(cell.getValue() ?? "")} />
-          ) : (
-            String(cell.getValue() ?? "")
-          ),
+        accessorFn: (event) =>
+          column.field === "sourceName"
+            ? getSourceDisplayValue(event)
+            : getLogEventFieldValue(event, column.field),
+        cell: (cell) => {
+          if (column.id === "level") {
+            return <LogLevelBadge level={String(cell.getValue() ?? "")} />;
+          }
+
+          if (column.field === "sourceName") {
+            return (
+              <span title={cell.row.original.filePath}>
+                {String(cell.getValue() ?? "")}
+              </span>
+            );
+          }
+
+          return String(cell.getValue() ?? "");
+        },
         enableHiding: column.hideable,
         enableResizing: true,
         header: column.label,
@@ -64,7 +79,8 @@ export function LogViewer() {
     setColumnSizing,
     setColumnVisibility,
   } = useLogTableLayout(activeSchema, Boolean(schema));
-  const { clearSelection, selectedRows, toggleSelected } = useSelectedRows();
+  const { clearSelection, selectAll, selectedRows, toggleSelected } =
+    useSelectedRows();
   const parentRef = useRef<HTMLDivElement>(null);
   const oldestEvent = events.at(-1);
   const {
@@ -115,6 +131,10 @@ export function LogViewer() {
     return columnId === stretchedColumnId ? width + extraTableWidth : width;
   }
 
+  function selectAllEvents() {
+    selectAll(events.map((event) => event.id));
+  }
+
   return (
     <section
       className="grid grid-rows-[auto_1fr] rounded-lg h-full min-h-0 overflow-hidden atelier-card"
@@ -131,6 +151,7 @@ export function LogViewer() {
         loadUntilTimestamp={loadUntilTimestamp}
         moveColumn={moveColumn}
         schemaById={schemaById}
+        selectAllEvents={selectAllEvents}
         selectedRows={selectedRows}
         setUntilInput={setUntilInput}
         table={table}

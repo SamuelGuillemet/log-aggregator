@@ -17,7 +17,7 @@ export const fallbackSchema: LogTableSchema = {
       groupLabel: "Base",
       hideable: true,
       id: "sourceName",
-      label: "Source",
+      label: "Source (file)",
       width: 240,
     },
     {

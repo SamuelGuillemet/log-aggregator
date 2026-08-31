@@ -62,7 +62,7 @@ export class LogLineParser {
     return {
       columns: [
         baseColumn("timestamp", "Time", 188, false),
-        baseColumn("sourceName", "Source", 240, true),
+        baseColumn("sourceName", "Source (file)", 240, true),
         baseColumn("level", "Level", 90, false),
         ...this.extraFieldIds().map((field) => ({
           field,
