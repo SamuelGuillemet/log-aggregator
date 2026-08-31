@@ -26,7 +26,7 @@ jobs:
 
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @log-aggregator/client build
+      - run: pnpm --filter "@log-aggregator/client..." build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
       - name: Setup Pages
