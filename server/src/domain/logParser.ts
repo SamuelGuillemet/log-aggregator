@@ -45,12 +45,14 @@ export class LogLineParser {
       id: randomUUID(),
       fields: this.extraFields(match.groups),
       filePath,
+      ingestSequence: 0,
       level: logLevels.has(level as LogLevel) ? (level as LogLevel) : "UNKNOWN",
       message: this.groupValue(match.groups, "message"),
       rawMessage: line,
       receivedAt: new Date().toISOString(),
       sourceId: source.id,
       sourceName: source.name,
+      sourceSequence: 0,
       timestamp: normalizeTimestamp(this.groupValue(match.groups, "timestamp")),
     };
   }

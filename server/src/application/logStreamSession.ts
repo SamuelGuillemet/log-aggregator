@@ -15,6 +15,8 @@ export interface StreamSessionCallbacks {
 export class LogStreamSession {
   private readonly lastEventsByFile = new Map<string, LogEvent>();
   private readonly positions = new Map<string, number>();
+  private readonly sourceSequences = new Map<string, number>();
+  private ingestSequence = 0;
 
   constructor(
     private readonly parser: LogLineParser,
@@ -24,6 +26,8 @@ export class LogStreamSession {
   clear(): void {
     this.lastEventsByFile.clear();
     this.positions.clear();
+    this.sourceSequences.clear();
+    this.ingestSequence = 0;
   }
 
   removeFileState(source: LogSource, filePath: string): void {
@@ -125,6 +129,8 @@ export class LogStreamSession {
     const stateKey = fileStateKey(source, filePath);
 
     if (event) {
+      event.ingestSequence = this.nextIngestSequence();
+      event.sourceSequence = this.nextSourceSequence(source.id);
       this.lastEventsByFile.set(stateKey, event);
       this.callbacks.onEvent(event, emitLive);
       return;
@@ -139,6 +145,17 @@ export class LogStreamSession {
 
     this.parser.appendContinuation(previousEvent, line);
     this.callbacks.onEvent(previousEvent, emitLive);
+  }
+
+  private nextIngestSequence(): number {
+    this.ingestSequence += 1;
+    return this.ingestSequence;
+  }
+
+  private nextSourceSequence(sourceId: string): number {
+    const next = (this.sourceSequences.get(sourceId) ?? 0) + 1;
+    this.sourceSequences.set(sourceId, next);
+    return next;
   }
 }
 

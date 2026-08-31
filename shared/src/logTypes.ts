@@ -21,6 +21,10 @@ export interface LogEvent {
   message: string;
   rawMessage: string;
   fields: Record<string, string>;
+  /** Global monotonic order in which the event was ingested, across all sources. */
+  ingestSequence: number;
+  /** Monotonic appearance order of the event within its own source (oldest first). */
+  sourceSequence: number;
 }
 
 export interface LogCursor {
@@ -56,4 +60,10 @@ export interface LogFilter {
   text: string;
   regex: boolean;
   caseSensitive: boolean;
+  /** Match when the log text contains any of these terms. */
+  includeAny: string[];
+  /** Match when the log text contains all of these terms. */
+  includeAll: string[];
+  /** Exclude when the log text contains any of these terms. */
+  excludeAny: string[];
 }
