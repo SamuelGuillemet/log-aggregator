@@ -12,6 +12,9 @@ const defaultPageSize = 50;
 
 export const defaultLogFilter: LogFilter = {
   caseSensitive: false,
+  excludeAny: [],
+  includeAll: [],
+  includeAny: [],
   levels: [],
   regex: false,
   text: "",
@@ -128,6 +131,9 @@ export function mergeLogFilter(
     ...defaultLogFilter,
     ...currentFilter,
     ...nextFilter,
+    excludeAny: nextFilter?.excludeAny ?? [],
+    includeAll: nextFilter?.includeAll ?? [],
+    includeAny: nextFilter?.includeAny ?? [],
     levels: nextFilter?.levels ?? [],
   };
 }
@@ -138,31 +144,85 @@ export function createEventMatcher(
   const normalizedFilter = {
     ...defaultLogFilter,
     ...filter,
+    excludeAny: filter?.excludeAny ?? [],
+    includeAll: filter?.includeAll ?? [],
+    includeAny: filter?.includeAny ?? [],
     levels: filter?.levels ?? [],
   };
   const hasLevelFilter = normalizedFilter.levels.length > 0;
+  const hasStructuredFilter =
+    normalizedFilter.includeAny.length > 0 ||
+    normalizedFilter.includeAll.length > 0 ||
+    normalizedFilter.excludeAny.length > 0;
+  const hasTextFilter = Boolean(normalizedFilter.text);
 
-  if (!normalizedFilter.text) {
-    return (event) =>
-      !hasLevelFilter || normalizedFilter.levels.includes(event.level);
+  if (!hasLevelFilter && !hasStructuredFilter && !hasTextFilter) {
+    return () => true;
   }
 
-  const matchesText = createTextMatcher(normalizedFilter);
+  const matchesText = hasTextFilter
+    ? createTextMatcher(normalizedFilter)
+    : undefined;
+  const matchesStructured = hasStructuredFilter
+    ? createStructuredMatcher(normalizedFilter)
+    : undefined;
 
   return (event) => {
     if (hasLevelFilter && !normalizedFilter.levels.includes(event.level)) {
       return false;
     }
 
-    const fullText = [
-      event.timestamp,
-      event.sourceName,
-      event.level,
-      event.message,
-      ...Object.values(event.fields),
-    ].join(" ");
+    if (!matchesText && !matchesStructured) {
+      return true;
+    }
 
-    return matchesText(fullText);
+    const fullText = buildFullText(event);
+
+    if (matchesStructured && !matchesStructured(fullText)) {
+      return false;
+    }
+
+    return !matchesText || matchesText(fullText);
+  };
+}
+
+function buildFullText(event: LogEvent): string {
+  return [
+    event.timestamp,
+    event.sourceName,
+    event.level,
+    event.message,
+    ...Object.values(event.fields),
+  ].join(" ");
+}
+
+function createStructuredMatcher(
+  filter: LogFilter,
+): (value: string) => boolean {
+  const normalize = (value: string) =>
+    filter.caseSensitive ? value : value.toLowerCase();
+  const includeAny = filter.includeAny.map(normalize).filter(Boolean);
+  const includeAll = filter.includeAll.map(normalize).filter(Boolean);
+  const excludeAny = filter.excludeAny.map(normalize).filter(Boolean);
+
+  return (rawValue) => {
+    const value = normalize(rawValue);
+
+    if (
+      includeAny.length > 0 &&
+      !includeAny.some((term) => value.includes(term))
+    ) {
+      return false;
+    }
+
+    if (
+      includeAll.length > 0 &&
+      !includeAll.every((term) => value.includes(term))
+    ) {
+      return false;
+    }
+
+    return !excludeAny.some((term) => value.includes(term));
   };
 }
 
@@ -187,7 +247,20 @@ function clampLimit(limit: number | undefined): number {
 }
 
 function compareLogEventsNewestFirst(left: LogEvent, right: LogEvent): number {
-  return compareTimestamp(right.timestamp, left.timestamp);
+  const timestampDiff = compareTimestamp(right.timestamp, left.timestamp);
+
+  if (timestampDiff !== 0) {
+    return timestampDiff;
+  }
+
+  const sourceDiff = left.sourceId.localeCompare(right.sourceId);
+
+  if (sourceDiff !== 0) {
+    return sourceDiff;
+  }
+
+  // Same timestamp and source: preserve oldest-line-first appearance order.
+  return left.sourceSequence - right.sourceSequence;
 }
 
 function compareTimestamp(left: string, right: string): number {

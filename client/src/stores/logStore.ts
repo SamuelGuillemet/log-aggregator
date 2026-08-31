@@ -11,6 +11,9 @@ import { create } from "zustand";
 
 export const defaultFilter: LogFilter = {
   caseSensitive: false,
+  excludeAny: [],
+  includeAll: [],
+  includeAny: [],
   levels: [],
   regex: false,
   text: "",
@@ -161,5 +164,19 @@ function mergeSortedDesc(left: LogEvent[], right: LogEvent[]): LogEvent[] {
 }
 
 function compareNewestFirst(left: LogEvent, right: LogEvent): number {
-  return Date.parse(right.timestamp) - Date.parse(left.timestamp);
+  const timestampDiff =
+    Date.parse(right.timestamp) - Date.parse(left.timestamp);
+
+  if (timestampDiff !== 0) {
+    return timestampDiff;
+  }
+
+  const sourceDiff = left.sourceId.localeCompare(right.sourceId);
+
+  if (sourceDiff !== 0) {
+    return sourceDiff;
+  }
+
+  // Same timestamp and source: preserve oldest-line-first appearance order.
+  return left.sourceSequence - right.sourceSequence;
 }
