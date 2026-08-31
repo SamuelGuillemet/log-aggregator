@@ -47,6 +47,7 @@ export class LogLineParser {
       filePath,
       level: logLevels.has(level as LogLevel) ? (level as LogLevel) : "UNKNOWN",
       message: this.groupValue(match.groups, "message"),
+      rawMessage: line,
       receivedAt: new Date().toISOString(),
       sourceId: source.id,
       sourceName: source.name,
@@ -56,6 +57,7 @@ export class LogLineParser {
 
   appendContinuation(event: LogEvent, line: string): void {
     event.message = `${event.message}\n${line}`;
+    event.rawMessage = `${event.rawMessage}\n${line}`;
   }
 
   getSchema(): LogTableSchema {

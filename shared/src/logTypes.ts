@@ -19,6 +19,7 @@ export interface LogEvent {
   filePath: string;
   level: LogLevel;
   message: string;
+  rawMessage: string;
   fields: Record<string, string>;
 }
 

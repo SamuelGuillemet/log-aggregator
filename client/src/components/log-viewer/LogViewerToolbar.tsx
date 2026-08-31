@@ -5,6 +5,7 @@ import type {
   VisibilityState,
 } from "@tanstack/react-table";
 import {
+  CheckSquare,
   ChevronLeft,
   ChevronRight,
   ChevronsDown,
@@ -35,6 +36,7 @@ interface LogViewerToolbarProps {
   loadUntilTimestamp: () => void;
   moveColumn: (columnId: string, offset: -1 | 1) => void;
   schemaById: Map<string, LogTableColumn>;
+  selectAllEvents: () => void;
   selectedRows: Set<string>;
   setUntilInput: (value: string) => void;
   table: Table<LogEvent>;
@@ -52,6 +54,7 @@ export function LogViewerToolbar({
   loadUntilTimestamp,
   moveColumn,
   schemaById,
+  selectAllEvents,
   selectedRows,
   setUntilInput,
   table,
@@ -59,9 +62,7 @@ export function LogViewerToolbar({
 }: LogViewerToolbarProps) {
   function handleCopySelected() {
     const selectedLogs = events.filter((event) => selectedRows.has(event.id));
-    const logsText = selectedLogs
-      .map((log) => JSON.stringify(log, null, 2))
-      .join("\n\n");
+    const logsText = selectedLogs.map((log) => log.rawMessage).join("\n");
     void navigator.clipboard?.writeText(logsText);
   }
 
@@ -71,6 +72,16 @@ export function LogViewerToolbar({
         <div className="mr-8 text-primary atelier-section-title">
           <span>{events.length.toLocaleString()} events buffered</span>
         </div>
+        <Button
+          variant="outline"
+          type="button"
+          disabled={events.length === 0}
+          onClick={selectAllEvents}
+          title="Select all loaded logs"
+        >
+          <CheckSquare size={16} />
+          Select all
+        </Button>
         {selectedRows.size > 0 && (
           <>
             <CopyButton
