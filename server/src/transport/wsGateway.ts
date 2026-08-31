@@ -1,10 +1,10 @@
 import type { Server as HttpServer } from "node:http";
 
-import { PROTOCOL_VERSION, type SourceOptions } from "@log-aggregator/shared";
+import type { SourceOptions } from "@log-aggregator/shared";
 import { WebSocketServer } from "ws";
 
 import { LogAggregatorService } from "../application/logAggregatorService.js";
-import { type ServerConfig } from "../config.js";
+import { PROTOCOL_VERSION, type ServerConfig } from "../config.js";
 import {
   bindSessionStreaming,
   type ClientSession,
