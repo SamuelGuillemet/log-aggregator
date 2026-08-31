@@ -8,7 +8,7 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { LOG_LEVELS } from "@/constants/log-levels";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,14 @@ function parseTerms(value: string): string[] {
     .filter(Boolean);
 }
 
+function sameTerms(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  return a.every((term, index) => term === b[index]);
+}
+
 export function FilterPanel() {
   const { filter, setFilter } = useLogStore(
     useShallow((state) => ({
@@ -46,6 +54,33 @@ export function FilterPanel() {
   );
   const [favoriteName, setFavoriteName] = useState("");
   const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [includeAnyInput, setIncludeAnyInput] = useState(
+    filter.includeAny.join(", "),
+  );
+  const [includeAllInput, setIncludeAllInput] = useState(
+    filter.includeAll.join(", "),
+  );
+  const [excludeAnyInput, setExcludeAnyInput] = useState(
+    filter.excludeAny.join(", "),
+  );
+
+  useEffect(() => {
+    if (!sameTerms(parseTerms(includeAnyInput), filter.includeAny)) {
+      setIncludeAnyInput(filter.includeAny.join(", "));
+    }
+  }, [filter.includeAny, includeAnyInput]);
+
+  useEffect(() => {
+    if (!sameTerms(parseTerms(includeAllInput), filter.includeAll)) {
+      setIncludeAllInput(filter.includeAll.join(", "));
+    }
+  }, [filter.includeAll, includeAllInput]);
+
+  useEffect(() => {
+    if (!sameTerms(parseTerms(excludeAnyInput), filter.excludeAny)) {
+      setExcludeAnyInput(filter.excludeAny.join(", "));
+    }
+  }, [filter.excludeAny, excludeAnyInput]);
 
   function handleSaveFavorite() {
     const name = favoriteName.trim();
@@ -76,7 +111,11 @@ export function FilterPanel() {
         />
         <span>Filters</span>
         <div className="flex items-center gap-2 ml-auto">
-          <DropdownMenu open={favoritesOpen} onOpenChange={setFavoritesOpen}>
+          <DropdownMenu
+            modal={false}
+            open={favoritesOpen}
+            onOpenChange={setFavoritesOpen}
+          >
             <DropdownMenuTrigger
               render={
                 <Button
@@ -98,6 +137,7 @@ export function FilterPanel() {
                   className="flex-1"
                   value={favoriteName}
                   onChange={(event) => setFavoriteName(event.target.value)}
+                  onKeyDown={(event) => event.stopPropagation()}
                   placeholder="Favorite name"
                 />
                 <Button
@@ -225,10 +265,13 @@ export function FilterPanel() {
           </span>
           <Input
             className="flex-1"
-            value={filter.includeAny.join(", ")}
-            onChange={(event) =>
-              setFilter({ includeAny: parseTerms(event.target.value) })
-            }
+            value={includeAnyInput}
+            onChange={(event) => {
+              const { value } = event.target;
+
+              setIncludeAnyInput(value);
+              setFilter({ includeAny: parseTerms(value) });
+            }}
             placeholder="term A, term B"
           />
         </label>
@@ -238,10 +281,13 @@ export function FilterPanel() {
           </span>
           <Input
             className="flex-1"
-            value={filter.includeAll.join(", ")}
-            onChange={(event) =>
-              setFilter({ includeAll: parseTerms(event.target.value) })
-            }
+            value={includeAllInput}
+            onChange={(event) => {
+              const { value } = event.target;
+
+              setIncludeAllInput(value);
+              setFilter({ includeAll: parseTerms(value) });
+            }}
             placeholder="term A, term B"
           />
         </label>
@@ -251,10 +297,13 @@ export function FilterPanel() {
           </span>
           <Input
             className="flex-1"
-            value={filter.excludeAny.join(", ")}
-            onChange={(event) =>
-              setFilter({ excludeAny: parseTerms(event.target.value) })
-            }
+            value={excludeAnyInput}
+            onChange={(event) => {
+              const { value } = event.target;
+
+              setExcludeAnyInput(value);
+              setFilter({ excludeAny: parseTerms(value) });
+            }}
             placeholder="term C"
           />
         </label>
