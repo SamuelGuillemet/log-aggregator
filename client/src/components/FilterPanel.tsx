@@ -1,10 +1,34 @@
-import { CaseSensitive, ChevronDown, Regex, Search } from "lucide-react";
+import type { LogFilter } from "@log-aggregator/shared";
+import {
+  CaseSensitive,
+  ChevronDown,
+  Regex,
+  Save,
+  Search,
+  Star,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { LOG_LEVELS } from "@/constants/log-levels";
 import { cn } from "@/lib/utils";
+import { useFavoritesStore } from "@/stores/favoritesStore";
 import { toggleLevel, useLogStore } from "@/stores/logStore";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import { Input } from "./ui/input";
+
+function parseTerms(value: string): string[] {
+  return value
+    .split(",")
+    .map((term) => term.trim())
+    .filter(Boolean);
+}
 
 export function FilterPanel() {
   const { filter, setFilter } = useLogStore(
@@ -13,6 +37,31 @@ export function FilterPanel() {
       setFilter: state.setFilter,
     })),
   );
+  const { deleteFavorite, favorites, saveFavorite } = useFavoritesStore(
+    useShallow((state) => ({
+      deleteFavorite: state.deleteFavorite,
+      favorites: state.favorites,
+      saveFavorite: state.saveFavorite,
+    })),
+  );
+  const [favoriteName, setFavoriteName] = useState("");
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
+
+  function handleSaveFavorite() {
+    const name = favoriteName.trim();
+
+    if (!name) {
+      return;
+    }
+
+    saveFavorite(name, filter);
+    setFavoriteName("");
+  }
+
+  function handleApplyFavorite(favoriteFilter: LogFilter) {
+    setFilter(favoriteFilter);
+    setFavoritesOpen(false);
+  }
 
   return (
     <details
@@ -26,6 +75,78 @@ export function FilterPanel() {
           className="group-open:rotate-180 transition-transform"
         />
         <span>Filters</span>
+        <div className="flex items-center gap-2 ml-auto">
+          <DropdownMenu open={favoritesOpen} onOpenChange={setFavoritesOpen}>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(event) => event.preventDefault()}
+                />
+              }
+            >
+              <Star size={16} />
+              Favorites
+              {favorites.length > 0 && (
+                <Badge variant="secondary">{favorites.length}</Badge>
+              )}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="space-y-2 p-2 w-72">
+              <div className="flex items-center gap-1.5">
+                <Input
+                  className="flex-1"
+                  value={favoriteName}
+                  onChange={(event) => setFavoriteName(event.target.value)}
+                  placeholder="Favorite name"
+                />
+                <Button
+                  variant="outline"
+                  type="button"
+                  disabled={!favoriteName.trim()}
+                  onClick={handleSaveFavorite}
+                  title="Save current filter as favorite"
+                >
+                  <Save size={16} />
+                  Save
+                </Button>
+              </div>
+              {favorites.length === 0 ? (
+                <p className="px-1 py-1 text-muted-foreground text-xs">
+                  No saved favorites yet.
+                </p>
+              ) : (
+                <div className="space-y-1 max-h-64 overflow-auto">
+                  {favorites.map((favorite) => (
+                    <div
+                      key={favorite.id}
+                      className="flex items-center gap-1 bg-muted/40 rounded-md"
+                    >
+                      <Button
+                        variant="ghost"
+                        className="flex-1 justify-start min-w-0"
+                        type="button"
+                        onClick={() => handleApplyFavorite(favorite.filter)}
+                        title={`Apply favorite "${favorite.name}"`}
+                      >
+                        <span className="truncate">{favorite.name}</span>
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon-sm"
+                        type="button"
+                        onClick={() => deleteFavorite(favorite.id)}
+                        title={`Delete favorite "${favorite.name}"`}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </summary>
       <div className="flex max-md:flex-col flex-wrap items-center max-md:items-stretch gap-2 p-2">
         <label className="flex items-center gap-1.5 min-w-[min(420px,100%)]">
@@ -96,6 +217,47 @@ export function FilterPanel() {
             </Button>
           ))}
         </div>
+      </div>
+      <div className="flex max-md:flex-col flex-wrap items-center max-md:items-stretch gap-2 p-2 pt-0">
+        <label className="flex flex-1 items-center gap-1.5 min-w-[min(240px,100%)]">
+          <span className="text-muted-foreground text-xs whitespace-nowrap">
+            Has any
+          </span>
+          <Input
+            className="flex-1"
+            value={filter.includeAny.join(", ")}
+            onChange={(event) =>
+              setFilter({ includeAny: parseTerms(event.target.value) })
+            }
+            placeholder="term A, term B"
+          />
+        </label>
+        <label className="flex flex-1 items-center gap-1.5 min-w-[min(240px,100%)]">
+          <span className="text-muted-foreground text-xs whitespace-nowrap">
+            Has all
+          </span>
+          <Input
+            className="flex-1"
+            value={filter.includeAll.join(", ")}
+            onChange={(event) =>
+              setFilter({ includeAll: parseTerms(event.target.value) })
+            }
+            placeholder="term A, term B"
+          />
+        </label>
+        <label className="flex flex-1 items-center gap-1.5 min-w-[min(240px,100%)]">
+          <span className="text-muted-foreground text-xs whitespace-nowrap">
+            Has not
+          </span>
+          <Input
+            className="flex-1"
+            value={filter.excludeAny.join(", ")}
+            onChange={(event) =>
+              setFilter({ excludeAny: parseTerms(event.target.value) })
+            }
+            placeholder="term C"
+          />
+        </label>
       </div>
     </details>
   );
