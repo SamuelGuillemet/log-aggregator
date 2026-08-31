@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { LogWebSocketClient } from "@/services/websocketClient";
+import { useCompatibilityStore } from "@/stores/compatibilityStore";
 import { useLogStore } from "@/stores/logStore";
 import { useSourceStore } from "@/stores/sourceStore";
 
@@ -25,11 +26,15 @@ export function useLogWebSocket() {
       selection: state.selection,
     })),
   );
+  const handleCompatibilityMessage = useCompatibilityStore(
+    (state) => state.handleServerMessage,
+  );
 
   useEffect(() => {
     function handleMessage(message: ServerMessage) {
       handleLogMessage(message);
       handleSourceMessage(message);
+      handleCompatibilityMessage(message);
     }
 
     const client = new LogWebSocketClient(handleMessage, setConnected);
@@ -41,7 +46,12 @@ export function useLogWebSocket() {
       client.disconnect();
       clientRef.current = null;
     };
-  }, [handleLogMessage, handleSourceMessage, setConnected]);
+  }, [
+    handleCompatibilityMessage,
+    handleLogMessage,
+    handleSourceMessage,
+    setConnected,
+  ]);
 
   useEffect(() => {
     if (connected) {

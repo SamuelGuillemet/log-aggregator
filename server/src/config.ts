@@ -2,7 +2,16 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { EnvironmentMatrixEntry } from "@log-aggregator/shared";
+import type { EnvironmentMatrixEntry, PROTOCOL_VERSION as SHARED_PROTOCOL_VERSION } from "@log-aggregator/shared";
+
+/**
+ * Mirrors the latest entry of shared/src/version.ts's COMPATIBILITY_TABLE.
+ * Kept as a plain literal instead of a runtime import from
+ * @log-aggregator/shared because the packaged release strips that
+ * workspace dependency at install time - only its types are used
+ * server-side. Bump both together.
+ */
+export const PROTOCOL_VERSION: SHARED_PROTOCOL_VERSION = 1;
 
 export interface ParserConfig {
   linePattern: string;

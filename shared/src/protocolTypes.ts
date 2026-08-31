@@ -8,7 +8,15 @@ export type ClientMessage =
   | { type: "ping" };
 
 export type ServerMessage =
-  | { type: "connected"; payload: { clientId: string; options: SourceOptions } }
+  | {
+      type: "connected";
+      payload: {
+        clientId: string;
+        options: SourceOptions;
+        /** Absent on backends older than this negotiation feature. */
+        protocolVersion?: number;
+      };
+    }
   | {
       type: "snapshot";
       payload: LogSnapshot;

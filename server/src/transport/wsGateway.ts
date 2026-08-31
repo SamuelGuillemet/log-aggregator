@@ -1,10 +1,10 @@
 import type { Server as HttpServer } from "node:http";
 
-import type { SourceOptions } from "@log-aggregator/shared";
+import { PROTOCOL_VERSION, type SourceOptions } from "@log-aggregator/shared";
 import { WebSocketServer } from "ws";
 
 import { LogAggregatorService } from "../application/logAggregatorService.js";
-import type { ServerConfig } from "../config.js";
+import { type ServerConfig } from "../config.js";
 import {
   bindSessionStreaming,
   type ClientSession,
@@ -53,7 +53,11 @@ export function attachWsGateway(
     bindSessionStreaming(client);
 
     sendMessage(socket, {
-      payload: { clientId: client.id, options: sourceOptions },
+      payload: {
+        clientId: client.id,
+        options: sourceOptions,
+        protocolVersion: PROTOCOL_VERSION,
+      },
       type: "connected",
     });
     sendSnapshot(client);

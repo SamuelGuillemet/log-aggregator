@@ -57,8 +57,7 @@ async function writePackageJson() {
   const serverPackage = JSON.parse(
     await readFile(path.join(repositoryRoot, "server", "package.json"), "utf8"),
   );
-  const { "@log-aggregator/shared": _, ...dependencies } =
-    serverPackage.dependencies;
+  const { "@log-aggregator/shared": _, ...dependencies } = serverPackage.dependencies;
 
   await writeFile(
     path.join(stagingDirectory, "package.json"),

@@ -6,6 +6,7 @@ import { SourceSelector } from "@/components/SourceSelector";
 import { Badge } from "@/components/ui/badge";
 import { useLogWebSocket } from "@/hooks/useLogWebSocket";
 import { cn } from "@/lib/utils";
+import { useCompatibilityStore } from "@/stores/compatibilityStore";
 import { useLogStore } from "@/stores/logStore";
 
 export function Dashboard() {
@@ -14,6 +15,12 @@ export function Dashboard() {
     useShallow((state) => ({
       connected: state.connected,
       error: state.error,
+    })),
+  );
+  const { compatibilityMessage, compatibilityStatus } = useCompatibilityStore(
+    useShallow((state) => ({
+      compatibilityMessage: state.message,
+      compatibilityStatus: state.status,
     })),
   );
 
@@ -38,12 +45,30 @@ export function Dashboard() {
 
       <FilterPanel />
 
-      {error ? (
-        <div
-          className="bg-[#fff1eb] px-4 py-3 border border-[#e0a18e] rounded-lg text-[#7b3025]"
-          role="status"
-        >
-          {error}
+      {error || compatibilityMessage ? (
+        <div className="flex flex-col gap-2">
+          {compatibilityMessage ? (
+            <div
+              className={cn(
+                "px-4 py-3 border rounded-lg",
+                compatibilityStatus === "server-outdated"
+                  ? "bg-[#fff1eb] border-[#e0a18e] text-[#7b3025]"
+                  : "bg-[#fff8e8] border-[#be8b2f] text-[#7a5a12]",
+              )}
+              role="status"
+            >
+              {compatibilityMessage}
+            </div>
+          ) : null}
+
+          {error ? (
+            <div
+              className="bg-[#fff1eb] px-4 py-3 border border-[#e0a18e] rounded-lg text-[#7b3025]"
+              role="status"
+            >
+              {error}
+            </div>
+          ) : null}
         </div>
       ) : null}
 
