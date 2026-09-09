@@ -1,10 +1,10 @@
 import type { ClientMessage, ServerMessage } from "@log-aggregator/shared";
 import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { LogWebSocketClient } from "@/services/websocketClient";
-import { useCompatibilityStore } from "@/stores/compatibilityStore";
-import { useLogStore } from "@/stores/logStore";
-import { useSourceStore } from "@/stores/sourceStore";
+import { useLogStore } from "@/store/logStore";
+import { useSourceStore } from "@/store/sourceStore";
+import { LogWebSocketClient } from "../lib/connection/websocketClient";
+import { useCompatibilityStore } from "../store/compatibilityStore";
 
 export function useLogWebSocket() {
   const clientRef = useRef<LogWebSocketClient | null>(null);

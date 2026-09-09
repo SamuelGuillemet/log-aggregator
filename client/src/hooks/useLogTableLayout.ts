@@ -1,7 +1,7 @@
 import type { LogTableSchema } from "@log-aggregator/shared";
 import type { ColumnOrderState, ColumnSizingState, VisibilityState } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
-import { readStoredTableLayout, saveStoredTableLayout } from "./tableLayoutStorage";
+import { readStoredTableLayout, saveStoredTableLayout } from "@/lib/logs/tableLayoutStorage";
 
 export function useLogTableLayout(schema: LogTableSchema, schemaReady: boolean) {
   const schemaColumnIds = useMemo(() => schema.columns.map((column) => column.id), [schema]);

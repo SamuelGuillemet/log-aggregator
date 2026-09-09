@@ -1,6 +1,6 @@
 import type { LogEvent, LogFilter, LogHistoryQuery, LogPage } from "@log-aggregator/shared";
 import { type RefObject, type UIEvent, useCallback, useEffect, useRef, useState } from "react";
-import { fetchLogPage } from "@/services/logApiClient";
+import { fetchLogPage } from "@/lib/logs/logApiClient";
 
 const pageSize = 200;
 

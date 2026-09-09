@@ -3,17 +3,17 @@ import { type ColumnDef, getCoreRowModel, useReactTable } from "@tanstack/react-
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useLogStore } from "@/stores/logStore";
-import { fallbackSchema } from "./log-viewer/fallbackSchema";
-import { getLogEventFieldValue, getSourceDisplayValue } from "./log-viewer/logEventFields";
-import { LogLevelBadge } from "./log-viewer/LogLevelBadge";
-import { LogTableHeader } from "./log-viewer/LogTableHeader";
-import { LogViewerToolbar } from "./log-viewer/LogViewerToolbar";
-import { useLogPageLoader } from "./log-viewer/useLogPageLoader";
-import { useLogTableLayout } from "./log-viewer/useLogTableLayout";
-import { useScrollAreaWidth } from "./log-viewer/useScrollAreaWidth";
-import { useSelectedRows } from "./log-viewer/useSelectedRows";
-import { VirtualLogRows } from "./log-viewer/VirtualLogRows";
+import { useLogPageLoader } from "@/hooks/useLogPageLoader";
+import { useLogTableLayout } from "@/hooks/useLogTableLayout";
+import { useScrollAreaWidth } from "@/hooks/useScrollAreaWidth";
+import { useSelectedRows } from "@/hooks/useSelectedRows";
+import { fallbackSchema } from "@/lib/logs/fallbackSchema";
+import { getLogEventFieldValue, getSourceDisplayValue } from "@/lib/logs/logEventFields";
+import { useLogStore } from "@/store/logStore";
+import { LogLevelBadge } from "./LogLevelBadge";
+import { LogTableHeader } from "./LogTableHeader";
+import { LogViewerToolbar } from "./LogViewerToolbar";
+import { VirtualLogRows } from "./VirtualLogRows";
 
 interface LogViewerProps {
   canControlStreaming: boolean;

@@ -1,5 +1,5 @@
 import type { ClientMessage, ServerMessage } from "@log-aggregator/shared";
-import { WS_URL } from "@/constants/url";
+import { WS_URL } from "@/lib/env";
 
 type MessageListener = (message: ServerMessage) => void;
 type StatusListener = (connected: boolean) => void;

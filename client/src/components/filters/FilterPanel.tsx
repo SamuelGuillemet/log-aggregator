@@ -2,14 +2,18 @@ import type { LogFilter } from "@log-aggregator/shared";
 import { CaseSensitive, ChevronDown, Regex, Save, Search, Star, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { LOG_LEVELS } from "@/constants/log-levels";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { LOG_LEVELS } from "@/lib/logLevels";
 import { cn } from "@/lib/utils";
-import { useFavoritesStore } from "@/stores/favoritesStore";
-import { toggleLevel, useLogStore } from "@/stores/logStore";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { Input } from "./ui/input";
+import { toggleLevel, useLogStore } from "@/store/logStore";
+import { useFavoritesStore } from "../../store/favoritesStore";
 
 function parseTerms(value: string): string[] {
   return value

@@ -1,11 +1,9 @@
 import type { ClientMessage, SourceSelection } from "@log-aggregator/shared";
 import { ChevronDown, Play, Square } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
-import { useLogStore } from "@/stores/logStore";
-import { useSourceStore } from "@/stores/sourceStore";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -14,7 +12,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "@/components/ui/select";
+import { useLogStore } from "@/store/logStore";
+import { useSourceStore } from "../../store/sourceStore";
 
 interface SourceSelectorProps {
   sendMessage: (message: ClientMessage) => void;
