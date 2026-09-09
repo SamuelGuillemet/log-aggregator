@@ -1,6 +1,5 @@
 {
   "$schema": "https://react.doctor/schema/config.json",
-  "deadCode": true,
   "lint": true,
   "rules": {
     "react-doctor/js-combine-iterations": "off",

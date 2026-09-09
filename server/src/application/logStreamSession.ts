@@ -2,9 +2,7 @@ import { createReadStream } from "node:fs";
 import { open, stat } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
 import { createInterface } from "node:readline";
-
 import type { LogEvent, LogSource } from "@log-aggregator/shared";
-
 import type { LogLineParser } from "../domain/logParser.js";
 
 export interface StreamSessionCallbacks {
@@ -35,11 +33,7 @@ export class LogStreamSession {
     this.lastEventsByFile.delete(fileStateKey(source, filePath));
   }
 
-  async processWholeFile(
-    source: LogSource,
-    filePath: string,
-    emitLive: boolean,
-  ): Promise<void> {
+  async processWholeFile(source: LogSource, filePath: string, emitLive: boolean): Promise<void> {
     const startedAt = performance.now();
     const readStream = createReadStream(filePath, { encoding: "utf8" });
     const reader = createInterface({
@@ -67,11 +61,7 @@ export class LogStreamSession {
     );
   }
 
-  async processTail(
-    source: LogSource,
-    filePath: string,
-    emitLive: boolean,
-  ): Promise<void> {
+  async processTail(source: LogSource, filePath: string, emitLive: boolean): Promise<void> {
     const startedAt = performance.now();
     const fileStats = await stat(filePath);
     const previousPosition = this.positions.get(filePath) ?? 0;
@@ -119,12 +109,7 @@ export class LogStreamSession {
     return lines.length;
   }
 
-  private processLine(
-    source: LogSource,
-    filePath: string,
-    line: string,
-    emitLive: boolean,
-  ): void {
+  private processLine(source: LogSource, filePath: string, line: string, emitLive: boolean): void {
     const event = this.parser.parseLine(line, source, filePath);
     const stateKey = fileStateKey(source, filePath);
 

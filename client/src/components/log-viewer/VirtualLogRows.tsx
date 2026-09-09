@@ -3,7 +3,6 @@ import { flexRender, type Row } from "@tanstack/react-table";
 import type { VirtualItem } from "@tanstack/react-virtual";
 import { Eye } from "lucide-react";
 import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -61,13 +60,13 @@ export function VirtualLogRows({
               key={row.id}
               data-index={virtualRow.index}
               className={cn(
-                "top-0 absolute inset-x-0 flex border-[#e5dece] border-b font-mono text-foreground text-xs",
+                "absolute inset-x-0 top-0 flex border-b border-[#e5dece] font-mono text-xs text-foreground",
                 colors.background,
               )}
               style={{ transform: `translateY(${virtualRow.start}px)` }}
             >
-              <div className={cn("border-l-4 w-1 shrink-0", colors.border)} />
-              <div className="flex items-center px-2 w-7 shrink-0">
+              <div className={cn("w-1 shrink-0 border-l-4", colors.border)} />
+              <div className="flex w-7 shrink-0 items-center px-2">
                 <input
                   type="checkbox"
                   checked={selected}
@@ -77,11 +76,11 @@ export function VirtualLogRows({
                   aria-label={`Select log ${row.original.id}`}
                 />
               </div>
-              <div className="flex items-center px-1 w-8 shrink-0">
+              <div className="flex w-8 shrink-0 items-center px-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="w-7 h-7"
+                  className="h-7 w-7"
                   onClick={() => setViewingLog(row.original)}
                   title="View full message"
                 >
@@ -91,12 +90,9 @@ export function VirtualLogRows({
               {row.getVisibleCells().map((cell) => (
                 <span
                   key={cell.id}
-                  className="flex items-center px-3 min-w-0 overflow-hidden truncate whitespace-nowrap"
+                  className="flex min-w-0 items-center truncate overflow-hidden px-3 whitespace-nowrap"
                   style={{
-                    flex: `0 0 ${getRenderWidth(
-                      cell.column.id,
-                      cell.column.getSize(),
-                    )}px`,
+                    flex: `0 0 ${getRenderWidth(cell.column.id, cell.column.getSize())}px`,
                   }}
                   title={String(cell.getValue() ?? "")}
                 >
@@ -110,16 +106,14 @@ export function VirtualLogRows({
 
       <Dialog open={!!viewingLog} onOpenChange={() => setViewingLog(null)}>
         <DialogContent
-          className="flex flex-col sm:max-w-6xl max-h-[80vh] overflow-hidden"
+          className="flex max-h-[80vh] flex-col overflow-hidden sm:max-w-6xl"
           showCloseButton
         >
           <DialogHeader>
             <DialogTitle>Full Log Message</DialogTitle>
             <DialogDescription>
               {viewingLog?.level && (
-                <span className="font-mono font-semibold">
-                  Level: {viewingLog.level}
-                </span>
+                <span className="font-mono font-semibold">Level: {viewingLog.level}</span>
               )}
               {viewingLog?.timestamp && (
                 <span className="ml-4 text-muted-foreground">
@@ -128,8 +122,8 @@ export function VirtualLogRows({
               )}
             </DialogDescription>
           </DialogHeader>
-          <div className="relative flex-1 bg-accent/30 p-3 border border-[#e5dece] rounded-md overflow-auto">
-            <div className="top-2 right-2 z-10 absolute">
+          <div className="relative flex-1 overflow-auto rounded-md border border-[#e5dece] bg-accent/30 p-3">
+            <div className="absolute top-2 right-2 z-10">
               <CopyButton
                 onCopy={() => {
                   if (viewingLog?.message) {

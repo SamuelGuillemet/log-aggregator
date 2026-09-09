@@ -1,5 +1,4 @@
 import { performance } from "node:perf_hooks";
-
 import type {
   EnvironmentMatrixEntry,
   LogEvent,
@@ -12,7 +11,6 @@ import type {
   SourceSelection,
 } from "@log-aggregator/shared";
 import { type FSWatcher, watch } from "chokidar";
-
 import type { ParserConfig } from "../config.js";
 import { LogHistoryBuffer } from "../domain/history.js";
 import { LogLineParser } from "../domain/logParser.js";
@@ -84,11 +82,7 @@ export class LogAggregatorService {
   }
 
   getSnapshot(filter?: Partial<LogFilter>): LogSnapshot {
-    return this.buffer.getSnapshot(
-      filter,
-      this.sources,
-      this.parser.getSchema(),
-    );
+    return this.buffer.getSnapshot(filter, this.sources, this.parser.getSchema());
   }
 
   getHistoryPage(query: LogHistoryQuery, filter?: Partial<LogFilter>): LogPage {
@@ -143,20 +137,13 @@ export class LogAggregatorService {
     await watcher?.close();
   }
 
-  private async loadExistingSource(
-    source: LogSource,
-    selection: SourceSelection,
-  ): Promise<void> {
+  private async loadExistingSource(source: LogSource, selection: SourceSelection): Promise<void> {
     try {
       const startedAt = performance.now();
       const files = await listMatchingSourceFiles(source, selection);
 
       for (const file of files) {
-        await this.streamSession.processWholeFile(
-          file.source,
-          file.filePath,
-          false,
-        );
+        await this.streamSession.processWholeFile(file.source, file.filePath, false);
         this.watchedFiles.add(file.filePath);
       }
 

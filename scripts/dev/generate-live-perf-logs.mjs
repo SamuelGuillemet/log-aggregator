@@ -2,18 +2,12 @@ import { appendFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repositoryRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../..",
-);
+const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 const args = parseArgs(process.argv.slice(2));
 const intervalSeconds = clampInteger(args.interval, 2, 1, 3_600);
 const appCount = clampInteger(args.apps, 100, 1, 10_000);
-const outputRoot = path.resolve(
-  repositoryRoot,
-  args.output ?? "sample-logs/perf-cluster",
-);
+const outputRoot = path.resolve(repositoryRoot, args.output ?? "sample-logs/perf-cluster");
 const date = args.date ?? todayUtcDate();
 
 const shares = ["perf-share-a", "perf-share-b", "perf-share-c"];
@@ -24,13 +18,7 @@ const tickByApp = new Map();
 
 for (const share of shares) {
   for (const tier of tiers) {
-    const logDirectory = path.join(
-      outputRoot,
-      share,
-      "Java",
-      `apache-tomcat-${tier}`,
-      "logs",
-    );
+    const logDirectory = path.join(outputRoot, share, "Java", `apache-tomcat-${tier}`, "logs");
     await mkdir(logDirectory, { recursive: true });
   }
 }
@@ -66,22 +54,13 @@ async function writeTick() {
 
     for (const share of shares) {
       for (const tier of tiers) {
-        const logDirectory = path.join(
-          outputRoot,
-          share,
-          "Java",
-          `apache-tomcat-${tier}`,
-          "logs",
-        );
+        const logDirectory = path.join(outputRoot, share, "Java", `apache-tomcat-${tier}`, "logs");
 
         for (const app of apps) {
           const nextTick = (tickByApp.get(app) ?? 0) + 1;
           tickByApp.set(app, nextTick);
 
-          const filePath = path.join(
-            logDirectory,
-            `${app}-serveur.${date}-0.log`,
-          );
+          const filePath = path.join(logDirectory, `${app}-serveur.${date}-0.log`);
           const line = buildLogLine(app, tier, now, nextTick, levelCycle);
           await appendFile(filePath, `${line}\n`, "utf8");
         }

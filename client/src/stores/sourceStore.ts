@@ -1,8 +1,4 @@
-import type {
-  ServerMessage,
-  SourceOptions,
-  SourceSelection,
-} from "@log-aggregator/shared";
+import type { ServerMessage, SourceOptions, SourceSelection } from "@log-aggregator/shared";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -40,14 +36,9 @@ export const useSourceStore = create<SourceStore>()(
         set((state) => {
           const nextSelection = { ...state.selection, ...selection };
 
-          if (
-            selection.environment &&
-            selection.environment !== state.selection.environment
-          ) {
+          if (selection.environment && selection.environment !== state.selection.environment) {
             nextSelection.country =
-              state.options.countriesByEnvironment[
-                selection.environment
-              ]?.[0] ?? "";
+              state.options.countriesByEnvironment[selection.environment]?.[0] ?? "";
           }
 
           return { selection: nextSelection };
@@ -59,9 +50,7 @@ export const useSourceStore = create<SourceStore>()(
           }
 
           const options = message.payload.options;
-          const environment = options.environments.includes(
-            state.selection.environment,
-          )
+          const environment = options.environments.includes(state.selection.environment)
             ? state.selection.environment
             : (options.environments[0] ?? "");
           const countries = options.countriesByEnvironment[environment] ?? [];

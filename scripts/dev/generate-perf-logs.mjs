@@ -2,19 +2,13 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repositoryRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../..",
-);
+const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 const args = parseArgs(process.argv.slice(2));
 const appCount = clampInteger(args.apps, 100, 1, 10_000);
 const dateCount = clampInteger(args.dates, 4, 1, 10);
 const linesPerFile = clampInteger(args.lines, 25, 1, 20_000);
-const outputRoot = path.resolve(
-  repositoryRoot,
-  args.output ?? "sample-logs/perf-cluster",
-);
+const outputRoot = path.resolve(repositoryRoot, args.output ?? "sample-logs/perf-cluster");
 
 const shares = ["perf-share-a", "perf-share-b", "perf-share-c"];
 const tiers = ["back"];
@@ -27,34 +21,20 @@ let createdFiles = 0;
 
 for (const share of shares) {
   for (const tier of tiers) {
-    const logDirectory = path.join(
-      outputRoot,
-      share,
-      "Java",
-      `apache-tomcat-${tier}`,
-      "logs",
-    );
+    const logDirectory = path.join(outputRoot, share, "Java", `apache-tomcat-${tier}`, "logs");
     await mkdir(logDirectory, { recursive: true });
 
     for (const date of dates) {
       for (const app of apps) {
-        const filePath = path.join(
-          logDirectory,
-          `${app}-serveur.${date}-0.log`,
-        );
-        await writeFile(
-          filePath,
-          buildLogContent(app, date, linesPerFile, tier),
-        );
+        const filePath = path.join(logDirectory, `${app}-serveur.${date}-0.log`);
+        await writeFile(filePath, buildLogContent(app, date, linesPerFile, tier));
         createdFiles += 1;
       }
     }
   }
 }
 
-console.info(
-  `Perf logs generated in ${path.relative(repositoryRoot, outputRoot)}`,
-);
+console.info(`Perf logs generated in ${path.relative(repositoryRoot, outputRoot)}`);
 console.info(`Apps: ${appCount}`);
 console.info(`Dates: ${dates.join(", ")}`);
 console.info(`Files: ${createdFiles}`);
@@ -107,11 +87,7 @@ function buildDates(dateCount) {
 
   for (let index = 0; index < dateCount; index += 1) {
     const date = new Date(
-      Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate() - index,
-      ),
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - index),
     );
 
     dates.push(date.toISOString().slice(0, 10));

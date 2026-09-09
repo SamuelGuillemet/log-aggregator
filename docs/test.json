@@ -1,0 +1,24 @@
+[
+  {
+    "country": "SAMPLE",
+    "date": "2026-08-01",
+    "directory": "/home/samug/ProjetPerso/log-aggregator/sample-logs/local-share-a/Java/apache-tomcat-back/logs",
+    "enabled": true,
+    "environment": "LOCAL",
+    "id": "local-sample-local-sample-test-0-back",
+    "name": "LOCAL/SAMPLE/back/local-share-a",
+    "project": "TEST",
+    "tier": "back"
+  },
+  {
+    "country": "SAMPLE",
+    "date": "2026-08-01",
+    "directory": "/home/samug/ProjetPerso/log-aggregator/sample-logs/local-share-b/Java/apache-tomcat-back/logs",
+    "enabled": true,
+    "environment": "LOCAL",
+    "id": "local-sample-local-sample-test-1-back",
+    "name": "LOCAL/SAMPLE/back/local-share-b",
+    "project": "TEST",
+    "tier": "back"
+  }
+]

@@ -1,8 +1,4 @@
-import type {
-  ColumnOrderState,
-  ColumnSizingState,
-  VisibilityState,
-} from "@tanstack/react-table";
+import type { ColumnOrderState, ColumnSizingState, VisibilityState } from "@tanstack/react-table";
 
 const tableLayoutStorageKey = "log-aggregator:table-layout:v2";
 
@@ -31,9 +27,7 @@ export function readStoredTableLayout(): StoredTableLayout {
     }
 
     return {
-      columnOrder: Array.isArray(parsed.columnOrder)
-        ? parsed.columnOrder.filter(isString)
-        : [],
+      columnOrder: Array.isArray(parsed.columnOrder) ? parsed.columnOrder.filter(isString) : [],
       columnSizing: readNumberRecord(parsed.columnSizing),
       columnVisibility: readBooleanRecord(parsed.columnVisibility),
     };
@@ -68,9 +62,7 @@ function readBooleanRecord(value: unknown): VisibilityState {
   }
 
   return Object.fromEntries(
-    Object.entries(value).filter(
-      ([, recordValue]) => typeof recordValue === "boolean",
-    ),
+    Object.entries(value).filter(([, recordValue]) => typeof recordValue === "boolean"),
   ) as VisibilityState;
 }
 
@@ -81,8 +73,7 @@ function readNumberRecord(value: unknown): ColumnSizingState {
 
   return Object.fromEntries(
     Object.entries(value).filter(
-      ([, recordValue]) =>
-        typeof recordValue === "number" && Number.isFinite(recordValue),
+      ([, recordValue]) => typeof recordValue === "number" && Number.isFinite(recordValue),
     ),
   ) as ColumnSizingState;
 }

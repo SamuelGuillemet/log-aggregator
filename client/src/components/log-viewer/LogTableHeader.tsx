@@ -7,14 +7,10 @@ interface LogTableHeaderProps {
   tableWidth: number;
 }
 
-export function LogTableHeader({
-  getRenderWidth,
-  table,
-  tableWidth,
-}: LogTableHeaderProps) {
+export function LogTableHeader({ getRenderWidth, table, tableWidth }: LogTableHeaderProps) {
   return (
     <div
-      className="top-0 z-20 sticky flex bg-muted-foreground min-h-9 font-bold text-primary-foreground text-xs"
+      className="sticky top-0 z-20 flex min-h-9 bg-muted-foreground text-xs font-bold text-primary-foreground"
       style={{ width: `${tableWidth}px` }}
     >
       {/* Space for colored border */}
@@ -27,18 +23,15 @@ export function LogTableHeader({
         headerGroup.headers.map((header) => (
           <div
             key={header.id}
-            className="relative flex items-center px-3 min-w-0 overflow-hidden truncate whitespace-nowrap"
+            className="relative flex min-w-0 items-center truncate overflow-hidden px-3 whitespace-nowrap"
             style={{
-              flex: `0 0 ${getRenderWidth(
-                header.column.id,
-                header.getSize(),
-              )}px`,
+              flex: `0 0 ${getRenderWidth(header.column.id, header.getSize())}px`,
             }}
           >
             {flexRender(header.column.columnDef.header, header.getContext())}
             <button
               type="button"
-              className="right-0 absolute inset-y-0 hover:bg-gray-200/20 w-1 touch-none cursor-col-resize"
+              className="absolute inset-y-0 right-0 w-1 cursor-col-resize touch-none hover:bg-gray-200/20"
               onMouseDown={header.getResizeHandler()}
               onTouchStart={header.getResizeHandler()}
               title="Resize column"

@@ -1,8 +1,6 @@
 import type { Server as HttpServer } from "node:http";
-
 import type { SourceOptions } from "@log-aggregator/shared";
 import { WebSocketServer } from "ws";
-
 import { LogAggregatorService } from "../application/logAggregatorService.js";
 import { PROTOCOL_VERSION, type ServerConfig } from "../config.js";
 import {
@@ -30,10 +28,7 @@ export function attachWsGateway(
   const webSocketServer = new WebSocketServer({ noServer: true });
 
   server.on("upgrade", (request, socket, head) => {
-    const requestUrl = new URL(
-      request.url ?? "/",
-      `http://${request.headers.host ?? "localhost"}`,
-    );
+    const requestUrl = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
 
     if (requestUrl.pathname !== "/ws") {
       socket.destroy();
@@ -75,9 +70,7 @@ export function attachWsGateway(
     closeAll: async () => {
       const activeClients = [...clients.values()];
 
-      await Promise.all(
-        activeClients.map((client) => closeClient(client.id, clients)),
-      );
+      await Promise.all(activeClients.map((client) => closeClient(client.id, clients)));
 
       for (const client of activeClients) {
         client.socket.close();
@@ -89,10 +82,7 @@ export function attachWsGateway(
   };
 }
 
-async function closeClient(
-  clientId: string,
-  clients: Map<string, ClientSession>,
-): Promise<void> {
+async function closeClient(clientId: string, clients: Map<string, ClientSession>): Promise<void> {
   const client = clients.get(clientId);
 
   if (!client) {

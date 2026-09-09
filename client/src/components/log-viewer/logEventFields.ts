@@ -1,7 +1,6 @@
 import type { LogEvent } from "@log-aggregator/shared";
 
-const sourceFileTokenPattern =
-  /-(serveur|fwk|ui)\.\d{4}-\d{2}-\d{2}(?:-\d+)?\.log$/i;
+const sourceFileTokenPattern = /-(serveur|fwk|ui)\.\d{4}-\d{2}-\d{2}(?:-\d+)?\.log$/i;
 
 export function getLogEventFieldValue(event: LogEvent, field: string): string {
   return getBaseFieldValue(event, field) ?? event.fields[field] ?? "";

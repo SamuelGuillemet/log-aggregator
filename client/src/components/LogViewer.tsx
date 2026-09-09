@@ -1,22 +1,14 @@
 import type { LogEvent } from "@log-aggregator/shared";
-import {
-  type ColumnDef,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { type ColumnDef, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
-
 import { useLogStore } from "@/stores/logStore";
 import { fallbackSchema } from "./log-viewer/fallbackSchema";
+import { getLogEventFieldValue, getSourceDisplayValue } from "./log-viewer/logEventFields";
 import { LogLevelBadge } from "./log-viewer/LogLevelBadge";
 import { LogTableHeader } from "./log-viewer/LogTableHeader";
 import { LogViewerToolbar } from "./log-viewer/LogViewerToolbar";
-import {
-  getLogEventFieldValue,
-  getSourceDisplayValue,
-} from "./log-viewer/logEventFields";
 import { useLogPageLoader } from "./log-viewer/useLogPageLoader";
 import { useLogTableLayout } from "./log-viewer/useLogTableLayout";
 import { useScrollAreaWidth } from "./log-viewer/useScrollAreaWidth";
@@ -24,18 +16,17 @@ import { useSelectedRows } from "./log-viewer/useSelectedRows";
 import { VirtualLogRows } from "./log-viewer/VirtualLogRows";
 
 export function LogViewer() {
-  const { appendLogPage, clientId, events, filter, hasMore, schema, setError } =
-    useLogStore(
-      useShallow((state) => ({
-        appendLogPage: state.appendLogPage,
-        clientId: state.clientId,
-        events: state.events,
-        filter: state.filter,
-        hasMore: state.hasMore,
-        schema: state.schema,
-        setError: state.setError,
-      })),
-    );
+  const { appendLogPage, clientId, events, filter, hasMore, schema, setError } = useLogStore(
+    useShallow((state) => ({
+      appendLogPage: state.appendLogPage,
+      clientId: state.clientId,
+      events: state.events,
+      filter: state.filter,
+      hasMore: state.hasMore,
+      schema: state.schema,
+      setError: state.setError,
+    })),
+  );
   const activeSchema = schema ?? fallbackSchema;
 
   const columns = useMemo<ColumnDef<LogEvent>[]>(
@@ -51,11 +42,7 @@ export function LogViewer() {
           }
 
           if (column.field === "sourceName") {
-            return (
-              <span title={cell.row.original.filePath}>
-                {String(cell.getValue() ?? "")}
-              </span>
-            );
+            return <span title={cell.row.original.filePath}>{String(cell.getValue() ?? "")}</span>;
           }
 
           return String(cell.getValue() ?? "");
@@ -79,8 +66,7 @@ export function LogViewer() {
     setColumnSizing,
     setColumnVisibility,
   } = useLogTableLayout(activeSchema, Boolean(schema));
-  const { clearSelection, selectAll, selectedRows, toggleSelected } =
-    useSelectedRows();
+  const { clearSelection, selectAll, selectedRows, toggleSelected } = useSelectedRows();
   const parentRef = useRef<HTMLDivElement>(null);
   const oldestEvent = events.at(-1);
   const {
@@ -117,8 +103,7 @@ export function LogViewer() {
   const baseTableWidth = table.getTotalSize();
   const tableWidth = Math.max(baseTableWidth, scrollAreaWidth);
   const stretchedColumnId =
-    visibleColumns.find((column) => column.id === "message")?.id ??
-    visibleColumns.at(-1)?.id;
+    visibleColumns.find((column) => column.id === "message")?.id ?? visibleColumns.at(-1)?.id;
   const extraTableWidth = Math.max(0, tableWidth - baseTableWidth);
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -137,7 +122,7 @@ export function LogViewer() {
 
   return (
     <section
-      className="grid grid-rows-[auto_1fr] rounded-lg h-full min-h-0 overflow-hidden atelier-card"
+      className="atelier-card grid h-full min-h-0 grid-rows-[auto_1fr] overflow-hidden rounded-lg"
       aria-label="Live logs"
     >
       <LogViewerToolbar
@@ -161,14 +146,10 @@ export function LogViewer() {
       <div
         ref={parentRef}
         onScroll={handleScroll}
-        className="relative bg-card/90 h-full min-h-0 overflow-x-hidden overflow-y-auto"
+        className="relative h-full min-h-0 overflow-x-hidden overflow-y-auto bg-card/90"
       >
         <div style={{ minWidth: `${tableWidth}px` }}>
-          <LogTableHeader
-            getRenderWidth={getRenderWidth}
-            table={table}
-            tableWidth={tableWidth}
-          />
+          <LogTableHeader getRenderWidth={getRenderWidth} table={table} tableWidth={tableWidth} />
           <VirtualLogRows
             getRenderWidth={getRenderWidth}
             rows={rows}

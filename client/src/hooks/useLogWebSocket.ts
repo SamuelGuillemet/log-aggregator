@@ -1,7 +1,6 @@
 import type { ClientMessage, ServerMessage } from "@log-aggregator/shared";
 import { useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
-
 import { LogWebSocketClient } from "@/services/websocketClient";
 import { useCompatibilityStore } from "@/stores/compatibilityStore";
 import { useLogStore } from "@/stores/logStore";
@@ -10,25 +9,22 @@ import { useSourceStore } from "@/stores/sourceStore";
 export function useLogWebSocket() {
   const clientRef = useRef<LogWebSocketClient | null>(null);
   const wasConnectedRef = useRef(false);
-  const { connected, filter, handleLogMessage, setConnected, sources } =
-    useLogStore(
-      useShallow((state) => ({
-        connected: state.connected,
-        filter: state.filter,
-        handleLogMessage: state.handleServerMessage,
-        setConnected: state.setConnected,
-        sources: state.sources,
-      })),
-    );
+  const { connected, filter, handleLogMessage, setConnected, sources } = useLogStore(
+    useShallow((state) => ({
+      connected: state.connected,
+      filter: state.filter,
+      handleLogMessage: state.handleServerMessage,
+      setConnected: state.setConnected,
+      sources: state.sources,
+    })),
+  );
   const { handleSourceMessage, selection } = useSourceStore(
     useShallow((state) => ({
       handleSourceMessage: state.handleServerMessage,
       selection: state.selection,
     })),
   );
-  const handleCompatibilityMessage = useCompatibilityStore(
-    (state) => state.handleServerMessage,
-  );
+  const handleCompatibilityMessage = useCompatibilityStore((state) => state.handleServerMessage);
 
   useEffect(() => {
     function handleMessage(message: ServerMessage) {
@@ -46,12 +42,7 @@ export function useLogWebSocket() {
       client.disconnect();
       clientRef.current = null;
     };
-  }, [
-    handleCompatibilityMessage,
-    handleLogMessage,
-    handleSourceMessage,
-    setConnected,
-  ]);
+  }, [handleCompatibilityMessage, handleLogMessage, handleSourceMessage, setConnected]);
 
   useEffect(() => {
     if (connected) {
@@ -63,12 +54,7 @@ export function useLogWebSocket() {
     if (connected && !wasConnectedRef.current && sources.length > 0) {
       const project = selection.project.trim();
 
-      if (
-        selection.environment &&
-        selection.country &&
-        project &&
-        selection.date
-      ) {
+      if (selection.environment && selection.country && project && selection.date) {
         clientRef.current?.send({
           payload: { ...selection, project },
           type: "subscribe",

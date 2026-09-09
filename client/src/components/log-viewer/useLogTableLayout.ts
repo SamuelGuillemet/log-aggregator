@@ -1,32 +1,16 @@
 import type { LogTableSchema } from "@log-aggregator/shared";
-import type {
-  ColumnOrderState,
-  ColumnSizingState,
-  VisibilityState,
-} from "@tanstack/react-table";
+import type { ColumnOrderState, ColumnSizingState, VisibilityState } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
+import { readStoredTableLayout, saveStoredTableLayout } from "./tableLayoutStorage";
 
-import {
-  readStoredTableLayout,
-  saveStoredTableLayout,
-} from "./tableLayoutStorage";
-
-export function useLogTableLayout(
-  schema: LogTableSchema,
-  schemaReady: boolean,
-) {
-  const schemaColumnIds = useMemo(
-    () => schema.columns.map((column) => column.id),
-    [schema],
-  );
+export function useLogTableLayout(schema: LogTableSchema, schemaReady: boolean) {
+  const schemaColumnIds = useMemo(() => schema.columns.map((column) => column.id), [schema]);
   const schemaById = useMemo(
     () => new Map(schema.columns.map((column) => [column.id, column])),
     [schema],
   );
   const [storedTableLayout] = useState(readStoredTableLayout);
-  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(
-    storedTableLayout.columnOrder,
-  );
+  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(storedTableLayout.columnOrder);
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(
     storedTableLayout.columnSizing,
   );
@@ -46,15 +30,11 @@ export function useLogTableLayout(
       return [...ordered, ...missing];
     });
     setColumnVisibility((currentVisibility) =>
-      Object.fromEntries(
-        schemaColumnIds.map((id) => [id, currentVisibility[id] ?? true]),
-      ),
+      Object.fromEntries(schemaColumnIds.map((id) => [id, currentVisibility[id] ?? true])),
     );
     setColumnSizing((currentSizing) =>
       Object.fromEntries(
-        Object.entries(currentSizing).filter(([id]) =>
-          schemaColumnIds.includes(id),
-        ),
+        Object.entries(currentSizing).filter(([id]) => schemaColumnIds.includes(id)),
       ),
     );
   }, [schemaColumnIds, schemaReady]);

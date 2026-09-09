@@ -4,10 +4,7 @@ import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repositoryRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-);
+const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const releaseDirectory = path.join(repositoryRoot, "release");
 const packageName = "log-aggregator-local";
 const stagingDirectory = path.join(releaseDirectory, packageName);
@@ -19,11 +16,9 @@ await rm(stagingDirectory, { force: true, recursive: true });
 await rm(artifactPath, { force: true });
 await mkdir(stagingDirectory, { recursive: true });
 
-await cp(
-  path.join(repositoryRoot, "server", "dist"),
-  path.join(stagingDirectory, "server"),
-  { recursive: true },
-);
+await cp(path.join(repositoryRoot, "server", "dist"), path.join(stagingDirectory, "server"), {
+  recursive: true,
+});
 
 await writePackageJson();
 await writeLauncherScripts();
@@ -51,9 +46,7 @@ function hasCommand(command) {
 }
 
 async function writePackageJson() {
-  const rootPackage = JSON.parse(
-    await readFile(path.join(repositoryRoot, "package.json"), "utf8"),
-  );
+  const rootPackage = JSON.parse(await readFile(path.join(repositoryRoot, "package.json"), "utf8"));
   const serverPackage = JSON.parse(
     await readFile(path.join(repositoryRoot, "server", "package.json"), "utf8"),
   );

@@ -67,9 +67,7 @@ export const useLogStore = create<LogStore>((set) => ({
       }
 
       if (message.type === "log") {
-        const existingIndex = state.events.findIndex(
-          (event) => event.id === message.payload.id,
-        );
+        const existingIndex = state.events.findIndex((event) => event.id === message.payload.id);
 
         if (existingIndex >= 0) {
           const events = [...state.events];
@@ -99,11 +97,9 @@ export const useLogStore = create<LogStore>((set) => ({
 
       return state;
     }),
-  setConnected: (connected) =>
-    set(connected ? { connected } : { clientId: undefined, connected }),
+  setConnected: (connected) => set(connected ? { connected } : { clientId: undefined, connected }),
   setError: (error) => set({ error }),
-  setFilter: (filter) =>
-    set((state) => ({ filter: { ...state.filter, ...filter } })),
+  setFilter: (filter) => set((state) => ({ filter: { ...state.filter, ...filter } })),
 }));
 
 export function toggleLevel(levels: LogLevel[], level: LogLevel): LogLevel[] {
@@ -122,9 +118,7 @@ function mergeEvents(
   }
 
   const existingIds = new Set(currentEvents.map((event) => event.id));
-  const newEvents = incomingEvents.filter(
-    (event) => !existingIds.has(event.id),
-  );
+  const newEvents = incomingEvents.filter((event) => !existingIds.has(event.id));
 
   if (newEvents.length === 0) {
     return currentEvents;
@@ -164,8 +158,7 @@ function mergeSortedDesc(left: LogEvent[], right: LogEvent[]): LogEvent[] {
 }
 
 function compareNewestFirst(left: LogEvent, right: LogEvent): number {
-  const timestampDiff =
-    Date.parse(right.timestamp) - Date.parse(left.timestamp);
+  const timestampDiff = Date.parse(right.timestamp) - Date.parse(left.timestamp);
 
   if (timestampDiff !== 0) {
     return timestampDiff;

@@ -1,10 +1,6 @@
 export type ApplicationTier = "back" | "front";
 
-export type ConnectionStatus =
-  | "connected"
-  | "disconnected"
-  | "watching"
-  | "error";
+export type ConnectionStatus = "connected" | "disconnected" | "watching" | "error";
 
 export interface EnvironmentMatrixEntry {
   environment: string;

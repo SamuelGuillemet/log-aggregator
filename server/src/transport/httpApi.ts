@@ -1,5 +1,4 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-
 import type { LogHistoryQuery } from "@log-aggregator/shared";
 import { readJsonBody, sendJson } from "../utils/json.js";
 import type { ClientSession } from "./clientSession.js";
@@ -15,10 +14,7 @@ export function routeHttpRequest(
   response: ServerResponse,
   clients: Map<string, ClientSession>,
 ): void {
-  const requestUrl = new URL(
-    request.url ?? "/",
-    `http://${request.headers.host ?? "localhost"}`,
-  );
+  const requestUrl = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
 
   console.info(`${request.method} ${requestUrl.pathname}`);
 
@@ -55,11 +51,7 @@ async function sendLogPage(
   try {
     const pageRequest = (await readJsonBody(request)) as LogHistoryQuery;
 
-    sendJson(
-      response,
-      client.service.getHistoryPage(pageRequest, client.filter),
-      CORS_HEADER,
-    );
+    sendJson(response, client.service.getHistoryPage(pageRequest, client.filter), CORS_HEADER);
   } catch {
     sendJson(response, { error: "Invalid log page request" }, CORS_HEADER, 400);
   }

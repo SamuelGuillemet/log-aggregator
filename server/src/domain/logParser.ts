@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-
 import type {
   LogEvent,
   LogLevel,
@@ -7,7 +6,6 @@ import type {
   LogTableColumn,
   LogTableSchema,
 } from "@log-aggregator/shared";
-
 import type { ParserConfig } from "../config.js";
 
 const baseParserFields = new Set(["timestamp", "level", "message"]);
@@ -28,11 +26,7 @@ export class LogLineParser {
     this.linePattern = new RegExp(config.linePattern);
   }
 
-  parseLine(
-    line: string,
-    source: LogSource,
-    filePath: string,
-  ): LogEvent | undefined {
+  parseLine(line: string, source: LogSource, filePath: string): LogEvent | undefined {
     const match = this.linePattern.exec(line);
 
     if (!match?.groups) {
@@ -95,9 +89,7 @@ export class LogLineParser {
   }
 
   private extraFieldIds(): string[] {
-    return Object.keys(this.config.groups).filter(
-      (field) => !baseParserFields.has(field),
-    );
+    return Object.keys(this.config.groups).filter((field) => !baseParserFields.has(field));
   }
 }
 
@@ -133,7 +125,5 @@ function toLabel(field: string): string {
 }
 
 function formatLabelWord(word: string): string {
-  return word.toLowerCase() === "id"
-    ? "ID"
-    : `${word[0].toUpperCase()}${word.slice(1)}`;
+  return word.toLowerCase() === "id" ? "ID" : `${word[0].toUpperCase()}${word.slice(1)}`;
 }

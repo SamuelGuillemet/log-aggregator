@@ -1,8 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-
-import type { EnvironmentMatrixEntry, PROTOCOL_VERSION as SHARED_PROTOCOL_VERSION } from "@log-aggregator/shared";
+import type {
+  EnvironmentMatrixEntry,
+  PROTOCOL_VERSION as SHARED_PROTOCOL_VERSION,
+} from "@log-aggregator/shared";
 
 /**
  * Mirrors the latest entry of shared/src/version.ts's COMPATIBILITY_TABLE.
@@ -28,12 +30,8 @@ const defaultMatrixFile = resolve(serverRoot, "config/environment-matrix.json");
 const defaultParserFile = resolve(serverRoot, "config/parser.json");
 
 export async function loadConfig(): Promise<ServerConfig> {
-  const matrixFile = resolve(
-    process.env.LOG_AGGREGATOR_MATRIX_FILE ?? defaultMatrixFile,
-  );
-  const parserFile = resolve(
-    process.env.LOG_AGGREGATOR_PARSER_FILE ?? defaultParserFile,
-  );
+  const matrixFile = resolve(process.env.LOG_AGGREGATOR_MATRIX_FILE ?? defaultMatrixFile);
+  const parserFile = resolve(process.env.LOG_AGGREGATOR_PARSER_FILE ?? defaultParserFile);
 
   return {
     matrix: await readJsonFile<EnvironmentMatrixEntry[]>(matrixFile),

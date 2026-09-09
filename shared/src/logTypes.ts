@@ -1,14 +1,7 @@
 import type { LogSource } from "./sourceTypes.js";
 import type { LogTableSchema } from "./tableTypes.js";
 
-export type LogLevel =
-  | "TRACE"
-  | "DEBUG"
-  | "INFO"
-  | "WARN"
-  | "ERROR"
-  | "FATAL"
-  | "UNKNOWN";
+export type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "UNKNOWN";
 
 export interface LogEvent {
   id: string;

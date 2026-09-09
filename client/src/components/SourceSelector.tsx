@@ -6,13 +6,7 @@ import { useSourceStore } from "@/stores/sourceStore";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 interface SourceSelectorProps {
   sendMessage: (message: ClientMessage) => void;
@@ -36,11 +30,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
   const project = selection.project.trim();
   const streaming = sources.length > 0;
   const canStartStream = Boolean(
-    connected &&
-      selection.environment &&
-      selection.country &&
-      project &&
-      selection.date,
+    connected && selection.environment && selection.country && project && selection.date,
   );
 
   function updateSelection(nextSelection: Partial<SourceSelection>) {
@@ -63,24 +53,15 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
   }
 
   return (
-    <details
-      className="group p-2 rounded-lg atelier-card"
-      aria-label="Source selection"
-      open
-    >
-      <summary className="flex items-center gap-2 text-primary cursor-pointer select-none list-none atelier-section-title">
-        <ChevronDown
-          size={16}
-          className="group-open:rotate-180 transition-transform"
-        />
+    <details className="group atelier-card rounded-lg p-2" aria-label="Source selection" open>
+      <summary className="atelier-section-title flex cursor-pointer list-none items-center gap-2 text-primary select-none">
+        <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
         <span>Source Selection</span>
       </summary>
-      <div className="gap-2 grid min-[1100px]:grid-cols-[minmax(280px,0.85fr)_minmax(420px,1.15fr)] p-2">
-        <div className="gap-2 grid grid-cols-1 min-[760px]:grid-cols-2">
-          <div className="min-[760px]:col-span-2 text-primary atelier-section-title">
-            Location
-          </div>
-          <Label className="gap-1 grid text-muted-foreground text-xs">
+      <div className="grid gap-2 p-2 min-[1100px]:grid-cols-[minmax(280px,0.85fr)_minmax(420px,1.15fr)]">
+        <div className="grid grid-cols-1 gap-2 min-[760px]:grid-cols-2">
+          <div className="atelier-section-title text-primary min-[760px]:col-span-2">Location</div>
+          <Label className="grid gap-1 text-xs text-muted-foreground">
             <span>Environment</span>
             <Select
               disabled={streaming}
@@ -99,7 +80,7 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
               </SelectContent>
             </Select>
           </Label>
-          <Label className="gap-1 grid text-muted-foreground text-xs">
+          <Label className="grid gap-1 text-xs text-muted-foreground">
             <span>Country</span>
             <Select
               disabled={streaming}
@@ -119,11 +100,11 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
             </Select>
           </Label>
         </div>
-        <div className="items-end gap-2 grid grid-cols-1 min-[760px]:grid-cols-[minmax(180px,1fr)_150px_140px_auto]">
-          <div className="min-[760px]:col-span-4 text-primary atelier-section-title">
+        <div className="grid grid-cols-1 items-end gap-2 min-[760px]:grid-cols-[minmax(180px,1fr)_150px_140px_auto]">
+          <div className="atelier-section-title text-primary min-[760px]:col-span-4">
             Project stream
           </div>
-          <Label className="gap-1 grid text-muted-foreground text-xs">
+          <Label className="grid gap-1 text-xs text-muted-foreground">
             <span>Project</span>
             <Input
               aria-label="Project name"
@@ -132,31 +113,25 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
               placeholder="Project name"
               spellCheck={false}
               value={selection.project}
-              onChange={(event) =>
-                updateSelection({ project: event.currentTarget.value })
-              }
+              onChange={(event) => updateSelection({ project: event.currentTarget.value })}
             />
           </Label>
-          <Label className="gap-1 grid text-muted-foreground text-xs">
+          <Label className="grid gap-1 text-xs text-muted-foreground">
             <span>Date</span>
             <Input
               aria-label="Log date"
               disabled={streaming}
               type="date"
               value={selection.date}
-              onChange={(event) =>
-                updateSelection({ date: event.currentTarget.value })
-              }
+              onChange={(event) => updateSelection({ date: event.currentTarget.value })}
             />
           </Label>
-          <Label className="gap-1 grid text-muted-foreground text-xs">
+          <Label className="grid gap-1 text-xs text-muted-foreground">
             <span>Side</span>
             <Select
               disabled={streaming}
               value={selection.tier}
-              onValueChange={(tier) =>
-                updateSelection({ tier: tier as SourceSelection["tier"] })
-              }
+              onValueChange={(tier) => updateSelection({ tier: tier as SourceSelection["tier"] })}
             >
               <SelectTrigger aria-label="Application side">
                 <SelectValue placeholder="Side" />

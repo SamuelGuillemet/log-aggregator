@@ -3,22 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.14.0",
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm --parallel --stream -r run dev",
     "perf:logs": "node scripts/dev/generate-perf-logs.mjs",
     "perf:logs:live": "node scripts/dev/generate-live-perf-logs.mjs",
-    "lint": "biome check .",
-    "format": "biome format --write .",
-    "check": "biome check --write .",
+    "lint": "oxlint --fix .",
+    "format": "oxfmt --write .",
+    "check": "pnpm format && pnpm lint",
     "package": "node scripts/packager.mjs",
     "doctor": "npx react-doctor@latest",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.2",
-    "react-doctor": "^0.8.1",
+    "oxfmt": "^0.67.0",
+    "oxlint": "^1.82.0",
+    "react-doctor": "^0.8.3",
     "typescript": "^7.0.2"
-  }
+  },
+  "packageManager": "pnpm@10.14.0"
 }

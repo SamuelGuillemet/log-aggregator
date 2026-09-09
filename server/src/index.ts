@@ -1,5 +1,4 @@
 import { createServer } from "node:http";
-
 import { loadConfig } from "./config.js";
 import { getSourceOptions } from "./domain/sourceResolver.js";
 import { routeHttpRequest } from "./transport/httpApi.js";

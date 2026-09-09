@@ -1,10 +1,7 @@
 import type { LogHistoryQuery, LogPage } from "@log-aggregator/shared";
 import { API_URL } from "@/constants/url";
 
-export async function fetchLogPage(
-  clientId: string,
-  query: LogHistoryQuery,
-): Promise<LogPage> {
+export async function fetchLogPage(clientId: string, query: LogHistoryQuery): Promise<LogPage> {
   const response = await fetch(`${API_URL}/api/logs`, {
     body: JSON.stringify(query),
     headers: {

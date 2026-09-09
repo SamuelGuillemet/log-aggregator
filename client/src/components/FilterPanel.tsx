@@ -1,13 +1,5 @@
 import type { LogFilter } from "@log-aggregator/shared";
-import {
-  CaseSensitive,
-  ChevronDown,
-  Regex,
-  Save,
-  Search,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { CaseSensitive, ChevronDown, Regex, Save, Search, Star, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { LOG_LEVELS } from "@/constants/log-levels";
@@ -16,11 +8,7 @@ import { useFavoritesStore } from "@/stores/favoritesStore";
 import { toggleLevel, useLogStore } from "@/stores/logStore";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Input } from "./ui/input";
 
 function parseTerms(value: string): string[] {
@@ -54,15 +42,9 @@ export function FilterPanel() {
   );
   const [favoriteName, setFavoriteName] = useState("");
   const [favoritesOpen, setFavoritesOpen] = useState(false);
-  const [includeAnyInput, setIncludeAnyInput] = useState(
-    filter.includeAny.join(", "),
-  );
-  const [includeAllInput, setIncludeAllInput] = useState(
-    filter.includeAll.join(", "),
-  );
-  const [excludeAnyInput, setExcludeAnyInput] = useState(
-    filter.excludeAny.join(", "),
-  );
+  const [includeAnyInput, setIncludeAnyInput] = useState(filter.includeAny.join(", "));
+  const [includeAllInput, setIncludeAllInput] = useState(filter.includeAll.join(", "));
+  const [excludeAnyInput, setExcludeAnyInput] = useState(filter.excludeAny.join(", "));
 
   useEffect(() => {
     if (!sameTerms(parseTerms(includeAnyInput), filter.includeAny)) {
@@ -99,39 +81,22 @@ export function FilterPanel() {
   }
 
   return (
-    <details
-      className="group p-2 rounded-lg atelier-card"
-      aria-label="Log filters"
-      open
-    >
-      <summary className="flex items-center gap-2 text-primary cursor-pointer select-none list-none atelier-section-title">
-        <ChevronDown
-          size={16}
-          className="group-open:rotate-180 transition-transform"
-        />
+    <details className="group atelier-card rounded-lg p-2" aria-label="Log filters" open>
+      <summary className="atelier-section-title flex cursor-pointer list-none items-center gap-2 text-primary select-none">
+        <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
         <span>Filters</span>
-        <div className="flex items-center gap-2 ml-auto">
-          <DropdownMenu
-            modal={false}
-            open={favoritesOpen}
-            onOpenChange={setFavoritesOpen}
-          >
+        <div className="ml-auto flex items-center gap-2">
+          <DropdownMenu modal={false} open={favoritesOpen} onOpenChange={setFavoritesOpen}>
             <DropdownMenuTrigger
               render={
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(event) => event.preventDefault()}
-                />
+                <Button variant="outline" size="sm" onClick={(event) => event.preventDefault()} />
               }
             >
               <Star size={16} />
               Favorites
-              {favorites.length > 0 && (
-                <Badge variant="secondary">{favorites.length}</Badge>
-              )}
+              {favorites.length > 0 && <Badge variant="secondary">{favorites.length}</Badge>}
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="space-y-2 p-2 w-72">
+            <DropdownMenuContent align="end" className="w-72 space-y-2 p-2">
               <div className="flex items-center gap-1.5">
                 <Input
                   className="flex-1"
@@ -152,19 +117,17 @@ export function FilterPanel() {
                 </Button>
               </div>
               {favorites.length === 0 ? (
-                <p className="px-1 py-1 text-muted-foreground text-xs">
-                  No saved favorites yet.
-                </p>
+                <p className="px-1 py-1 text-xs text-muted-foreground">No saved favorites yet.</p>
               ) : (
-                <div className="space-y-1 max-h-64 overflow-auto">
+                <div className="max-h-64 space-y-1 overflow-auto">
                   {favorites.map((favorite) => (
                     <div
                       key={favorite.id}
-                      className="flex items-center gap-1 bg-muted/40 rounded-md"
+                      className="flex items-center gap-1 rounded-md bg-muted/40"
                     >
                       <Button
                         variant="ghost"
-                        className="flex-1 justify-start min-w-0"
+                        className="min-w-0 flex-1 justify-start"
                         type="button"
                         onClick={() => handleApplyFavorite(favorite.filter)}
                         title={`Apply favorite "${favorite.name}"`}
@@ -188,17 +151,17 @@ export function FilterPanel() {
           </DropdownMenu>
         </div>
       </summary>
-      <div className="flex max-md:flex-col flex-wrap items-center max-md:items-stretch gap-2 p-2">
-        <label className="flex items-center gap-1.5 min-w-[min(420px,100%)]">
+      <div className="flex flex-wrap items-center gap-2 p-2 max-md:flex-col max-md:items-stretch">
+        <label className="flex min-w-[min(420px,100%)] items-center gap-1.5">
           <Search size={16} />
           <Input
-            className="flex-1 min-w-48"
+            className="min-w-48 flex-1"
             value={filter.text}
             onChange={(event) => setFilter({ text: event.target.value })}
             placeholder="Filter text"
           />
         </label>
-        <div className="flex gap-1.5 ml-1.5">
+        <div className="ml-1.5 flex gap-1.5">
           <Button
             variant={filter.regex ? "secondary" : "outline"}
             size="icon"
@@ -218,11 +181,7 @@ export function FilterPanel() {
             <CaseSensitive size={16} />
           </Button>
         </div>
-        <div
-          className="flex flex-wrap gap-1.5"
-          role="group"
-          aria-label="Log levels"
-        >
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Log levels">
           {LOG_LEVELS.map((level) => (
             <Button
               key={level}
@@ -249,20 +208,16 @@ export function FilterPanel() {
                   level === "TRACE" &&
                   "border-l-4 border-l-[#9ca3af]",
               )}
-              onClick={() =>
-                setFilter({ levels: toggleLevel(filter.levels, level) })
-              }
+              onClick={() => setFilter({ levels: toggleLevel(filter.levels, level) })}
             >
               {level}
             </Button>
           ))}
         </div>
       </div>
-      <div className="flex max-md:flex-col flex-wrap items-center max-md:items-stretch gap-2 p-2 pt-0">
-        <label className="flex flex-1 items-center gap-1.5 min-w-[min(240px,100%)]">
-          <span className="text-muted-foreground text-xs whitespace-nowrap">
-            Has any
-          </span>
+      <div className="flex flex-wrap items-center gap-2 p-2 pt-0 max-md:flex-col max-md:items-stretch">
+        <label className="flex min-w-[min(240px,100%)] flex-1 items-center gap-1.5">
+          <span className="text-xs whitespace-nowrap text-muted-foreground">Has any</span>
           <Input
             className="flex-1"
             value={includeAnyInput}
@@ -275,10 +230,8 @@ export function FilterPanel() {
             placeholder="term A, term B"
           />
         </label>
-        <label className="flex flex-1 items-center gap-1.5 min-w-[min(240px,100%)]">
-          <span className="text-muted-foreground text-xs whitespace-nowrap">
-            Has all
-          </span>
+        <label className="flex min-w-[min(240px,100%)] flex-1 items-center gap-1.5">
+          <span className="text-xs whitespace-nowrap text-muted-foreground">Has all</span>
           <Input
             className="flex-1"
             value={includeAllInput}
@@ -291,10 +244,8 @@ export function FilterPanel() {
             placeholder="term A, term B"
           />
         </label>
-        <label className="flex flex-1 items-center gap-1.5 min-w-[min(240px,100%)]">
-          <span className="text-muted-foreground text-xs whitespace-nowrap">
-            Has not
-          </span>
+        <label className="flex min-w-[min(240px,100%)] flex-1 items-center gap-1.5">
+          <span className="text-xs whitespace-nowrap text-muted-foreground">Has not</span>
           <Input
             className="flex-1"
             value={excludeAnyInput}

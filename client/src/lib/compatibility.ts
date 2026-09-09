@@ -4,11 +4,7 @@ import {
   PROTOCOL_VERSION,
 } from "@log-aggregator/shared";
 
-export type CompatibilityStatus =
-  | "compatible"
-  | "server-outdated"
-  | "server-newer"
-  | "unknown";
+export type CompatibilityStatus = "compatible" | "server-outdated" | "server-newer" | "unknown";
 
 export interface CompatibilityResult {
   status: CompatibilityStatus;

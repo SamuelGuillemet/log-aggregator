@@ -1,6 +1,5 @@
 import { readdir } from "node:fs/promises";
 import { basename, isAbsolute, join, relative, resolve } from "node:path";
-
 import type {
   EnvironmentMatrixEntry,
   LogSource,
@@ -16,9 +15,7 @@ export interface ActiveLogFile {
 const tiers: SourceOptions["tiers"] = ["back", "front"];
 const logDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 
-export function getSourceOptions(
-  matrix: EnvironmentMatrixEntry[],
-): SourceOptions {
+export function getSourceOptions(matrix: EnvironmentMatrixEntry[]): SourceOptions {
   const countriesByEnvironment: Record<string, string[]> = {};
 
   for (const entry of matrix) {
@@ -38,9 +35,9 @@ export function getSourceOptions(
           [...countries].toSorted((left, right) => left.localeCompare(right)),
         ]),
     ),
-    environments: [
-      ...new Set(matrix.map((entry) => entry.environment)),
-    ].toSorted((left, right) => left.localeCompare(right)),
+    environments: [...new Set(matrix.map((entry) => entry.environment))].toSorted((left, right) =>
+      left.localeCompare(right),
+    ),
     tiers,
   };
 }
@@ -56,21 +53,13 @@ export function resolveSources(
   }
 
   return matrix.flatMap((entry) => {
-    if (
-      entry.environment !== selection.environment ||
-      entry.country !== selection.country
-    ) {
+    if (entry.environment !== selection.environment || entry.country !== selection.country) {
       return [];
     }
 
     return entry.shares.map((share, shareIndex) => {
       const sharePath = resolveSharePath(share);
-      const directory = join(
-        sharePath,
-        "Java",
-        `apache-tomcat-${selection.tier}`,
-        "logs",
-      );
+      const directory = join(sharePath, "Java", `apache-tomcat-${selection.tier}`, "logs");
 
       return {
         country: entry.country,
@@ -97,27 +86,17 @@ export async function listMatchingSourceFiles(
     .map((entry) => ({ filePath: join(source.directory, entry), source }));
 }
 
-export function findSourceForFile(
-  filePath: string,
-  sources: LogSource[],
-): LogSource | undefined {
+export function findSourceForFile(filePath: string, sources: LogSource[]): LogSource | undefined {
   const absoluteFilePath = resolve(filePath);
 
   return sources.find((source) => {
     const relativePath = relative(source.directory, absoluteFilePath);
 
-    return Boolean(
-      relativePath &&
-        !relativePath.startsWith("..") &&
-        !isAbsolute(relativePath),
-    );
+    return Boolean(relativePath && !relativePath.startsWith("..") && !isAbsolute(relativePath));
   });
 }
 
-export function matchesSelectedLogFile(
-  filePath: string,
-  selection: SourceSelection,
-): boolean {
+export function matchesSelectedLogFile(filePath: string, selection: SourceSelection): boolean {
   const project = selection.project.trim();
 
   if (!project || !logDatePattern.test(selection.date)) {
@@ -142,14 +121,7 @@ function buildSourceId(
   shareIndex: number,
   tier: SourceSelection["tier"],
 ): string {
-  return [
-    entry.environment,
-    entry.country,
-    entry.code,
-    project,
-    String(shareIndex),
-    tier,
-  ]
+  return [entry.environment, entry.country, entry.code, project, String(shareIndex), tier]
     .map(slug)
     .join("-");
 }

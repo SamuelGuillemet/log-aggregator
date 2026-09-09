@@ -25,9 +25,7 @@ export class LogWebSocketClient {
       this.reconnectDelayMs = 500;
       this.onStatus(true);
     });
-    socket.addEventListener("message", (event) =>
-      this.handleMessage(event.data),
-    );
+    socket.addEventListener("message", (event) => this.handleMessage(event.data));
     socket.addEventListener("close", () => this.scheduleReconnect(socket));
     socket.addEventListener("error", () => socket.close());
   }

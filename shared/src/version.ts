@@ -23,5 +23,4 @@ export const COMPATIBILITY_TABLE: readonly CompatibilityEntry[] = [
 ];
 
 /** Oldest backend protocol version this frontend build still talks to. */
-export const MIN_SUPPORTED_PROTOCOL_VERSION =
-  COMPATIBILITY_TABLE[0].protocolVersion;
+export const MIN_SUPPORTED_PROTOCOL_VERSION = COMPATIBILITY_TABLE[0].protocolVersion;

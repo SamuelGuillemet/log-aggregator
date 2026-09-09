@@ -1,18 +1,5 @@
-import type {
-  LogEvent,
-  LogFilter,
-  LogHistoryQuery,
-  LogPage,
-} from "@log-aggregator/shared";
-import {
-  type RefObject,
-  type UIEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-
+import type { LogEvent, LogFilter, LogHistoryQuery, LogPage } from "@log-aggregator/shared";
+import { type RefObject, type UIEvent, useCallback, useEffect, useRef, useState } from "react";
 import { fetchLogPage } from "@/services/logApiClient";
 
 const pageSize = 200;
@@ -115,8 +102,7 @@ export function useLogPageLoader({
   const handleScroll = useCallback(
     (event: UIEvent<HTMLDivElement>) => {
       const target = event.currentTarget;
-      const distanceToBottom =
-        target.scrollHeight - target.scrollTop - target.clientHeight;
+      const distanceToBottom = target.scrollHeight - target.scrollTop - target.clientHeight;
 
       if (distanceToBottom > 360) {
         bottomLoadArmedRef.current = true;

@@ -7,7 +7,6 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit --pretty false",
-
     "dev": "tsx watch --conditions=development src/index.ts",
     "start": "node dist/index.js"
   },

@@ -1,8 +1,6 @@
 import { type RefObject, useEffect, useState } from "react";
 
-export function useScrollAreaWidth(
-  parentRef: RefObject<HTMLDivElement | null>,
-): number {
+export function useScrollAreaWidth(parentRef: RefObject<HTMLDivElement | null>): number {
   const [scrollAreaWidth, setScrollAreaWidth] = useState(0);
 
   useEffect(() => {

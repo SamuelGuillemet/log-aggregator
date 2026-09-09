@@ -1,9 +1,7 @@
 import { useState } from "react";
 
 export function useSelectedRows() {
-  const [selectedRows, setSelectedRows] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(() => new Set());
 
   function toggleSelected(rowId: string) {
     setSelectedRows((currentRows) => {

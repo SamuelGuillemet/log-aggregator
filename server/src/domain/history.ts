@@ -47,10 +47,7 @@ export class LogHistoryBuffer {
     this.isSorted = true;
   }
 
-  getPage(
-    query: LogHistoryQuery | undefined,
-    filter: Partial<LogFilter> | undefined,
-  ): LogPage {
+  getPage(query: LogHistoryQuery | undefined, filter: Partial<LogFilter> | undefined): LogPage {
     this.ensureSorted();
     const matchesEvent = createEventMatcher(filter);
     const events = this.events.filter(matchesEvent);
@@ -60,9 +57,7 @@ export class LogHistoryBuffer {
 
     if (query?.type === "cursor") {
       const limit = clampLimit(query.limit);
-      const cursorIndex = events.findIndex(
-        (event) => event.id === query.beforeCursor.id,
-      );
+      const cursorIndex = events.findIndex((event) => event.id === query.beforeCursor.id);
 
       if (cursorIndex >= 0) {
         // Return events after the cursor.
@@ -160,9 +155,7 @@ export function createEventMatcher(
     return () => true;
   }
 
-  const matchesText = hasTextFilter
-    ? createTextMatcher(normalizedFilter)
-    : undefined;
+  const matchesText = hasTextFilter ? createTextMatcher(normalizedFilter) : undefined;
   const matchesStructured = hasStructuredFilter
     ? createStructuredMatcher(normalizedFilter)
     : undefined;
@@ -196,11 +189,8 @@ function buildFullText(event: LogEvent): string {
   ].join(" ");
 }
 
-function createStructuredMatcher(
-  filter: LogFilter,
-): (value: string) => boolean {
-  const normalize = (value: string) =>
-    filter.caseSensitive ? value : value.toLowerCase();
+function createStructuredMatcher(filter: LogFilter): (value: string) => boolean {
+  const normalize = (value: string) => (filter.caseSensitive ? value : value.toLowerCase());
   const includeAny = filter.includeAny.map(normalize).filter(Boolean);
   const includeAll = filter.includeAll.map(normalize).filter(Boolean);
   const excludeAny = filter.excludeAny.map(normalize).filter(Boolean);
@@ -208,17 +198,11 @@ function createStructuredMatcher(
   return (rawValue) => {
     const value = normalize(rawValue);
 
-    if (
-      includeAny.length > 0 &&
-      !includeAny.some((term) => value.includes(term))
-    ) {
+    if (includeAny.length > 0 && !includeAny.some((term) => value.includes(term))) {
       return false;
     }
 
-    if (
-      includeAll.length > 0 &&
-      !includeAll.every((term) => value.includes(term))
-    ) {
+    if (includeAll.length > 0 && !includeAll.every((term) => value.includes(term))) {
       return false;
     }
 
@@ -238,8 +222,7 @@ function createTextMatcher(filter: LogFilter): (value: string) => boolean {
 
   const text = filter.caseSensitive ? filter.text : filter.text.toLowerCase();
 
-  return (value) =>
-    (filter.caseSensitive ? value : value.toLowerCase()).includes(text);
+  return (value) => (filter.caseSensitive ? value : value.toLowerCase()).includes(text);
 }
 
 function clampLimit(limit: number | undefined): number {

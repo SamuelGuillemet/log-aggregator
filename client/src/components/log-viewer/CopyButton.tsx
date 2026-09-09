@@ -1,6 +1,5 @@
 import { Check, Clipboard } from "lucide-react";
 import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -40,13 +39,13 @@ export function CopyButton({
       title={copied ? "Copied!" : title}
       className={cn(
         "transition-all",
-        copied && "bg-green-100 border-green-500 text-green-700",
+        copied && "border-green-500 bg-green-100 text-green-700",
         className,
       )}
     >
       {copied ? (
         <>
-          <Check size={15} className="animate-in duration-200 zoom-in-50" />
+          <Check size={15} className="animate-in zoom-in-50 duration-200" />
           {!isIconOnly && <span>Copied!</span>}
         </>
       ) : (

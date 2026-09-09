@@ -1,10 +1,6 @@
 import type { ServerMessage } from "@log-aggregator/shared";
 import { create } from "zustand";
-
-import {
-  type CompatibilityResult,
-  resolveCompatibility,
-} from "@/lib/compatibility";
+import { type CompatibilityResult, resolveCompatibility } from "@/lib/compatibility";
 
 interface CompatibilityStore extends CompatibilityResult {
   handleServerMessage: (message: ServerMessage) => void;

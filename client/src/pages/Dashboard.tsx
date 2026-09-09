@@ -25,14 +25,12 @@ export function Dashboard() {
   );
 
   return (
-    <main className="gap-4 grid grid-rows-[auto_auto_auto_auto_minmax(0,1fr)] p-3 md:p-5 h-dvh min-h-0 overflow-hidden atelier-page-enter">
-      <header className="flex md:flex-row flex-col md:justify-between items-stretch md:items-end gap-4">
-        <h1 className="m-0 mb-2 font-heading text-2xl md:text-3xl leading-tight">
-          Log Aggregator
-        </h1>
+    <main className="atelier-page-enter grid h-dvh min-h-0 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)] gap-4 overflow-hidden p-3 md:p-5">
+      <header className="flex flex-col items-stretch gap-4 md:flex-row md:items-end md:justify-between">
+        <h1 className="m-0 mb-2 font-heading text-2xl leading-tight md:text-3xl">Log Aggregator</h1>
         <Badge
           className={cn(
-            "gap-2 bg-secondary px-3 border border-muted-foreground/30 rounded-[7px] min-h-9 text-[#7b3025]",
+            "min-h-9 gap-2 rounded-[7px] border border-muted-foreground/30 bg-secondary px-3 text-[#7b3025]",
             connected && "text-primary",
           )}
         >
@@ -50,10 +48,10 @@ export function Dashboard() {
           {compatibilityMessage ? (
             <div
               className={cn(
-                "px-4 py-3 border rounded-lg",
+                "rounded-lg border px-4 py-3",
                 compatibilityStatus === "server-outdated"
-                  ? "bg-[#fff1eb] border-[#e0a18e] text-[#7b3025]"
-                  : "bg-[#fff8e8] border-[#be8b2f] text-[#7a5a12]",
+                  ? "border-[#e0a18e] bg-[#fff1eb] text-[#7b3025]"
+                  : "border-[#be8b2f] bg-[#fff8e8] text-[#7a5a12]",
               )}
               role="status"
             >
@@ -63,7 +61,7 @@ export function Dashboard() {
 
           {error ? (
             <div
-              className="bg-[#fff1eb] px-4 py-3 border border-[#e0a18e] rounded-lg text-[#7b3025]"
+              className="rounded-lg border border-[#e0a18e] bg-[#fff1eb] px-4 py-3 text-[#7b3025]"
               role="status"
             >
               {error}

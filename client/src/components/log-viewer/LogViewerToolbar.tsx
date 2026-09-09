@@ -1,9 +1,5 @@
 import type { LogEvent, LogTableColumn } from "@log-aggregator/shared";
-import type {
-  ColumnOrderState,
-  Table,
-  VisibilityState,
-} from "@tanstack/react-table";
+import type { ColumnOrderState, Table, VisibilityState } from "@tanstack/react-table";
 import {
   CheckSquare,
   ChevronLeft,
@@ -15,14 +11,9 @@ import {
   EyeOff,
   X,
 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CopyButton } from "./CopyButton";
 
 interface LogViewerToolbarProps {
@@ -67,9 +58,9 @@ export function LogViewerToolbar({
   }
 
   return (
-    <div className="flex max-md:flex-col justify-between gap-2 bg-card/75 p-2 border-[#b8b1a2] border-b">
+    <div className="flex justify-between gap-2 border-b border-[#b8b1a2] bg-card/75 p-2 max-md:flex-col">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="mr-8 text-primary atelier-section-title">
+        <div className="atelier-section-title mr-8 text-primary">
           <span>{events.length.toLocaleString()} events buffered</span>
         </div>
         <Button
@@ -102,7 +93,7 @@ export function LogViewerToolbar({
           </>
         )}
       </div>
-      <div className="flex max-sm:flex-col items-center max-sm:items-stretch gap-2">
+      <div className="flex items-center gap-2 max-sm:flex-col max-sm:items-stretch">
         <Input
           aria-label="Load logs to timestamp"
           type="datetime-local"
@@ -134,7 +125,7 @@ export function LogViewerToolbar({
             <Columns3 size={16} />
             Columns
           </PopoverTrigger>
-          <PopoverContent className="w-80 max-h-80 overflow-auto">
+          <PopoverContent className="max-h-80 w-80 overflow-auto">
             <div className="space-y-1">
               {table.getAllLeafColumns().map((column) => {
                 const columnSchema = schemaById.get(column.id);
@@ -144,20 +135,17 @@ export function LogViewerToolbar({
                 return (
                   <div
                     key={column.id}
-                    className="items-center gap-1 grid grid-cols-[1fr_auto_auto_auto] py-1 text-sm"
+                    className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-1 py-1 text-sm"
                   >
-                    <label className="flex items-center gap-2 min-w-0">
+                    <label className="flex min-w-0 items-center gap-2">
                       <input
+                        aria-label={`Toggle visibility for column ${columnSchema?.label ?? column.id}`}
                         type="checkbox"
                         checked={visible}
                         disabled={!column.getCanHide()}
-                        onChange={(event) =>
-                          column.toggleVisibility(event.currentTarget.checked)
-                        }
+                        onChange={(event) => column.toggleVisibility(event.currentTarget.checked)}
                       />
-                      <span className="truncate">
-                        {columnSchema?.label ?? column.id}
-                      </span>
+                      <span className="truncate">{columnSchema?.label ?? column.id}</span>
                     </label>
                     {visible ? <Eye size={15} /> : <EyeOff size={15} />}
                     <Button
