@@ -15,7 +15,19 @@ import { useScrollAreaWidth } from "./log-viewer/useScrollAreaWidth";
 import { useSelectedRows } from "./log-viewer/useSelectedRows";
 import { VirtualLogRows } from "./log-viewer/VirtualLogRows";
 
-export function LogViewer() {
+interface LogViewerProps {
+  canControlStreaming: boolean;
+  connected: boolean;
+  streamingPaused: boolean;
+  toggleStreaming: () => void;
+}
+
+export function LogViewer({
+  canControlStreaming,
+  connected,
+  streamingPaused,
+  toggleStreaming,
+}: LogViewerProps) {
   const { appendLogPage, clientId, events, filter, hasMore, schema, setError } = useLogStore(
     useShallow((state) => ({
       appendLogPage: state.appendLogPage,
@@ -139,8 +151,11 @@ export function LogViewer() {
         selectAllEvents={selectAllEvents}
         selectedRows={selectedRows}
         setUntilInput={setUntilInput}
+        streamingPaused={streamingPaused}
         table={table}
+        toggleStreaming={toggleStreaming}
         untilInput={untilInput}
+        streamControlDisabled={!connected || !canControlStreaming}
       />
 
       <div

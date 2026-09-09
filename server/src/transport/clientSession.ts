@@ -9,6 +9,7 @@ export interface ClientSession {
   id: string;
   filter: LogFilter;
   filterMatcher: (event: LogEvent) => boolean;
+  streamingPaused: boolean;
   service: LogAggregatorService;
   stopStreaming: () => Promise<void>;
   socket: WebSocket;
@@ -22,6 +23,7 @@ export function createClientSession(
     id: randomUUID(),
     filter: defaultLogFilter,
     filterMatcher: createEventMatcher(defaultLogFilter),
+    streamingPaused: false,
     service,
     socket,
     stopStreaming: async () => {
@@ -32,7 +34,7 @@ export function createClientSession(
 
 export function bindSessionStreaming(session: ClientSession): void {
   const unsubscribeLog = session.service.onLog((event) => {
-    if (session.filterMatcher(event)) {
+    if (!session.streamingPaused && session.filterMatcher(event)) {
       sendMessage(session.socket, { payload: event, type: "log" });
     }
   });
@@ -86,6 +88,13 @@ export async function handleClientMessage(
         payload: { timestamp: new Date().toISOString() },
         type: "pong",
       });
+    },
+    pause: () => {
+      session.streamingPaused = true;
+    },
+    resume: () => {
+      session.streamingPaused = false;
+      sendSnapshot(session);
     },
     subscribe: async () => {
       if (message.type !== "subscribe") {

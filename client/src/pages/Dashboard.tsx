@@ -10,19 +10,21 @@ import { useCompatibilityStore } from "@/stores/compatibilityStore";
 import { useLogStore } from "@/stores/logStore";
 
 export function Dashboard() {
-  const { sendMessage } = useLogWebSocket();
+  const { sendMessage, streamingPaused, toggleStreaming } = useLogWebSocket();
   const { connected, error } = useLogStore(
     useShallow((state) => ({
       connected: state.connected,
       error: state.error,
     })),
   );
-  const { compatibilityMessage, compatibilityStatus } = useCompatibilityStore(
-    useShallow((state) => ({
-      compatibilityMessage: state.message,
-      compatibilityStatus: state.status,
-    })),
-  );
+  const { compatibilityFeatures, compatibilityMessage, compatibilityStatus } =
+    useCompatibilityStore(
+      useShallow((state) => ({
+        compatibilityFeatures: state.features,
+        compatibilityMessage: state.message,
+        compatibilityStatus: state.status,
+      })),
+    );
 
   return (
     <main className="atelier-page-enter grid h-dvh min-h-0 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)] gap-4 overflow-hidden p-3 md:p-5">
@@ -70,7 +72,12 @@ export function Dashboard() {
         </div>
       ) : null}
 
-      <LogViewer />
+      <LogViewer
+        canControlStreaming={compatibilityFeatures.has("stream-control")}
+        connected={connected}
+        streamingPaused={streamingPaused}
+        toggleStreaming={toggleStreaming}
+      />
     </main>
   );
 }

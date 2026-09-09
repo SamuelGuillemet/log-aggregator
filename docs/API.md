@@ -263,7 +263,8 @@ For every new connection, the server immediately sends two messages in order:
 
 The first snapshot sent on connection always uses the default filter for that socket.
 
-Each socket starts with its own filter state initialized to the default filter.
+Each socket starts with its own filter state initialized to the default filter and live streaming
+enabled.
 
 ### Client Messages
 
@@ -317,6 +318,27 @@ Important:
 
 - because the service is shared, unsubscribe affects all connected sockets
 
+#### `pause`
+
+Stops live `log` messages for the requesting socket without stopping file watchers or ingestion.
+
+```json
+{ "type": "pause" }
+```
+
+New events continue to enter the in-memory buffer while streaming is paused.
+
+#### `resume`
+
+Resumes live `log` messages for the requesting socket.
+
+```json
+{ "type": "resume" }
+```
+
+The server immediately sends a filtered `snapshot` so the client receives events buffered during
+the pause before subsequent live updates.
+
 #### `filter`
 
 Updates the per-socket filter and returns a filtered snapshot.
@@ -368,7 +390,7 @@ Sent once on connection.
   "type": "connected",
   "payload": {
     "clientId": "3e6cb356-05a2-44f2-9c7d-e568a910d9be",
-    "protocolVersion": 2,
+    "protocolVersion": 3,
     "options": {
       "sources": [
         {
@@ -407,7 +429,7 @@ The new config is used by future subscriptions. Existing active file watchers co
 
 #### `snapshot`
 
-Sent on connection, after `subscribe`, after `unsubscribe`, and after `filter`.
+Sent on connection, after `subscribe`, after `unsubscribe`, after `filter`, and after `resume`.
 
 ```json
 {
@@ -458,6 +480,7 @@ Sent for live updates only.
 Rules:
 
 - only sockets whose current filter matches the event receive the message
+- paused sockets do not receive live `log` messages
 - initial file loading during `subscribe` is buffered but not emitted as individual `log` messages
 - live file additions and file changes after watcher readiness are emitted
 - continuation lines for multiline events can produce another `log` message for the mutated existing event object when live broadcasting is enabled

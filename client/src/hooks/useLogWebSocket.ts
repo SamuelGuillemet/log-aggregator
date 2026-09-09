@@ -1,5 +1,5 @@
 import type { ClientMessage, ServerMessage } from "@log-aggregator/shared";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { LogWebSocketClient } from "@/services/websocketClient";
 import { useCompatibilityStore } from "@/stores/compatibilityStore";
@@ -9,6 +9,7 @@ import { useSourceStore } from "@/stores/sourceStore";
 export function useLogWebSocket() {
   const clientRef = useRef<LogWebSocketClient | null>(null);
   const wasConnectedRef = useRef(false);
+  const [streamingPaused, setStreamingPaused] = useState(false);
   const { connected, filter, handleLogMessage, setConnected, sources } = useLogStore(
     useShallow((state) => ({
       connected: state.connected,
@@ -33,7 +34,13 @@ export function useLogWebSocket() {
       handleCompatibilityMessage(message);
     }
 
-    const client = new LogWebSocketClient(handleMessage, setConnected);
+    const client = new LogWebSocketClient(handleMessage, (nextConnected) => {
+      if (!nextConnected) {
+        setStreamingPaused(false);
+      }
+
+      setConnected(nextConnected);
+    });
     clientRef.current = client;
     const connectTimer = window.setTimeout(() => client.connect(), 0);
 
@@ -69,5 +76,11 @@ export function useLogWebSocket() {
     clientRef.current?.send(message);
   }
 
-  return { sendMessage };
+  function toggleStreaming() {
+    const nextPaused = !streamingPaused;
+    sendMessage({ type: nextPaused ? "pause" : "resume" });
+    setStreamingPaused(nextPaused);
+  }
+
+  return { sendMessage, streamingPaused, toggleStreaming };
 }

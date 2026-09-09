@@ -4,6 +4,8 @@ import type { SourceOptions, SourceSelection } from "./sourceTypes.js";
 export type ClientMessage =
   | { type: "subscribe"; payload: SourceSelection }
   | { type: "unsubscribe" }
+  | { type: "pause" }
+  | { type: "resume" }
   | { type: "filter"; payload: Partial<LogFilter> }
   | { type: "ping" };
 

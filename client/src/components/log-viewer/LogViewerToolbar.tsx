@@ -9,6 +9,8 @@ import {
   Columns3,
   Eye,
   EyeOff,
+  Pause,
+  Play,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,7 +32,10 @@ interface LogViewerToolbarProps {
   selectAllEvents: () => void;
   selectedRows: Set<string>;
   setUntilInput: (value: string) => void;
+  streamControlDisabled: boolean;
+  streamingPaused: boolean;
   table: Table<LogEvent>;
+  toggleStreaming: () => void;
   untilInput: string;
 }
 
@@ -48,7 +53,10 @@ export function LogViewerToolbar({
   selectAllEvents,
   selectedRows,
   setUntilInput,
+  streamControlDisabled,
+  streamingPaused,
   table,
+  toggleStreaming,
   untilInput,
 }: LogViewerToolbarProps) {
   function handleCopySelected() {
@@ -63,6 +71,17 @@ export function LogViewerToolbar({
         <div className="atelier-section-title mr-8 text-primary">
           <span>{events.length.toLocaleString()} events buffered</span>
         </div>
+        <Button
+          variant={streamingPaused ? "default" : "outline"}
+          type="button"
+          disabled={streamControlDisabled}
+          onClick={toggleStreaming}
+          title={streamingPaused ? "Resume live logs" : "Pause live logs"}
+          aria-pressed={streamingPaused}
+        >
+          {streamingPaused ? <Play size={16} /> : <Pause size={16} />}
+          {streamingPaused ? "Resume" : "Pause"}
+        </Button>
         <Button
           variant="outline"
           type="button"

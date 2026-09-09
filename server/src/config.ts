@@ -13,7 +13,7 @@ import type {
  * workspace dependency at install time - only its types are used
  * server-side. Bump both together.
  */
-export const PROTOCOL_VERSION: SHARED_PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION: SHARED_PROTOCOL_VERSION = 3;
 
 export interface ParserConfig {
   linePattern: string;
