@@ -1,5 +1,5 @@
 import type { Server as HttpServer } from "node:http";
-import type { SourceOptions } from "@log-aggregator/shared";
+import type { LogSourceConfig, SourceOptions } from "@log-aggregator/shared";
 import { WebSocketServer } from "ws";
 import { LogAggregatorService } from "../application/logAggregatorService.js";
 import { PROTOCOL_VERSION, type ServerConfig } from "../config.js";
@@ -14,9 +14,11 @@ import {
 import { sendMessage } from "./messageCodec.js";
 
 export interface GatewayContext {
+  broadcastError: (message: string, error: unknown) => void;
   closeAll: () => Promise<void>;
   clients: Map<string, ClientSession>;
   server: WebSocketServer;
+  updateSources: (sources: LogSourceConfig[], options: SourceOptions) => void;
 }
 
 export function attachWsGateway(
@@ -26,6 +28,7 @@ export function attachWsGateway(
 ): GatewayContext {
   const clients = new Map<string, ClientSession>();
   const webSocketServer = new WebSocketServer({ noServer: true });
+  let currentSourceOptions = sourceOptions;
 
   server.on("upgrade", (request, socket, head) => {
     const requestUrl = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
@@ -50,7 +53,7 @@ export function attachWsGateway(
     sendMessage(socket, {
       payload: {
         clientId: client.id,
-        options: sourceOptions,
+        options: currentSourceOptions,
         protocolVersion: PROTOCOL_VERSION,
       },
       type: "connected",
@@ -66,6 +69,14 @@ export function attachWsGateway(
   });
 
   return {
+    broadcastError: (message, error) => {
+      for (const client of clients.values()) {
+        sendMessage(client.socket, {
+          payload: { details: String(error), message },
+          type: "error",
+        });
+      }
+    },
     clients,
     closeAll: async () => {
       const activeClients = [...clients.values()];
@@ -79,6 +90,14 @@ export function attachWsGateway(
       webSocketServer.close();
     },
     server: webSocketServer,
+    updateSources: (sources, options) => {
+      config.sources = sources;
+      currentSourceOptions = options;
+
+      for (const client of clients.values()) {
+        sendMessage(client.socket, { payload: options, type: "source-options" });
+      }
+    },
   };
 }
 

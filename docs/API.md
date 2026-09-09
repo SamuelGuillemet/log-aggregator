@@ -22,13 +22,15 @@ There is no authentication, no authorization, and no persistence layer.
 
 At startup the server:
 
-- loads the environment matrix from `LOG_AGGREGATOR_MATRIX_FILE` or `server/config/environment-matrix.json`
+- loads named log sources from `LOG_AGGREGATOR_SOURCES_FILE` or `server/config/sources.json`
 - loads the parser config from `LOG_AGGREGATOR_PARSER_FILE` or `server/config/parser.json`
+- watches the source config and broadcasts refreshed options after valid `change` or `add` events
 - creates one in-memory event buffer with a maximum size from `LOG_AGGREGATOR_BUFFER_SIZE` or `10000`
 - starts an HTTP server and upgrades WebSocket connections on `/ws`
 
 On shutdown (`SIGINT`, `SIGTERM`) the server:
 
+- closes the source config watcher
 - stops watchers
 - clears active sources and buffered events
 - closes the WebSocket server
@@ -39,12 +41,8 @@ On shutdown (`SIGINT`, `SIGTERM`) the server:
 ### Source Selection
 
 ```ts
-type ApplicationTier = "back" | "front";
-
 interface SourceSelection {
-  environment: string;
-  country: string;
-  tier: ApplicationTier;
+  sourceId: string;
   project: string;
   date: string;
 }
@@ -54,7 +52,8 @@ Rules:
 
 - `project` is trimmed before use.
 - `date` must match `YYYY-MM-DD` exactly.
-- if `project` is empty or `date` is invalid, the selection resolves to zero sources without throwing.
+- `sourceId` must match a configured source.
+- if the source is unknown, `project` is empty, or `date` is invalid, the selection resolves to zero sources without throwing.
 
 This is important, only the files that match the selected project and date are watched, not the directory as a whole.
 
@@ -62,22 +61,33 @@ This is important, only the files that match the selected project and date are w
 
 ```ts
 interface SourceOptions {
-  environments: string[];
-  countriesByEnvironment: Record<string, string[]>;
-  tiers: ["back", "front"] | string[];
+  sources: Array<{
+    id: string;
+    name: string;
+    group: string;
+    applications: string[];
+  }>;
 }
 ```
 
 Rules:
 
-- environments are derived from the matrix and sorted alphabetically
-- countries are grouped by environment and sorted alphabetically
-- tiers are always `back` and `front`
+- source order follows the configuration file
+- sources with the same `group` are shown under one dropdown label
+- application names are discovered from supported log filenames in each source's directories
+- inaccessible directories contribute no suggestions and do not prevent startup
 
 ### Log Event
 
 ```ts
-type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "UNKNOWN";
+type LogLevel =
+  | "TRACE"
+  | "DEBUG"
+  | "INFO"
+  | "WARN"
+  | "ERROR"
+  | "FATAL"
+  | "UNKNOWN";
 
 interface LogEvent {
   id: string;
@@ -265,9 +275,7 @@ Starts watching the selected sources.
 {
   "type": "subscribe",
   "payload": {
-    "environment": "LOCAL",
-    "country": "SAMPLE",
-    "tier": "back",
+    "sourceId": "local-sample-back",
     "project": "ACCOUNTING-API",
     "date": "2026-07-29"
   }
@@ -276,7 +284,7 @@ Starts watching the selected sources.
 
 Effects:
 
-- resolves sources from the selected environment, country, tier, project, and date
+- resolves directories from the selected source, project, and date
 - clears the existing in-memory event buffer
 - clears multiline continuation state
 - resets tail read positions
@@ -359,16 +367,43 @@ Sent once on connection.
 {
   "type": "connected",
   "payload": {
+    "clientId": "3e6cb356-05a2-44f2-9c7d-e568a910d9be",
+    "protocolVersion": 2,
     "options": {
-      "environments": ["LOCAL"],
-      "countriesByEnvironment": {
-        "LOCAL": ["SAMPLE"]
-      },
-      "tiers": ["back", "front"]
+      "sources": [
+        {
+          "id": "local-sample-back",
+          "name": "Local sample - Back",
+          "group": "Local sample",
+          "applications": ["ACCOUNTING-API", "TEST"]
+        }
+      ]
     }
   }
 }
 ```
+
+#### `source-options`
+
+Sent to every connected client after a valid source config change. Its payload has the same `SourceOptions` shape as `connected.payload.options`.
+
+```json
+{
+  "type": "source-options",
+  "payload": {
+    "sources": [
+      {
+        "id": "local-sample-back",
+        "name": "Local sample - Back",
+        "group": "Local sample",
+        "applications": ["ACCOUNTING-API", "TEST"]
+      }
+    ]
+  }
+}
+```
+
+The new config is used by future subscriptions. Existing active file watchers continue until the client stops or starts a stream. If reading, parsing, or scanning the changed config fails, the server retains the last valid options and sends an `error` message instead.
 
 #### `snapshot`
 
@@ -459,35 +494,29 @@ Broadcast operational error:
 
 ## Source Resolution
 
-The environment matrix is an array of:
+The source configuration is an array of:
 
 ```ts
-interface EnvironmentMatrixEntry {
-  environment: string;
-  country: string;
-  code: string;
-  host: string;
-  shares: string[];
+interface LogSourceConfig {
+  id: string;
+  name: string;
+  group: string;
+  directories: string[];
 }
 ```
 
-For each matching matrix row and for each configured share, the backend creates one source for the selected tier only:
+For the selected entry, the backend creates one active source per configured directory. Directories are used without modification; relative paths are resolved from the source configuration file's directory.
 
-- `back` maps to `<share>/Java/apache-tomcat-back/logs`
-- `front` maps to `<share>/Java/apache-tomcat-front/logs`
-
-Relative share paths in the matrix file are resolved relative to the matrix file directory.
-
-Generated source names use this format:
+When an entry has multiple directories, generated source names use this format:
 
 ```text
-<environment>/<country>/<tier>/<share-basename>
+<configured name> #<directory number>
 ```
 
 Example:
 
 ```text
-LOCAL/SAMPLE/back/local-share-a
+Local sample - Back #1
 ```
 
 ## Watched Files

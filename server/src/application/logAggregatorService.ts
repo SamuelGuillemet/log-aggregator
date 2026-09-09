@@ -1,13 +1,12 @@
 import { performance } from "node:perf_hooks";
 import type {
-  EnvironmentMatrixEntry,
   LogEvent,
   LogFilter,
   LogHistoryQuery,
   LogPage,
   LogSnapshot,
   LogSource,
-  SourceOptions,
+  LogSourceConfig,
   SourceSelection,
 } from "@log-aggregator/shared";
 import { type FSWatcher, watch } from "chokidar";
@@ -16,7 +15,6 @@ import { LogHistoryBuffer } from "../domain/history.js";
 import { LogLineParser } from "../domain/logParser.js";
 import {
   findSourceForFile,
-  getSourceOptions,
   listMatchingSourceFiles,
   matchesSelectedLogFile,
   resolveSources,
@@ -24,8 +22,8 @@ import {
 import { LogStreamSession } from "./logStreamSession.js";
 
 interface LogAggregatorServiceOptions {
-  matrix: EnvironmentMatrixEntry[];
   parser: ParserConfig;
+  sources: LogSourceConfig[];
 }
 
 interface OperationalError {
@@ -37,8 +35,6 @@ type LogListener = (event: LogEvent) => void;
 type ErrorListener = (error: OperationalError) => void;
 
 export class LogAggregatorService {
-  readonly sourceOptions: SourceOptions;
-
   private activeSelection: SourceSelection | undefined;
   private readonly buffer: LogHistoryBuffer;
   private readonly errorListeners = new Set<ErrorListener>();
@@ -54,7 +50,6 @@ export class LogAggregatorService {
   constructor(private readonly options: LogAggregatorServiceOptions) {
     this.buffer = new LogHistoryBuffer();
     this.parser = new LogLineParser(options.parser);
-    this.sourceOptions = getSourceOptions(options.matrix);
     this.streamSession = new LogStreamSession(this.parser, {
       onContinuationDropped: (filePath) => {
         console.warn(`Dropped continuation without log event in ${filePath}`);
@@ -98,7 +93,7 @@ export class LogAggregatorService {
       ...selection,
       project: selection.project.trim(),
     };
-    this.sources = resolveSources(this.activeSelection, this.options.matrix);
+    this.sources = resolveSources(this.activeSelection, this.options.sources);
 
     for (const source of this.sources) {
       await this.loadExistingSource(source, this.activeSelection);

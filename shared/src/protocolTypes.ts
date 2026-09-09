@@ -21,6 +21,7 @@ export type ServerMessage =
       type: "snapshot";
       payload: LogSnapshot;
     }
+  | { type: "source-options"; payload: SourceOptions }
   | { type: "log"; payload: LogEvent }
   | { type: "disconnected"; payload: { reason?: string } }
   | { type: "error"; payload: { message: string; details?: string } }

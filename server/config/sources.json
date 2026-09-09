@@ -1,0 +1,40 @@
+[
+  {
+    "id": "local-sample-back",
+    "name": "Local sample - Back",
+    "group": "Local sample",
+    "directories": [
+      "../../sample-logs/local-share-a/Java/apache-tomcat-back/logs",
+      "../../sample-logs/local-share-b/Java/apache-tomcat-back/logs"
+    ]
+  },
+  {
+    "id": "local-sample-front",
+    "name": "Local sample - Front",
+    "group": "Local sample",
+    "directories": [
+      "../../sample-logs/local-share-a/Java/apache-tomcat-front/logs",
+      "../../sample-logs/local-share-b/Java/apache-tomcat-front/logs"
+    ]
+  },
+  {
+    "id": "local-performance-back",
+    "name": "Local performance - Back",
+    "group": "Local performance",
+    "directories": [
+      "../../sample-logs/perf-cluster/perf-share-a/Java/apache-tomcat-back/logs",
+      "../../sample-logs/perf-cluster/perf-share-b/Java/apache-tomcat-back/logs",
+      "../../sample-logs/perf-cluster/perf-share-c/Java/apache-tomcat-back/logs"
+    ]
+  },
+  {
+    "id": "local-performance-front",
+    "name": "Local performance - Front",
+    "group": "Local performance",
+    "directories": [
+      "../../sample-logs/perf-cluster/perf-share-a/Java/apache-tomcat-front/logs",
+      "../../sample-logs/perf-cluster/perf-share-b/Java/apache-tomcat-front/logs",
+      "../../sample-logs/perf-cluster/perf-share-c/Java/apache-tomcat-front/logs"
+    ]
+  }
+]

@@ -6,7 +6,15 @@ import { useSourceStore } from "@/stores/sourceStore";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 interface SourceSelectorProps {
   sendMessage: (message: ClientMessage) => void;
@@ -26,12 +34,17 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
       setSelection: state.setSelection,
     })),
   );
-  const countries = options.countriesByEnvironment[selection.environment] ?? [];
+  const selectedSource = options.sources.find((source) => source.id === selection.sourceId);
+  const applications = selectedSource?.applications ?? [];
+  const sourceGroups = options.sources.reduce((groups, source) => {
+    const group = groups.get(source.group) ?? [];
+    group.push(source);
+    groups.set(source.group, group);
+    return groups;
+  }, new Map<string, typeof options.sources>());
   const project = selection.project.trim();
   const streaming = sources.length > 0;
-  const canStartStream = Boolean(
-    connected && selection.environment && selection.country && project && selection.date,
-  );
+  const canStartStream = Boolean(connected && selection.sourceId && project && selection.date);
 
   function updateSelection(nextSelection: Partial<SourceSelection>) {
     if (streaming) {
@@ -58,116 +71,85 @@ export function SourceSelector({ sendMessage }: SourceSelectorProps) {
         <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
         <span>Source Selection</span>
       </summary>
-      <div className="grid gap-2 p-2 min-[1100px]:grid-cols-[minmax(280px,0.85fr)_minmax(420px,1.15fr)]">
-        <div className="grid grid-cols-1 gap-2 min-[760px]:grid-cols-2">
-          <div className="atelier-section-title text-primary min-[760px]:col-span-2">Location</div>
-          <Label className="grid gap-1 text-xs text-muted-foreground">
-            <span>Environment</span>
-            <Select
-              disabled={streaming}
-              value={selection.environment}
-              onValueChange={(environment) => updateSelection({ environment })}
+      <div className="grid grid-cols-1 items-end gap-2 p-2 min-[760px]:grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)_150px_auto]">
+        <Label className="grid gap-1 text-xs text-muted-foreground">
+          <span>Source</span>
+          <Select
+            disabled={streaming}
+            value={selection.sourceId}
+            onValueChange={(sourceId: string | null) =>
+              updateSelection({ sourceId: sourceId ?? "" })
+            }
+          >
+            <SelectTrigger aria-label="Log source">
+              <SelectValue placeholder="Choose a source">{selectedSource?.name}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {[...sourceGroups].map(([group, groupSources]) => (
+                <SelectGroup key={group}>
+                  <SelectLabel>{group}</SelectLabel>
+                  {groupSources.map((source) => (
+                    <SelectItem key={source.id} value={source.id}>
+                      {source.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
+        </Label>
+        <Label className="grid gap-1 text-xs text-muted-foreground">
+          <span>Application</span>
+          <Input
+            aria-label="Application name"
+            autoComplete="off"
+            disabled={streaming}
+            list="source-applications"
+            placeholder="Application name"
+            spellCheck={false}
+            value={selection.project}
+            onChange={(event) => updateSelection({ project: event.currentTarget.value })}
+          />
+          <datalist id="source-applications">
+            {applications.map((application) => (
+              <option key={application} value={application}>
+                {application}
+              </option>
+            ))}
+          </datalist>
+        </Label>
+        <Label className="grid gap-1 text-xs text-muted-foreground">
+          <span>Date</span>
+          <Input
+            aria-label="Log date"
+            disabled={streaming}
+            type="date"
+            value={selection.date}
+            onChange={(event) => updateSelection({ date: event.currentTarget.value })}
+          />
+        </Label>
+        <div className="flex gap-1.5 max-[759px]:pt-1">
+          {streaming ? (
+            <Button
+              variant="outline"
+              type="button"
+              onClick={stopStream}
+              title="Stop current log stream"
             >
-              <SelectTrigger aria-label="Environment">
-                <SelectValue placeholder="Environment" />
-              </SelectTrigger>
-              <SelectContent>
-                {options.environments.map((environment) => (
-                  <SelectItem key={environment} value={environment}>
-                    {environment}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Label>
-          <Label className="grid gap-1 text-xs text-muted-foreground">
-            <span>Country</span>
-            <Select
-              disabled={streaming}
-              value={selection.country}
-              onValueChange={(country) => updateSelection({ country })}
+              <Square size={16} />
+              Stop stream
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              disabled={!canStartStream}
+              onClick={startStream}
+              title="Start log streaming for this application"
             >
-              <SelectTrigger aria-label="Country">
-                <SelectValue placeholder="Country" />
-              </SelectTrigger>
-              <SelectContent>
-                {countries.map((country) => (
-                  <SelectItem key={country} value={country}>
-                    {country}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Label>
-        </div>
-        <div className="grid grid-cols-1 items-end gap-2 min-[760px]:grid-cols-[minmax(180px,1fr)_150px_140px_auto]">
-          <div className="atelier-section-title text-primary min-[760px]:col-span-4">
-            Project stream
-          </div>
-          <Label className="grid gap-1 text-xs text-muted-foreground">
-            <span>Project</span>
-            <Input
-              aria-label="Project name"
-              autoComplete="off"
-              disabled={streaming}
-              placeholder="Project name"
-              spellCheck={false}
-              value={selection.project}
-              onChange={(event) => updateSelection({ project: event.currentTarget.value })}
-            />
-          </Label>
-          <Label className="grid gap-1 text-xs text-muted-foreground">
-            <span>Date</span>
-            <Input
-              aria-label="Log date"
-              disabled={streaming}
-              type="date"
-              value={selection.date}
-              onChange={(event) => updateSelection({ date: event.currentTarget.value })}
-            />
-          </Label>
-          <Label className="grid gap-1 text-xs text-muted-foreground">
-            <span>Side</span>
-            <Select
-              disabled={streaming}
-              value={selection.tier}
-              onValueChange={(tier) => updateSelection({ tier: tier as SourceSelection["tier"] })}
-            >
-              <SelectTrigger aria-label="Application side">
-                <SelectValue placeholder="Side" />
-              </SelectTrigger>
-              <SelectContent>
-                {options.tiers.map((tier) => (
-                  <SelectItem key={tier} value={tier}>
-                    {tier === "back" ? "Back project" : "Front project"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Label>
-          <div className="flex gap-1.5 max-[759px]:pt-1">
-            {streaming ? (
-              <Button
-                variant="outline"
-                type="button"
-                onClick={stopStream}
-                title="Stop current log stream"
-              >
-                <Square size={16} />
-                Stop stream
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                disabled={!canStartStream}
-                onClick={startStream}
-                title="Start log streaming for this project"
-              >
-                <Play size={16} />
-                Start stream
-              </Button>
-            )}
-          </div>
+              <Play size={16} />
+              Start stream
+            </Button>
+          )}
         </div>
       </div>
     </details>

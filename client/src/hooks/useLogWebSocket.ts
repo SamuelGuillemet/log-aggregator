@@ -54,7 +54,7 @@ export function useLogWebSocket() {
     if (connected && !wasConnectedRef.current && sources.length > 0) {
       const project = selection.project.trim();
 
-      if (selection.environment && selection.country && project && selection.date) {
+      if (selection.sourceId && project && selection.date) {
         clientRef.current?.send({
           payload: { ...selection, project },
           type: "subscribe",

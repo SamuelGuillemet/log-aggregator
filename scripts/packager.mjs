@@ -19,6 +19,9 @@ await mkdir(stagingDirectory, { recursive: true });
 await cp(path.join(repositoryRoot, "server", "dist"), path.join(stagingDirectory, "server"), {
   recursive: true,
 });
+await cp(path.join(repositoryRoot, "server", "config"), path.join(stagingDirectory, "config"), {
+  recursive: true,
+});
 
 await writePackageJson();
 await writeLauncherScripts();

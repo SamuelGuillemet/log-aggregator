@@ -5,7 +5,7 @@
  * Never edit or remove past entries - already-installed backends keep
  * reporting them, and the frontend needs them to gate its own features.
  */
-export const PROTOCOL_VERSION = 1 as const;
+export const PROTOCOL_VERSION = 2 as const;
 
 export type PROTOCOL_VERSION = typeof PROTOCOL_VERSION;
 
@@ -20,7 +20,19 @@ export const COMPATIBILITY_TABLE: readonly CompatibilityEntry[] = [
     features: ["subscribe", "history-pagination", "favorites"],
     protocolVersion: 1,
   },
+  {
+    features: [
+      "subscribe",
+      "history-pagination",
+      "favorites",
+      "configured-sources",
+      "source-groups",
+      "source-config-reload",
+      "application-autocomplete",
+    ],
+    protocolVersion: 2,
+  },
 ];
 
 /** Oldest backend protocol version this frontend build still talks to. */
-export const MIN_SUPPORTED_PROTOCOL_VERSION = COMPATIBILITY_TABLE[0].protocolVersion;
+export const MIN_SUPPORTED_PROTOCOL_VERSION = 2;

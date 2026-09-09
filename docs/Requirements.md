@@ -86,28 +86,33 @@ The application runs entirely on the developer's machine and monitors one or mor
 
 The backend shall support multiple log sources.
 
-For the first iteration, sources are defined from a fixed environment matrix
-(listed below) and loaded from a configuration file.
+Sources are defined as a flat list loaded from a configuration file. The UI shall expose a single source selector instead of separate environment, country, and Tomcat selectors.
 
 Each source contains:
 
 - Unique identifier
 - Name
-- Root directory
-- Parser type
-- Enabled state
+- Dropdown group
+- One or more complete log directories
 
 Example:
 
 ```json
 {
   "id": "worker-01",
-  "directory": "C:/Logs/Worker1",
-  "parser": "default"
+  "name": "Production - Worker",
+  "group": "Production",
+  "directories": ["C:/Logs/Worker1", "//worker-02/logs"]
 }
 ```
 
-Canonical matrix for environments/countries/shares:
+The backend shall use each directory exactly as configured and shall not append an environment-specific or Tomcat-specific path. Relative directories are resolved from the source configuration file's directory.
+
+The application name input shall offer autocomplete values discovered from supported log filenames in the selected source while remaining editable for applications that have not emitted a log yet.
+
+The backend shall watch the source configuration file and update connected clients after valid changes without requiring a restart. Invalid changes shall leave the last valid source configuration active.
+
+Legacy deployment inventory, retained as input for source configuration:
 
 ```csv
 PRODUCTION,HONGRIE,PROD_HU,UEUHUP01,\\ueuhup01\logappli$;\\ueuhup02\logappli$
@@ -143,11 +148,7 @@ IAT,HONGRIE,IAT_HU,UEUHURI01,\\ueuhuri01\logappli$;\\ueuhuri02\logappli$;\\ueuhu
 MDO,HONGRIE,MDO_HU,UEUHUM01,\\ueuhum01\logappli$;\\ueuhum02\logappli$
 ```
 
-This is exact and will not change. For each share in the matrix, the application shall monitor exactly these two
-directories:
-
-- <share>/Java/apache-tomcat-back/logs
-- <share>/Java/apache-tomcat-front/logs
+This inventory does not define runtime path rules. Deployments shall translate it into explicit named source directories.
 
 ---
 

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type {
-  EnvironmentMatrixEntry,
+  LogSourceConfig,
   PROTOCOL_VERSION as SHARED_PROTOCOL_VERSION,
 } from "@log-aggregator/shared";
 
@@ -13,7 +13,7 @@ import type {
  * workspace dependency at install time - only its types are used
  * server-side. Bump both together.
  */
-export const PROTOCOL_VERSION: SHARED_PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION: SHARED_PROTOCOL_VERSION = 2;
 
 export interface ParserConfig {
   linePattern: string;
@@ -21,22 +21,33 @@ export interface ParserConfig {
 }
 
 export interface ServerConfig {
-  matrix: EnvironmentMatrixEntry[];
+  sources: LogSourceConfig[];
+  sourcesFile: string;
   parser: ParserConfig;
 }
 
 const serverRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const defaultMatrixFile = resolve(serverRoot, "config/environment-matrix.json");
+const defaultSourcesFile = resolve(serverRoot, "config/sources.json");
 const defaultParserFile = resolve(serverRoot, "config/parser.json");
 
 export async function loadConfig(): Promise<ServerConfig> {
-  const matrixFile = resolve(process.env.LOG_AGGREGATOR_MATRIX_FILE ?? defaultMatrixFile);
+  const sourcesFile = resolve(process.env.LOG_AGGREGATOR_SOURCES_FILE ?? defaultSourcesFile);
   const parserFile = resolve(process.env.LOG_AGGREGATOR_PARSER_FILE ?? defaultParserFile);
 
   return {
-    matrix: await readJsonFile<EnvironmentMatrixEntry[]>(matrixFile),
     parser: await readJsonFile<ParserConfig>(parserFile),
+    sources: await loadSources(sourcesFile),
+    sourcesFile,
   };
+}
+
+export async function loadSources(sourcesFile: string): Promise<LogSourceConfig[]> {
+  const sources = await readJsonFile<LogSourceConfig[]>(sourcesFile);
+
+  return sources.map((source) => ({
+    ...source,
+    directories: source.directories.map((directory) => resolve(dirname(sourcesFile), directory)),
+  }));
 }
 
 async function readJsonFile<T>(filePath: string): Promise<T> {

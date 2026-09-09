@@ -10,9 +10,7 @@ interface SourceStore {
 }
 
 const emptyOptions: SourceOptions = {
-  countriesByEnvironment: {},
-  environments: [],
-  tiers: ["back", "front"],
+  sources: [],
 };
 
 const defaultLogDate = new Date().toISOString().slice(0, 10);
@@ -26,49 +24,34 @@ export const useSourceStore = create<SourceStore>()(
     (set) => ({
       options: emptyOptions,
       selection: {
-        country: "",
         date: defaultLogDate,
-        environment: "",
         project: "",
-        tier: "back",
+        sourceId: "",
       },
       setSelection: (selection) =>
-        set((state) => {
-          const nextSelection = { ...state.selection, ...selection };
-
-          if (selection.environment && selection.environment !== state.selection.environment) {
-            nextSelection.country =
-              state.options.countriesByEnvironment[selection.environment]?.[0] ?? "";
-          }
-
-          return { selection: nextSelection };
-        }),
+        set((state) => ({ selection: { ...state.selection, ...selection } })),
       handleServerMessage: (message) =>
         set((state) => {
-          if (message.type !== "connected") {
+          if (message.type !== "connected" && message.type !== "source-options") {
             return state;
           }
 
-          const options = message.payload.options;
-          const environment = options.environments.includes(state.selection.environment)
-            ? state.selection.environment
-            : (options.environments[0] ?? "");
-          const countries = options.countriesByEnvironment[environment] ?? [];
-          const country = countries.includes(state.selection.country)
-            ? state.selection.country
-            : (countries[0] ?? "");
-          const tier = options.tiers.includes(state.selection.tier)
-            ? state.selection.tier
-            : (options.tiers[0] ?? "back");
+          const options = message.type === "connected" ? message.payload.options : message.payload;
+
+          if (!Array.isArray(options.sources)) {
+            return state;
+          }
+
+          const sourceId = options.sources.some((source) => source.id === state.selection.sourceId)
+            ? state.selection.sourceId
+            : (options.sources[0]?.id ?? "");
 
           return {
             options,
             selection: {
-              country,
               date: state.selection.date,
-              environment,
               project: state.selection.project,
-              tier,
+              sourceId,
             },
           };
         }),
@@ -77,12 +60,23 @@ export const useSourceStore = create<SourceStore>()(
       name: "log-aggregator-source-selection",
       partialize: (state) => ({
         selection: {
-          country: state.selection.country,
-          environment: state.selection.environment,
           project: state.selection.project,
-          tier: state.selection.tier,
+          sourceId: state.selection.sourceId,
         },
       }),
+      version: 2,
+      migrate: (persistedState) => {
+        const legacySelection = (
+          persistedState as { selection?: { project?: unknown } } | undefined
+        )?.selection;
+
+        return {
+          selection: {
+            project: typeof legacySelection?.project === "string" ? legacySelection.project : "",
+            sourceId: "",
+          },
+        };
+      },
       merge: (persistedState, currentState) => ({
         ...currentState,
         selection: {

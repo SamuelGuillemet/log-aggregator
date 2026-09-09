@@ -1,8 +1,8 @@
 import { readdir } from "node:fs/promises";
 import { basename, isAbsolute, join, relative, resolve } from "node:path";
 import type {
-  EnvironmentMatrixEntry,
   LogSource,
+  LogSourceConfig,
   SourceOptions,
   SourceSelection,
 } from "@log-aggregator/shared";
@@ -12,39 +12,25 @@ export interface ActiveLogFile {
   source: LogSource;
 }
 
-const tiers: SourceOptions["tiers"] = ["back", "front"];
 const logDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+const logFilePattern = /^(.+)-(?:serveur|fwk|ui)\.\d{4}-\d{2}-\d{2}-\d+\.log$/i;
 
-export function getSourceOptions(matrix: EnvironmentMatrixEntry[]): SourceOptions {
-  const countriesByEnvironment: Record<string, string[]> = {};
-
-  for (const entry of matrix) {
-    countriesByEnvironment[entry.environment] ??= [];
-
-    if (!countriesByEnvironment[entry.environment].includes(entry.country)) {
-      countriesByEnvironment[entry.environment].push(entry.country);
-    }
-  }
-
+export async function getSourceOptions(sources: LogSourceConfig[]): Promise<SourceOptions> {
   return {
-    countriesByEnvironment: Object.fromEntries(
-      Object.entries(countriesByEnvironment)
-        .toSorted(([left], [right]) => left.localeCompare(right))
-        .map(([environment, countries]) => [
-          environment,
-          [...countries].toSorted((left, right) => left.localeCompare(right)),
-        ]),
+    sources: await Promise.all(
+      sources.map(async (source) => ({
+        applications: await listApplications(source.directories),
+        group: source.group,
+        id: source.id,
+        name: source.name,
+      })),
     ),
-    environments: [...new Set(matrix.map((entry) => entry.environment))].toSorted((left, right) =>
-      left.localeCompare(right),
-    ),
-    tiers,
   };
 }
 
 export function resolveSources(
   selection: SourceSelection,
-  matrix: EnvironmentMatrixEntry[],
+  configuredSources: LogSourceConfig[],
 ): LogSource[] {
   const project = selection.project.trim();
 
@@ -52,27 +38,22 @@ export function resolveSources(
     return [];
   }
 
-  return matrix.flatMap((entry) => {
-    if (entry.environment !== selection.environment || entry.country !== selection.country) {
-      return [];
-    }
+  const configuredSource = configuredSources.find((source) => source.id === selection.sourceId);
 
-    return entry.shares.map((share, shareIndex) => {
-      const sharePath = resolveSharePath(share);
-      const directory = join(sharePath, "Java", `apache-tomcat-${selection.tier}`, "logs");
+  if (!configuredSource) {
+    return [];
+  }
 
-      return {
-        country: entry.country,
-        environment: entry.environment,
-        date: selection.date,
-        tier: selection.tier,
-        project,
-        directory,
-        id: buildSourceId(entry, project, shareIndex, selection.tier),
-        name: `[${entry.code}] ${sharePath}`,
-      } satisfies LogSource;
-    });
-  });
+  return configuredSource.directories.map((directory, directoryIndex) => ({
+    date: selection.date,
+    project,
+    directory: resolveDirectory(directory),
+    id: `${configuredSource.id}-${directoryIndex + 1}`,
+    name:
+      configuredSource.directories.length === 1
+        ? configuredSource.name
+        : `${configuredSource.name} #${directoryIndex + 1}`,
+  }));
 }
 
 export async function listMatchingSourceFiles(
@@ -111,28 +92,29 @@ export function matchesSelectedLogFile(filePath: string, selection: SourceSelect
   ).test(basename(filePath));
 }
 
-function resolveSharePath(share: string): string {
-  return isAbsolute(share) ? share : resolve(process.cwd(), share);
+async function listApplications(directories: string[]): Promise<string[]> {
+  const applicationNames = await Promise.all(
+    directories.map(async (directory) => {
+      try {
+        const entries = await readdir(resolveDirectory(directory));
+
+        return entries.flatMap((entry) => {
+          const match = logFilePattern.exec(entry);
+          return match?.[1] ? [match[1]] : [];
+        });
+      } catch {
+        return [];
+      }
+    }),
+  );
+
+  return [...new Set(applicationNames.flat())].toSorted((left, right) => left.localeCompare(right));
 }
 
-function buildSourceId(
-  entry: EnvironmentMatrixEntry,
-  project: string,
-  shareIndex: number,
-  tier: SourceSelection["tier"],
-): string {
-  return [entry.environment, entry.country, entry.code, project, String(shareIndex), tier]
-    .map(slug)
-    .join("-");
-}
-
-function slug(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+function resolveDirectory(directory: string): string {
+  return isAbsolute(directory) ? directory : resolve(process.cwd(), directory);
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 }

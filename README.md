@@ -1,6 +1,6 @@
 # Local Cluster Log Aggregator
 
-Local-first log aggregation for clustered application logs. The current implementation is the first vertical slice: select an environment, country, and app side, resolve configured log shares, watch ACCOUNTING API log files, tail appended lines, parse normalized events, and stream them to a React dashboard over WebSocket.
+Local-first log aggregation for clustered application logs. Select a configured source and application, watch its matching log files, tail appended lines, parse normalized events, and stream them to a React dashboard over WebSocket.
 
 ## Stack
 
@@ -26,9 +26,9 @@ pnpm dev
 
 The app includes a local fixture source. In the dashboard, select:
 
-- Environment: `LOCAL`
-- Country: `SAMPLE`
-- App: `Back`
+- Source: `Local sample - Back`
+- Application: `ACCOUNTING-API`
+- Date: `2026-07-29`
 
 Then click `Start stream`.
 
@@ -86,14 +86,20 @@ The workflow in [.github/workflows/release.yml](.github/workflows/release.yml) a
 
 ## Configuration
 
-Source configuration lives in [server/config/environment-matrix.json](server/config/environment-matrix.json). You can point the backend to another matrix file with `LOG_AGGREGATOR_MATRIX_FILE`.
+Source configuration lives in [server/config/sources.json](server/config/sources.json). You can point the backend to another source file with `LOG_AGGREGATOR_SOURCES_FILE`.
 
-Each selected environment/country entry expands every share into the selected app-side directory:
+Each entry gives the dropdown option a stable `id`, display `name`, dropdown `group`, and one or more log `directories`:
 
-- `Java/apache-tomcat-back/logs`
-- `Java/apache-tomcat-front/logs`
+```json
+{
+  "id": "production-orders",
+  "name": "Production - Orders",
+  "group": "Production",
+  "directories": ["//server-a/logs/orders", "//server-b/logs/orders"]
+}
+```
 
-The current matrix contains the requirement examples plus a `LOCAL/SAMPLE` fixture entry for development on this machine. Relative shares in the JSON file are resolved from the JSON file directory.
+Directories are used exactly as configured, with no Tomcat path appended. Relative paths are resolved from the source JSON file's directory. The backend watches the source JSON file and refreshes the dropdown and application autocomplete values after each valid change. Invalid changes keep the last valid configuration active and report an error to connected clients.
 
 Parser configuration lives in [server/config/parser.json](server/config/parser.json). You can point the backend to another parser file with `LOG_AGGREGATOR_PARSER_FILE`. Parser config defines the line pattern and captured groups; supported log file names are fixed in the backend.
 
