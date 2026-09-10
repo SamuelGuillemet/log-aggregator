@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { getLogLevelColors } from "@/lib/logs/logLevelColors";
 import { cn } from "@/lib/utils";
-import { CopyButton } from "../CopyButton";
+import { CopyButton } from "./CopyButton";
 
 interface VirtualLogRowsProps {
   getRenderWidth: (columnId: string, width: number) => number;
