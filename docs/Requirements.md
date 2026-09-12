@@ -112,44 +112,6 @@ The application name input shall offer autocomplete values discovered from suppo
 
 The backend shall watch the source configuration file and update connected clients after valid changes without requiring a restart. Invalid changes shall leave the last valid source configuration active.
 
-Legacy deployment inventory, retained as input for source configuration:
-
-```csv
-PRODUCTION,HONGRIE,PROD_HU,UEUHUP01,\\ueuhup01\logappli$;\\ueuhup02\logappli$
-PRODUCTION,REPUBLIQUE_TCHEQUE,PROD_CZ,UEUCZP01,\\ueuczp01\logappli$;\\ueuczp02\logappli$
-PRODUCTION,SLOVAQUIE,PROD_SK,UEUSKP01,\\ueuskp01\logappli$;\\ueuskp02\logappli$
-PRODUCTION,POLOGNE,PROD_PL,UEUPLP01,\\ueuplp01\logappli$;\\ueuplp02\logappli$
-PRODUCTION,INTERNATIONALE,PROD_CI,UEUCIP01,\\ueucip01\logappli$;\\ueucip02\logappli$
-FORMATION,HONGRIE,FORM_HU,UEUHUF01,\\ueuhuf01\logappli$;\\ueuhuf02\logappli$;\\ueuhuf03\logappli$
-FORMATION,REPUBLIQUE_TCHEQUE,FORM_CZ,UEUCZF01,\\ueuczf01\logappli$;\\ueuczf02\logappli$
-FORMATION,SLOVAQUIE,FORM_SK,UEUSKF01,\\ueuskf01\logappli$;\\ueuskf02\logappli$
-FORMATION,POLOGNE,FORM_PL,UEUPLF01,\\ueuplf01\logappli$;\\ueuplf02\logappli$
-FORMATION,INTERNATIONALE,FORM_CI,UCTCIF01,\\uctcif01\logappli$;\\uctcif02\logappli$
-RECETTE,HONGRIE,RE7_HU,UEUHUR01,\\ueuhur01\logappli$;\\ueuhur02\logappli$;\\ueuhur03\logappli$
-RECETTE,REPUBLIQUE_TCHEQUE,RE7_CZ,UEUCZR01,\\ueuczr01\logappli$;\\ueuczr02\logappli$
-RECETTE,SLOVAQUIE,RE7_SK,UEUSKR01,\\ueuskr01\logappli$;\\ueuskr02\logappli$
-RECETTE,POLOGNE,RE7_PL,UEUPLR01,\\ueuplr01\logappli$;\\ueuplr02\logappli$
-RECETTE,INTERNATIONALE,RE7_CI,UEUCIR01,\\ueucir01\logappli$;\\ueucir02\logappli$
-CLOTURE,HONGRIE,CLOT_HU,UEUHUC01,\\ueuhuc01\logappli$;\\ueuhuc02\logappli$
-CLOTURE,REPUBLIQUE_TCHEQUE,CLOT_CZ,UEUCZC01,\\ueuczc01\logappli$;\\ueuczc02\logappli$
-CLOTURE,SLOVAQUIE,CLOT_SK,UEUSKC01,\\ueuskc01\logappli$;\\ueuskc02\logappli$
-CLOTURE,POLOGNE,CLOT_PL,UEUPLC01,\\ueuplc01\logappli$;\\ueuplc02\logappli$
-CLOTURE,INTERNATIONALE,CLOT_CI,UCTCIC01,\\uctcic01\logappli$
-DEVELOPPEMENT,HONGRIE,DEV_HU,UEUHUD01,\\ueuhud01\logappli$;\\ueuhud02\logappli$;\\ueuhud03\logappli$
-DEVELOPPEMENT,REPUBLIQUE_TCHEQUE,DEV_CZ,UEUCZD01,\\ueuczd01\logappli$;\\ueuczd02\logappli$
-DEVELOPPEMENT,SLOVAQUIE,DEV_SK,UEUSKD01,\\ueuskd01\logappli$;\\ueuskd02\logappli$
-DEVELOPPEMENT,POLOGNE,DEV_PL,UEUPLD01,\\ueupld01\logappli$;\\ueupld02\logappli$
-DEVELOPPEMENT,INTERNATIONALE,DEV_CI,UEUCID01,\\ueucid01\logappli$;\\ueucid02\logappli$
-TEST,HONGRIE,TEST_HU,UEUHUT01,\\ueuhut01\logappli$;\\ueuhut02\logappli$;\\ueuhut03\logappli$
-TEST,REPUBLIQUE_TCHEQUE,TEST_CZ,UEUCZT01,\\ueuczt01\logappli$;\\ueuczt02\logappli$
-TEST,SLOVAQUIE,TEST_SK,UEUSKT01,\\ueuskt01\logappli$;\\ueuskt02\logappli$
-TEST,POLOGNE,TEST_PL,UEUPLT01,\\ueuplt01\logappli$;\\ueuplt02\logappli$
-IAT,HONGRIE,IAT_HU,UEUHURI01,\\ueuhuri01\logappli$;\\ueuhuri02\logappli$;\\ueuhuri03\logappli$
-MDO,HONGRIE,MDO_HU,UEUHUM01,\\ueuhum01\logappli$;\\ueuhum02\logappli$
-```
-
-This inventory does not define runtime path rules. Deployments shall translate it into explicit named source directories.
-
 ---
 
 ## File Watching
