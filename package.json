@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm --parallel --stream -r run dev",
+    "dev": "pnpm --parallel --stream --filter \"./shared\" --filter \"./server\" --filter \"./client\" run dev",
+    "test": "pnpm -r test",
     "perf:logs": "node scripts/dev/generate-perf-logs.mjs",
     "perf:logs:live": "node scripts/dev/generate-live-perf-logs.mjs",
     "lint": "oxlint --fix .",
     "format": "oxfmt --write .",
     "check": "pnpm format && pnpm lint",
-    "package": "node scripts/packager.mjs",
+    "package": "node scripts/package.mjs",
     "doctor": "npx react-doctor@latest",
     "typecheck": "pnpm -r typecheck"
   },

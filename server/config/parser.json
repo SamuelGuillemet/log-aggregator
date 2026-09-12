@@ -6,5 +6,6 @@
     "thread": "thread",
     "logger": "logger",
     "message": "message"
-  }
+  },
+  "logFileName": "^{project}-(?<kind>serveur)\\.{date}-\\d+\\.log$"
 }

@@ -80,14 +80,7 @@ Rules:
 ### Log Event
 
 ```ts
-type LogLevel =
-  | "TRACE"
-  | "DEBUG"
-  | "INFO"
-  | "WARN"
-  | "ERROR"
-  | "FATAL"
-  | "UNKNOWN";
+type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "UNKNOWN";
 
 interface LogEvent {
   id: string;

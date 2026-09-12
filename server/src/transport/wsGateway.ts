@@ -1,113 +1,161 @@
 import type { Server as HttpServer } from "node:http";
-import type { LogSourceConfig, SourceOptions } from "@log-aggregator/shared";
-import { WebSocketServer } from "ws";
-import { LogAggregatorService } from "../application/logAggregatorService.js";
-import { PROTOCOL_VERSION, type ServerConfig } from "../config.js";
 import {
-  bindSessionStreaming,
-  type ClientSession,
-  closeSession,
-  createClientSession,
-  handleClientMessage,
-  sendSnapshot,
-} from "./clientSession.js";
-import { sendMessage } from "./messageCodec.js";
+  PROTOCOL_VERSION,
+  type LogTableSchema,
+  type SourceOptions,
+  decodeClientMessage,
+} from "@log-aggregator/shared";
+import { WebSocketServer, type WebSocket } from "ws";
+import type { StreamRegistry } from "../domain/streamRegistry.js";
+import { describe, logger } from "../util/logger.js";
+import type { OriginGuard } from "./origin.js";
+import { send } from "./outbound.js";
+import { Session } from "./session.js";
 
-export interface GatewayContext {
-  broadcastError: (message: string, error: unknown) => void;
-  closeAll: () => Promise<void>;
-  clients: Map<string, ClientSession>;
-  server: WebSocketServer;
-  updateSources: (sources: LogSourceConfig[], options: SourceOptions) => void;
+const HEARTBEAT_INTERVAL_MS = 30_000;
+
+interface Connection {
+  socket: WebSocket;
+  session: Session;
+  alive: boolean;
 }
 
-export function attachWsGateway(
-  server: HttpServer,
-  config: ServerConfig,
-  sourceOptions: SourceOptions,
-): GatewayContext {
-  const clients = new Map<string, ClientSession>();
-  const webSocketServer = new WebSocketServer({ noServer: true });
-  let currentSourceOptions = sourceOptions;
+export interface GatewayDeps {
+  originGuard: OriginGuard;
+  registry: StreamRegistry;
+  schema: LogTableSchema;
+  maxLiveBatch: number;
+  getOptions: () => SourceOptions;
+}
+
+export interface Gateway {
+  getSession: (clientId: string) => Session | undefined;
+  publishOptions: (options: SourceOptions) => void;
+  broadcastError: (message: string) => void;
+  close: () => Promise<void>;
+}
+
+export function attachWsGateway(server: HttpServer, deps: GatewayDeps): Gateway {
+  const connections = new Map<string, Connection>();
+  const webSocketServer = new WebSocketServer({ maxPayload: 256 * 1_024, noServer: true });
 
   server.on("upgrade", (request, socket, head) => {
-    const requestUrl = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
+    const url = new URL(request.url ?? "/", "http://localhost");
 
-    if (requestUrl.pathname !== "/ws") {
+    if (url.pathname !== "/ws") {
+      socket.destroy();
+      return;
+    }
+
+    if (!deps.originGuard(request.headers.origin, request.socket.remoteAddress)) {
+      logger.warn(`rejected upgrade from origin ${request.headers.origin ?? "<none>"}`);
+      socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
       socket.destroy();
       return;
     }
 
     webSocketServer.handleUpgrade(request, socket, head, (webSocket) => {
-      webSocketServer.emit("connection", webSocket, request);
+      webSocketServer.emit("connection", webSocket);
     });
   });
 
-  webSocketServer.on("connection", (socket) => {
-    const service = new LogAggregatorService(config);
-    const client = createClientSession(socket, service);
-    clients.set(client.id, client);
+  webSocketServer.on("connection", (socket: WebSocket) => {
+    const session = new Session(socket, {
+      maxLiveBatch: deps.maxLiveBatch,
+      registry: deps.registry,
+      schema: deps.schema,
+    });
+    const connection: Connection = { alive: true, session, socket };
 
-    bindSessionStreaming(client);
+    connections.set(session.id, connection);
+    logger.info(`client connected ${session.id} (${connections.size} total)`);
 
-    sendMessage(socket, {
-      payload: {
-        clientId: client.id,
-        options: currentSourceOptions,
-        protocolVersion: PROTOCOL_VERSION,
-      },
+    send(socket, {
+      clientId: session.id,
+      options: deps.getOptions(),
+      protocolVersion: PROTOCOL_VERSION,
       type: "connected",
     });
-    sendSnapshot(client);
 
-    socket.on("message", (rawMessage) => {
-      void handleClientMessage(client, rawMessage);
+    socket.on("pong", () => {
+      connection.alive = true;
     });
-    socket.on("close", () => {
-      void closeClient(client.id, clients);
-    });
-  });
 
-  return {
-    broadcastError: (message, error) => {
-      for (const client of clients.values()) {
-        sendMessage(client.socket, {
-          payload: { details: String(error), message },
+    socket.on("message", (raw: Buffer | ArrayBuffer | Buffer[]) => {
+      const decoded = decodeClientMessage(toText(raw));
+
+      if (!decoded.ok) {
+        // v1 cast the payload and let `handlers[unknownType]()` take down the process.
+        send(socket, { message: "Invalid message", details: decoded.error, type: "error" });
+        return;
+      }
+
+      try {
+        session.handleMessage(decoded.value);
+      } catch (error) {
+        logger.error(`session ${session.id} failed to handle ${decoded.value.type}`, error);
+        send(socket, {
+          details: describe(error),
+          message: "Failed to handle message",
           type: "error",
         });
       }
-    },
-    clients,
-    closeAll: async () => {
-      const activeClients = [...clients.values()];
+    });
 
-      await Promise.all(activeClients.map((client) => closeClient(client.id, clients)));
+    socket.on("error", (error) => logger.warn(`socket error: ${describe(error)}`));
+    socket.on("close", () => {
+      connections.delete(session.id);
+      session.close();
+      logger.info(`client disconnected ${session.id} (${connections.size} remaining)`);
+    });
+  });
 
-      for (const client of activeClients) {
-        client.socket.close();
+  // Without this, a half-open TCP connection keeps a session, and its stream
+  // reference, alive forever.
+  const heartbeat = setInterval(() => {
+    for (const connection of connections.values()) {
+      if (!connection.alive) {
+        connection.socket.terminate();
+        continue;
       }
 
-      webSocketServer.close();
-    },
-    server: webSocketServer,
-    updateSources: (sources, options) => {
-      config.sources = sources;
-      currentSourceOptions = options;
+      connection.alive = false;
+      connection.socket.ping();
+    }
+  }, HEARTBEAT_INTERVAL_MS);
+  heartbeat.unref();
 
-      for (const client of clients.values()) {
-        sendMessage(client.socket, { payload: options, type: "source-options" });
+  return {
+    broadcastError: (message) => {
+      for (const connection of connections.values()) {
+        send(connection.socket, { message, type: "error" });
+      }
+    },
+    close: async () => {
+      clearInterval(heartbeat);
+
+      for (const connection of connections.values()) {
+        connection.session.close();
+        connection.socket.close(1_001, "Server shutting down");
+      }
+
+      connections.clear();
+
+      await new Promise<void>((resolve) => webSocketServer.close(() => resolve()));
+    },
+    getSession: (clientId) => connections.get(clientId)?.session,
+    publishOptions: (options) => {
+      for (const connection of connections.values()) {
+        send(connection.socket, { options, type: "source-options" });
       }
     },
   };
 }
 
-async function closeClient(clientId: string, clients: Map<string, ClientSession>): Promise<void> {
-  const client = clients.get(clientId);
-
-  if (!client) {
-    return;
+function toText(raw: Buffer | ArrayBuffer | Buffer[]): string {
+  if (Array.isArray(raw)) {
+    return Buffer.concat(raw).toString("utf8");
   }
 
-  clients.delete(clientId);
-  await closeSession(client);
+  return Buffer.isBuffer(raw) ? raw.toString("utf8") : Buffer.from(raw).toString("utf8");
 }

@@ -1,83 +1,52 @@
-import { Wifi, WifiOff } from "lucide-react";
-import { useShallow } from "zustand/react/shallow";
-import { FilterPanel } from "@/components/filters/FilterPanel";
-import { LogViewer } from "@/components/logs/LogViewer";
-import { SourceSelector } from "@/components/sources/SourceSelector";
-import { Badge } from "@/components/ui/badge";
-import { useLogWebSocket } from "@/hooks/useLogWebSocket";
+import { useLogConnection } from "@/connection/useLogConnection";
+import { FilterRail } from "@/features/filters/FilterRail";
+import { LogTable } from "@/features/logs/LogTable";
+import { StatusBar } from "@/features/shell/StatusBar";
 import { cn } from "@/lib/utils";
-import { useCompatibilityStore } from "@/store/compatibilityStore";
-import { useLogStore } from "@/store/logStore";
+import { useConnectionStore } from "@/state/connectionStore";
 
 export function App() {
-  const { sendMessage, streamingPaused, toggleStreaming } = useLogWebSocket();
-  const { connected, error } = useLogStore(
-    useShallow((state) => ({
-      connected: state.connected,
-      error: state.error,
-    })),
-  );
-  const { compatibilityFeatures, compatibilityMessage, compatibilityStatus } =
-    useCompatibilityStore(
-      useShallow((state) => ({
-        compatibilityFeatures: state.features,
-        compatibilityMessage: state.message,
-        compatibilityStatus: state.status,
-      })),
-    );
+  const { startStream, stopStream, togglePause } = useLogConnection();
+  const error = useConnectionStore((state) => state.error);
+  const compatibility = useConnectionStore((state) => state.compatibility);
 
   return (
-    <main className="atelier-page-enter grid h-dvh min-h-0 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)] gap-4 overflow-hidden p-3 md:p-5">
-      <header className="flex flex-col items-stretch gap-4 md:flex-row md:items-end md:justify-between">
-        <h1 className="m-0 mb-2 font-heading text-2xl leading-tight md:text-3xl">Log Aggregator</h1>
-        <Badge
-          className={cn(
-            "min-h-9 gap-2 rounded-[7px] border border-muted-foreground/30 bg-secondary px-3 text-[#7b3025]",
-            connected && "text-primary",
-          )}
-        >
-          {connected ? <Wifi size={18} /> : <WifiOff size={18} />}
-          <span>{connected ? "Connected" : "Disconnected"}</span>
-        </Badge>
-      </header>
+    <main className="grid h-dvh min-h-0 grid-rows-[auto_auto_auto_minmax(0,1fr)] overflow-hidden">
+      <StatusBar onStart={startStream} onStop={stopStream} />
+      <FilterRail />
 
-      <SourceSelector sendMessage={sendMessage} />
-
-      <FilterPanel />
-
-      {error || compatibilityMessage ? (
-        <div className="flex flex-col gap-2">
-          {compatibilityMessage ? (
-            <div
-              className={cn(
-                "rounded-lg border px-4 py-3",
-                compatibilityStatus === "server-outdated"
-                  ? "border-[#e0a18e] bg-[#fff1eb] text-[#7b3025]"
-                  : "border-[#be8b2f] bg-[#fff8e8] text-[#7a5a12]",
-              )}
-              role="status"
-            >
-              {compatibilityMessage}
-            </div>
+      {error || compatibility.message ? (
+        <div className="flex flex-col">
+          {compatibility.message ? (
+            <Notice level={compatibility.status === "server-outdated" ? "error" : "warn"}>
+              {compatibility.message}
+            </Notice>
           ) : null}
-
-          {error ? (
-            <div
-              className="rounded-lg border border-[#e0a18e] bg-[#fff1eb] px-4 py-3 text-[#7b3025]"
-              role="status"
-            >
-              {error}
-            </div>
-          ) : null}
+          {error ? <Notice level="error">{error}</Notice> : null}
         </div>
-      ) : null}
+      ) : (
+        <div />
+      )}
 
-      <LogViewer
-        canControlStreaming={compatibilityFeatures.has("stream-control")}
-        connected={connected}
-        streamingPaused={streamingPaused}
-        toggleStreaming={toggleStreaming}
+      <LogTable
+        canControlStreaming={compatibility.features.has("stream-control")}
+        onTogglePause={togglePause}
       />
     </main>
+  );
+}
+
+/** Notices borrow the severity palette rather than inventing a second colour system. */
+function Notice({ children, level }: { children: React.ReactNode; level: "error" | "warn" }) {
+  return (
+    <p
+      className={cn(
+        "data border-b border-line px-3 py-1.5 text-[12px]",
+        level === "error" ? "bg-wash-error text-level-error" : "bg-wash-warn text-level-warn",
+      )}
+      role="status"
+    >
+      {children}
+    </p>
   );
 }

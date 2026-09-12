@@ -88,7 +88,7 @@ function buildLogLine(app, now, tick, levels) {
   const datePart = now.toISOString().slice(0, 10);
   const timePart = now.toISOString().slice(11, 23).replace(".", ",");
   const level = levels[tick % levels.length];
-  const loggerName = `${app.toLowerCase().replaceAll('-', ".")}.Service`;
+  const loggerName = `${app.toLowerCase().replaceAll("-", ".")}.Service`;
   const requestId = `${app}-REQ-LIVE-${String(tick).padStart(6, "0")}`;
   const sessionId = `${app}-SID-LIVE-${String((tick % 500) + 1).padStart(4, "0")}`;
   const transactionId = `${app}-TX-LIVE-${datePart.replaceAll("-", "")}-${String(tick).padStart(6, "0")}`;

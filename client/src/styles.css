@@ -1,27 +1,51 @@
 @import "tailwindcss";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/outfit";
-@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Instrument panel, on a cool technical white.
+ *
+ * One rule governs this file: chrome is monochrome, severity is the only colour
+ * in the application. Nothing is tinted to look pleasant. If a pixel carries
+ * colour, it reports a log level -- which is what makes one ERROR findable in
+ * ten thousand lines, the entire job of this product.
+ *
+ * Type is one family in two voices: Plex Sans for chrome, Plex Mono for every
+ * piece of data, so the tool reads as one object rather than a shell wrapped
+ * around foreign payload.
+ */
+
 @theme inline {
-  --font-heading: "Fraunces Variable", serif;
-  --font-sans: "Outfit Variable", sans-serif;
-  --font-mono: "Source Code Pro", monospace;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
+  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --font-heading: var(--font-sans);
+
+  /* Design tokens as real utilities: text-mute, bg-panel, border-line, text-level-error. */
+  --color-surface: var(--surface);
+  --color-panel: var(--panel);
+  --color-panel-high: var(--panel-high);
+  --color-line: var(--line);
+  --color-mute: var(--mute);
+  --color-fg: var(--fg);
+  --color-row-hover: var(--row-hover);
+  --color-spine-viewport: var(--spine-viewport);
+
+  --color-level-trace: var(--level-trace);
+  --color-level-debug: var(--level-debug);
+  --color-level-info: var(--level-info);
+  --color-level-warn: var(--level-warn);
+  --color-level-error: var(--level-error);
+  --color-level-fatal: var(--level-fatal);
+  --color-level-unknown: var(--level-unknown);
+
+  --color-wash-warn: var(--wash-warn);
+  --color-wash-error: var(--wash-error);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -45,70 +69,68 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
-  --paper: #f8f5f5;
-  --paper-strong: #fafeff;
-  --ink: #18211d;
-  --ink-soft: #536056;
-  --rule: #e9f0e5;
-  --rule-strong: #aeb9ac;
-  --blueprint: #4175c9;
-  --signal: #e2361c;
-  --moss: #2faa4c;
-  --amber: #e49918;
-  --plum: #8d54a3;
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: var(--paper-strong);
-  --card-foreground: var(--ink);
-  --popover: var(--paper-strong);
-  --popover-foreground: var(--ink);
-  --primary: var(--blueprint);
-  --primary-foreground: #fffefa;
-  --secondary: #e8eee2;
-  --secondary-foreground: var(--ink);
-  --muted: #f7f9f6;
-  --muted-foreground: var(--ink-soft);
-  --accent: #edf3e8;
-  --accent-foreground: var(--ink);
-  --destructive: var(--signal);
-  --border: var(--rule);
-  --input: var(--rule);
-  --ring: var(--blueprint);
-  --chart-1: var(--blueprint);
-  --chart-2: var(--moss);
-  --chart-3: var(--amber);
-  --chart-4: var(--signal);
-  --chart-5: var(--plum);
-  --radius: 0.55rem;
-  --sidebar: #e8eee2;
-  --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--blueprint);
-  --sidebar-primary-foreground: #fffefa;
-  --sidebar-accent: #dfe8db;
-  --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: var(--rule-strong);
-  --sidebar-ring: var(--blueprint);
+  --surface: #f7f8fa;
+  --panel: #edf1f6;
+  --panel-high: #ffffff;
+  --line: #d5dce5;
+  --mute: #5a6676;
+  --fg: #18212c;
+  --row-hover: #e9eef4;
+  --spine-viewport: #41546b;
 
-  --entity-task: var(--blueprint);
-  --entity-question: var(--amber);
-  --entity-deliverable: var(--moss);
-  --entity-time: var(--signal);
+  /*
+   * The only chroma in the product, ordered by how much it should alarm you.
+   * Re-picked for a light ground: every value clears 4.5:1 against the page, so an
+   * eleven-pixel level label stays legible rather than merely decorative.
+   */
+  --level-trace: #6f7b8c;
+  --level-debug: #4f5b6b;
+  --level-info: #0b6fbe;
+  --level-warn: #9a6608;
+  --level-error: #c4321a;
+  --level-fatal: #ae0f46;
+  --level-unknown: #8b95a3;
 
-  --workspace-shadow: 0 18px 50px rgb(24 33 29 / 0.08);
+  /* Row and notice tints, derived so they can never drift from the ramp. */
+  --wash-warn: color-mix(in srgb, var(--level-warn) 12%, transparent);
+  --wash-error: color-mix(in srgb, var(--level-error) 12%, transparent);
+
+  --background: var(--surface);
+  --foreground: var(--fg);
+  --card: var(--panel-high);
+  --card-foreground: var(--fg);
+  --popover: var(--panel-high);
+  --popover-foreground: var(--fg);
+  /* Not a brand colour: the one solid control on the page, in graphite. */
+  --primary: #2f3d4e;
+  --primary-foreground: #f6f9fc;
+  --secondary: #e3e9f0;
+  --secondary-foreground: var(--fg);
+  --muted: #eef2f7;
+  --muted-foreground: var(--mute);
+  --accent: #dbe3ec;
+  --accent-foreground: var(--fg);
+  --destructive: var(--level-error);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: #3f6a99;
+  --radius: 0.375rem;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
   }
+
   html {
     @apply font-sans;
   }
@@ -124,67 +146,78 @@
     cursor: pointer;
   }
 
-  body::before {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    content: "";
-    background:
-      linear-gradient(rgba(24, 32, 33, 0.045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(24, 33, 33, 0.045) 1px, transparent 1px),
-      radial-gradient(circle at 20% 12%, rgb(23 105 170 / 0.08), transparent 28rem),
-      radial-gradient(circle at 92% 18%, rgba(115, 125, 79, 0.09), transparent 24rem), var(--paper);
-    background-size:
-      34px 34px,
-      34px 34px,
-      auto,
-      auto,
-      auto;
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
   }
 
   ::selection {
-    color: var(--primary-foreground);
-    background: var(--primary);
+    background: #cfe1f4;
+    color: #10202f;
   }
-}
 
-.border-rule {
-  border: 1px solid color-mix(in srgb, var(--rule), transparent 10%);
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--surface);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c2ccd8;
+    border: 2px solid var(--surface);
+    border-radius: 6px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a7b4c4;
+  }
 }
 
 @layer utilities {
-  .atelier-card {
-    background: color-mix(in srgb, var(--card), transparent 5%);
-    border: 1px solid color-mix(in srgb, var(--rule), transparent 10%);
-    box-shadow: 0 8px 24px rgb(24 33 29 / 0.055);
-  }
-
-  .atelier-section-title {
+  /* Mono, because every label in this interface names a data field. */
+  .label-micro {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 650;
-    letter-spacing: 0.08em;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mute);
   }
 
-  .atelier-page-enter {
-    animation: atelier-page-enter 2000ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .atelier-page-enter {
-      animation: none;
-    }
+  .data {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .row-hover:hover {
+    background: var(--row-hover);
   }
 }
 
-@keyframes atelier-page-enter {
-  from {
-    opacity: 0;
-    transform: translateY(7px);
-  }
-  to {
+@keyframes pulse-live {
+  0%,
+  100% {
     opacity: 1;
-    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.live-dot {
+  animation: pulse-live 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
   }
 }
