@@ -63,9 +63,6 @@ async function writePackageJson() {
         version: rootPackage.version,
         private: true,
         type: "module",
-        scripts: {
-          start: "node server/index.js",
-        },
         dependencies,
         engines: {
           node: ">=22",
@@ -82,7 +79,7 @@ async function writeLauncherScripts() {
 
   await writeFile(
     commandScript,
-    ["@echo off", "cd /d %~dp0", "node server/index.js", ""].join("\r\n"),
+    ["@echo off", "cd /d %~dp0", "node --max-old-space-size=8192 server/index.js", ""].join("\r\n"),
   );
 }
 
