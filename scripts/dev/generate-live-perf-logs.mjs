@@ -11,16 +11,13 @@ const outputRoot = path.resolve(repositoryRoot, args.output ?? "sample-logs/perf
 const date = args.date ?? todayUtcDate();
 
 const shares = ["perf-share-a", "perf-share-b", "perf-share-c"];
-const tiers = ["back"];
 const apps = buildApps(appCount);
 const levelCycle = ["INFO", "DEBUG", "WARN", "ERROR"];
 const tickByApp = new Map();
 
 for (const share of shares) {
-  for (const tier of tiers) {
-    const logDirectory = path.join(outputRoot, share, "Java", `apache-tomcat-${tier}`, "logs");
-    await mkdir(logDirectory, { recursive: true });
-  }
+  const logDirectory = path.join(outputRoot, share);
+  await mkdir(logDirectory, { recursive: true });
 }
 
 console.info(
@@ -53,17 +50,15 @@ async function writeTick() {
     now.setDate(now.getDate() + 1); // Add 1 day to simulate future logs
 
     for (const share of shares) {
-      for (const tier of tiers) {
-        const logDirectory = path.join(outputRoot, share, "Java", `apache-tomcat-${tier}`, "logs");
+      const logDirectory = path.join(outputRoot, share);
 
-        for (const app of apps) {
-          const nextTick = (tickByApp.get(app) ?? 0) + 1;
-          tickByApp.set(app, nextTick);
+      for (const app of apps) {
+        const nextTick = (tickByApp.get(app) ?? 0) + 1;
+        tickByApp.set(app, nextTick);
 
-          const filePath = path.join(logDirectory, `${app}-serveur.${date}-0.log`);
-          const line = buildLogLine(app, tier, now, nextTick, levelCycle);
-          await appendFile(filePath, `${line}\n`, "utf8");
-        }
+        const filePath = path.join(logDirectory, `${app}-serveur.${date}-0.log`);
+        const line = buildLogLine(app, now, nextTick, levelCycle);
+        await appendFile(filePath, `${line}\n`, "utf8");
       }
     }
   } catch (error) {
@@ -84,11 +79,11 @@ function stop() {
   process.exit(0);
 }
 
-function buildLogLine(app, tier, now, tick, levels) {
+function buildLogLine(app, now, tick, levels) {
   const datePart = now.toISOString().slice(0, 10);
   const timePart = now.toISOString().slice(11, 23).replace(".", ",");
   const level = levels[tick % levels.length];
-  const loggerName = `${app.toLowerCase().replace(/-/g, ".")}.${tier}.Service`;
+  const loggerName = `${app.toLowerCase().replaceAll('-', ".")}.Service`;
   const requestId = `${app}-REQ-LIVE-${String(tick).padStart(6, "0")}`;
   const sessionId = `${app}-SID-LIVE-${String((tick % 500) + 1).padStart(4, "0")}`;
   const transactionId = `${app}-TX-LIVE-${datePart.replaceAll("-", "")}-${String(tick).padStart(6, "0")}`;

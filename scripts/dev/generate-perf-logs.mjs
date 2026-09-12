@@ -11,7 +11,6 @@ const linesPerFile = clampInteger(args.lines, 25, 1, 20_000);
 const outputRoot = path.resolve(repositoryRoot, args.output ?? "sample-logs/perf-cluster");
 
 const shares = ["perf-share-a", "perf-share-b", "perf-share-c"];
-const tiers = ["back"];
 const dates = buildDates(dateCount);
 const apps = buildApps(appCount);
 
@@ -20,16 +19,14 @@ await rm(outputRoot, { force: true, recursive: true });
 let createdFiles = 0;
 
 for (const share of shares) {
-  for (const tier of tiers) {
-    const logDirectory = path.join(outputRoot, share, "Java", `apache-tomcat-${tier}`, "logs");
-    await mkdir(logDirectory, { recursive: true });
+  const logDirectory = path.join(outputRoot, share);
+  await mkdir(logDirectory, { recursive: true });
 
-    for (const date of dates) {
-      for (const app of apps) {
-        const filePath = path.join(logDirectory, `${app}-serveur.${date}-0.log`);
-        await writeFile(filePath, buildLogContent(app, date, linesPerFile, tier));
-        createdFiles += 1;
-      }
+  for (const date of dates) {
+    for (const app of apps) {
+      const filePath = path.join(logDirectory, `${app}-serveur.${date}-0.log`);
+      await writeFile(filePath, buildLogContent(app, date, linesPerFile));
+      createdFiles += 1;
     }
   }
 }
@@ -96,9 +93,9 @@ function buildDates(dateCount) {
   return dates;
 }
 
-function buildLogContent(app, date, linesPerFile, tier) {
+function buildLogContent(app, date, linesPerFile) {
   const levels = ["INFO", "DEBUG", "WARN", "ERROR"];
-  const loggerName = `${app.toLowerCase().replaceAll("-", ".")}.${tier}.Service`;
+  const loggerName = `${app.toLowerCase().replaceAll("-", ".")}.Service`;
 
   const lines = Array.from({ length: linesPerFile }, (_, index) => {
     const hour = String((8 + index) % 24).padStart(2, "0");
@@ -118,7 +115,6 @@ function buildLogContent(app, date, linesPerFile, tier) {
       loggerName,
       requestId,
       sessionId,
-      tier,
       timestamp,
       transactionId,
     });
@@ -134,7 +130,6 @@ function buildLogEntry({
   loggerName,
   requestId,
   sessionId,
-  tier,
   timestamp,
   transactionId,
 }) {
@@ -147,9 +142,9 @@ function buildLogEntry({
   return [
     `${message} failure=java.lang.IllegalStateException`,
     `java.lang.IllegalStateException: Failed to process transaction ${transactionId} for ${app}`,
-    `\tat com.example.${tier}.Service.handleRequest(Service.java:${120 + (index % 30)})`,
-    `\tat com.example.${tier}.Service.persist(Service.java:${180 + (index % 25)})`,
-    `\tat com.example.${tier}.Repository.save(Repository.java:${60 + (index % 20)})`,
+    `\tat com.example.Service.handleRequest(Service.java:${120 + (index % 30)})`,
+    `\tat com.example.Service.persist(Service.java:${180 + (index % 25)})`,
+    `\tat com.example.Repository.save(Repository.java:${60 + (index % 20)})`,
     `Caused by: java.net.SocketTimeoutException: Read timed out`,
     `\tat java.base/sun.nio.ch.NioSocketImpl.timedRead(NioSocketImpl.java:${270 + (index % 15)})`,
     `\tat java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:${320 + (index % 15)})`,
