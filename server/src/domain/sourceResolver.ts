@@ -13,7 +13,7 @@ export interface ActiveLogFile {
 }
 
 const logDatePattern = /^\d{4}-\d{2}-\d{2}$/;
-const logFilePattern = /^(.+)-(?:serveur|fwk|ui)\.\d{4}-\d{2}-\d{2}-\d+\.log$/i;
+const logFilePattern = /^(.+)-(?:serveur|fwk|ui|batch)\.\d{4}-\d{2}-\d{2}-\d+\.log$/i;
 
 export async function getSourceOptions(sources: LogSourceConfig[]): Promise<SourceOptions> {
   return {
@@ -85,7 +85,7 @@ export function matchesSelectedLogFile(filePath: string, selection: SourceSelect
   }
 
   return new RegExp(
-    String.raw`^${escapeRegExp(project)}-(?:serveur|fwk|ui)\.${escapeRegExp(
+    String.raw`^${escapeRegExp(project)}-(?:serveur|fwk|ui|batch)\.${escapeRegExp(
       selection.date,
     )}-\d+\.log$`,
     "i",
