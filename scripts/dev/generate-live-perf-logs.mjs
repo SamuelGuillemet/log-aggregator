@@ -7,6 +7,7 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 const args = parseArgs(process.argv.slice(2));
 const intervalSeconds = clampInteger(args.interval, 2, 1, 3_600);
 const appCount = clampInteger(args.apps, 100, 1, 10_000);
+const eventsPerTick = clampInteger(args["events-per-tick"], 1, 1, 20_000);
 const outputRoot = path.resolve(repositoryRoot, args.output ?? "sample-logs/perf-cluster");
 const date = args.date ?? todayUtcDate();
 
@@ -21,7 +22,7 @@ for (const share of shares) {
 }
 
 console.info(
-  `Live perf logs started: apps=${appCount}, interval=${intervalSeconds}s, date=${date}`,
+  `Live perf logs started: apps=${appCount}, eventsPerTick=${eventsPerTick}, interval=${intervalSeconds}s, date=${date}`,
 );
 console.info(`Target root: ${path.relative(repositoryRoot, outputRoot)}`);
 console.info("Press Ctrl+C to stop.");
@@ -53,12 +54,16 @@ async function writeTick() {
       const logDirectory = path.join(outputRoot, share);
 
       for (const app of apps) {
-        const nextTick = (tickByApp.get(app) ?? 0) + 1;
-        tickByApp.set(app, nextTick);
-
         const filePath = path.join(logDirectory, `${app}-serveur.${date}-0.log`);
-        const line = buildLogLine(app, now, nextTick, levelCycle);
-        await appendFile(filePath, `${line}\n`, "utf8");
+        const lines = [];
+
+        for (let eventIndex = 0; eventIndex < eventsPerTick; eventIndex += 1) {
+          const nextTick = (tickByApp.get(app) ?? 0) + 1;
+          tickByApp.set(app, nextTick);
+          lines.push(buildLogLine(app, now, nextTick, levelCycle));
+        }
+
+        await appendFile(filePath, `${lines.join("\n")}\n`, "utf8");
       }
     }
   } catch (error) {

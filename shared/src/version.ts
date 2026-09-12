@@ -5,7 +5,7 @@
  * Never edit or remove past entries - already-installed backends keep
  * reporting them, and the frontend needs them to gate its own features.
  */
-export const PROTOCOL_VERSION = 3 as const;
+export const PROTOCOL_VERSION = 4 as const;
 
 export type PROTOCOL_VERSION = typeof PROTOCOL_VERSION;
 
@@ -44,6 +44,20 @@ export const COMPATIBILITY_TABLE: readonly CompatibilityEntry[] = [
       "stream-control",
     ],
     protocolVersion: 3,
+  },
+  {
+    features: [
+      "subscribe",
+      "history-pagination",
+      "favorites",
+      "configured-sources",
+      "source-groups",
+      "source-config-reload",
+      "application-autocomplete",
+      "stream-control",
+      "batched-live-streaming",
+    ],
+    protocolVersion: 4,
   },
 ];
 

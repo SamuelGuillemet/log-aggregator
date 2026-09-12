@@ -25,6 +25,7 @@ export type ServerMessage =
     }
   | { type: "source-options"; payload: SourceOptions }
   | { type: "log"; payload: LogEvent }
+  | { type: "logs"; payload: LogEvent[] }
   | { type: "disconnected"; payload: { reason?: string } }
   | { type: "error"; payload: { message: string; details?: string } }
   | { type: "pong"; payload: { timestamp: string } };

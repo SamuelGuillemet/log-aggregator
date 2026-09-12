@@ -5,6 +5,9 @@ import type { LogAggregatorService } from "../application/logAggregatorService.j
 import { createEventMatcher, defaultLogFilter, mergeLogFilter } from "../domain/history.js";
 import { rawDataToString, sendMessage } from "./messageCodec.js";
 
+const defaultLiveBatchIntervalMs = 100;
+const liveBatchIntervalMs = readLiveBatchInterval();
+
 export interface ClientSession {
   id: string;
   filter: LogFilter;
@@ -13,6 +16,8 @@ export interface ClientSession {
   service: LogAggregatorService;
   stopStreaming: () => Promise<void>;
   socket: WebSocket;
+  pendingLiveEvents: LogEvent[];
+  liveBatchTimer: NodeJS.Timeout | undefined;
 }
 
 export function createClientSession(
@@ -26,6 +31,8 @@ export function createClientSession(
     streamingPaused: false,
     service,
     socket,
+    pendingLiveEvents: [],
+    liveBatchTimer: undefined,
     stopStreaming: async () => {
       await service.shutdown();
     },
@@ -34,9 +41,13 @@ export function createClientSession(
 
 export function bindSessionStreaming(session: ClientSession): void {
   const unsubscribeLog = session.service.onLog((event) => {
-    if (!session.streamingPaused && session.filterMatcher(event)) {
-      sendMessage(session.socket, { payload: event, type: "log" });
+    if (session.streamingPaused) {
+      return;
     }
+
+    session.pendingLiveEvents.push(event);
+
+    session.liveBatchTimer ??= setTimeout(() => flushLiveEvents(session), liveBatchIntervalMs);
   });
 
   const unsubscribeError = session.service.onError((error) => {
@@ -46,8 +57,29 @@ export function bindSessionStreaming(session: ClientSession): void {
   session.stopStreaming = async () => {
     unsubscribeLog();
     unsubscribeError();
+    clearLiveBatch(session);
     await session.service.shutdown();
   };
+}
+
+function flushLiveEvents(session: ClientSession): void {
+  session.liveBatchTimer = undefined;
+
+  const events = session.pendingLiveEvents.filter((event) => session.filterMatcher(event));
+  session.pendingLiveEvents = [];
+
+  if (!session.streamingPaused && events.length > 0) {
+    sendMessage(session.socket, { payload: events, type: "logs" });
+  }
+}
+
+export function clearLiveBatch(session: ClientSession): void {
+  if (session.liveBatchTimer) {
+    clearTimeout(session.liveBatchTimer);
+    session.liveBatchTimer = undefined;
+  }
+
+  session.pendingLiveEvents = [];
 }
 
 export function sendSnapshot(session: ClientSession): void {
@@ -91,6 +123,7 @@ export async function handleClientMessage(
     },
     pause: () => {
       session.streamingPaused = true;
+      clearLiveBatch(session);
     },
     resume: () => {
       session.streamingPaused = false;
@@ -101,16 +134,26 @@ export async function handleClientMessage(
         return;
       }
 
+      clearLiveBatch(session);
       await session.service.subscribe(message.payload);
       sendSnapshot(session);
     },
     unsubscribe: async () => {
+      clearLiveBatch(session);
       await session.service.unsubscribe();
       sendSnapshot(session);
     },
   };
 
   await handlers[message.type]();
+}
+
+function readLiveBatchInterval(): number {
+  const configuredInterval = Number(process.env.LOG_AGGREGATOR_LIVE_BATCH_INTERVAL_MS);
+
+  return Number.isFinite(configuredInterval) && configuredInterval > 0
+    ? configuredInterval
+    : defaultLiveBatchIntervalMs;
 }
 
 export async function closeSession(session: ClientSession): Promise<void> {

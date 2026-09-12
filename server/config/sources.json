@@ -1,18 +1,8 @@
 [
   {
-    "id": "local-performance-back",
-    "name": "Local performance - Back",
-    "group": "Local performance",
-    "directories": [
-      "../../sample-logs/perf-cluster/perf-share-a",
-      "../../sample-logs/perf-cluster/perf-share-b",
-      "../../sample-logs/perf-cluster/perf-share-c"
-    ]
-  },
-  {
-    "id": "local-performance-front",
-    "name": "Local performance - Front",
-    "group": "Local performance",
+    "id": "local-performance",
+    "name": "Local performance",
+    "group": "Local",
     "directories": [
       "../../sample-logs/perf-cluster/perf-share-a",
       "../../sample-logs/perf-cluster/perf-share-b",

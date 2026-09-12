@@ -320,7 +320,7 @@ Important:
 
 #### `pause`
 
-Stops live `log` messages for the requesting socket without stopping file watchers or ingestion.
+Stops live `logs` messages for the requesting socket without stopping file watchers or ingestion.
 
 ```json
 { "type": "pause" }
@@ -328,9 +328,14 @@ Stops live `log` messages for the requesting socket without stopping file watche
 
 New events continue to enter the in-memory buffer while streaming is paused.
 
+Live events are buffered per WebSocket connection and sent as a `logs` message every
+`LOG_AGGREGATOR_LIVE_BATCH_INTERVAL_MS` milliseconds (250 by default). The message payload is
+an array of events. Events already buffered when streaming is paused are discarded from the live
+batch; `resume` sends a snapshot.
+
 #### `resume`
 
-Resumes live `log` messages for the requesting socket.
+Resumes live `logs` messages for the requesting socket.
 
 ```json
 { "type": "resume" }
@@ -359,7 +364,7 @@ Rules:
 
 - the server merges the partial payload into the socket's existing filter
 - omitted fields keep their previous values
-- the updated filter affects future `log` broadcasts for that socket only
+- the updated filter affects future `logs` broadcasts for that socket only
 - the server responds with a `snapshot` after applying the new filter
 
 #### `ping`

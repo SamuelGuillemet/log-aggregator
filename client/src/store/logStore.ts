@@ -67,18 +67,16 @@ export const useLogStore = create<LogStore>((set) => ({
       }
 
       if (message.type === "log") {
-        const existingIndex = state.events.findIndex((event) => event.id === message.payload.id);
-
-        if (existingIndex >= 0) {
-          const events = [...state.events];
-          events[existingIndex] = message.payload;
-
-          return { error: undefined, events };
-        }
-
         return {
           error: undefined,
-          events: mergeEvents(state.events, [message.payload], "top"),
+          events: mergeLiveEvents(state.events, [message.payload]),
+        };
+      }
+
+      if (message.type === "logs") {
+        return {
+          error: undefined,
+          events: mergeLiveEvents(state.events, message.payload),
         };
       }
 
@@ -129,6 +127,16 @@ function mergeEvents(
   }
 
   return mergeSortedDesc(currentEvents, newEvents);
+}
+
+function mergeLiveEvents(currentEvents: LogEvent[], incomingEvents: LogEvent[]): LogEvent[] {
+  const existingById = new Map(currentEvents.map((event) => [event.id, event]));
+
+  for (const event of incomingEvents) {
+    existingById.set(event.id, event);
+  }
+
+  return [...existingById.values()].sort(compareNewestFirst);
 }
 
 function mergeSortedDesc(left: LogEvent[], right: LogEvent[]): LogEvent[] {
