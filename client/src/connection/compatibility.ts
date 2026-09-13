@@ -22,7 +22,7 @@ export const UNKNOWN_COMPATIBILITY: CompatibilityResult = {
 };
 
 export function resolveCompatibility(serverProtocolVersion: number): CompatibilityResult {
-  if (serverProtocolVersion < MIN_SUPPORTED_PROTOCOL_VERSION) {
+  if (serverProtocolVersion === undefined || serverProtocolVersion < MIN_SUPPORTED_PROTOCOL_VERSION) {
     return {
       features: new Set(),
       message: `This backend speaks protocol v${serverProtocolVersion}; this app needs at least v${MIN_SUPPORTED_PROTOCOL_VERSION}. Update your local backend: ${RELEASES_URL}`,
