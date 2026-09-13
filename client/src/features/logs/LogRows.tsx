@@ -26,6 +26,11 @@ export function LogRows({
   onInspect,
   onToggleSelected,
 }: LogRowsProps) {
+  // oxlint-disable-next-line react/incompatible-library -- `rows` carries TanStack `Row`
+  // objects backed by the mutable `table` instance, so compiler memoization would miss
+  // state-only changes (e.g. column order) that don't change these references.
+  "use no memo";
+
   return (
     <div style={{ height: `${totalHeight}px`, position: "relative", width: `${tableWidth}px` }}>
       {virtualItems.map((virtualRow) => {

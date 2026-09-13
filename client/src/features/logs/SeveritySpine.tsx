@@ -1,15 +1,30 @@
 import type { LogEvent, LogLevel } from "@log-aggregator/shared";
-import { type RefObject, useEffect, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { levelColor } from "./levelStyles";
 
 /** Fine enough to place a single error, coarse enough to stay cheap to rebuild. */
 const SLICE_COUNT = 400;
 
-type Mark = "none" | "error" | "fatal";
+type Mark = "none" | "warn" | "error" | "fatal";
 
 const MARK_LEVEL: Record<Exclude<Mark, "none">, LogLevel> = {
+  warn: "WARN",
   error: "ERROR",
   fatal: "FATAL",
+};
+
+/** Higher rank must never be overwritten by a lower one when slices collide. */
+const MARK_RANK: Record<Mark, number> = {
+  none: 0,
+  warn: 1,
+  error: 2,
+  fatal: 3,
+};
+
+const LEVEL_MARK: Partial<Record<LogLevel, Mark>> = {
+  WARN: "warn",
+  ERROR: "error",
+  FATAL: "fatal",
 };
 
 interface Run {
@@ -24,13 +39,14 @@ interface SeveritySpineProps {
 
 /**
  * A minimap of the whole loaded buffer answering one question: where is the bad
- * part. It plots only errors against an empty track -- an earlier version drew every
- * level and became a rainbow barcode with no signal in it. Ordinary scrolling does
- * the same job, so this is hidden from assistive tech rather than being a second
+ * part. It plots only warnings and errors against an empty track -- an earlier version
+ * drew every level and became a rainbow barcode with no signal in it. Ordinary scrolling
+ * does the same job, so this is hidden from assistive tech rather than being a second
  * thing to tab through.
  */
 export function SeveritySpine({ events, scrollRef }: SeveritySpineProps) {
   const [viewport, setViewport] = useState({ height: 0, top: 0 });
+  const dragFrame = useRef<number | null>(null);
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -61,8 +77,27 @@ export function SeveritySpine({ events, scrollRef }: SeveritySpineProps) {
     };
   }, [scrollRef, events.length]);
 
+  useEffect(() => {
+    return () => {
+      if (dragFrame.current !== null) {
+        cancelAnimationFrame(dragFrame.current);
+      }
+    };
+  }, []);
+
   const runs = buildRuns(events);
   const markCount = runs.filter((run) => run.mark !== "none").length;
+
+  const scrollToClientY = (clientY: number, bounds: DOMRect) => {
+    const element = scrollRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const fraction = (clientY - bounds.top) / bounds.height;
+    element.scrollTo({ top: fraction * element.scrollHeight });
+  };
 
   return (
     <div
@@ -70,17 +105,38 @@ export function SeveritySpine({ events, scrollRef }: SeveritySpineProps) {
       aria-hidden
       title={
         markCount > 0
-          ? "Errors across the loaded buffer. Click to jump."
-          : "No errors in the loaded buffer."
+          ? "Warnings and errors across the loaded buffer. Click and drag to jump."
+          : "No warnings or errors in the loaded buffer."
       }
       style={{ cursor: events.length > 0 ? "pointer" : "default" }}
-      onMouseDown={(event) => {
-        const element = scrollRef.current;
+      onPointerDown={(event) => {
+        if (events.length === 0) {
+          return;
+        }
+
+        event.currentTarget.setPointerCapture(event.pointerId);
+        scrollToClientY(event.clientY, event.currentTarget.getBoundingClientRect());
+      }}
+      onPointerMove={(event) => {
+        if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+          return;
+        }
+
+        const { clientY } = event;
         const bounds = event.currentTarget.getBoundingClientRect();
 
-        if (element) {
-          const fraction = (event.clientY - bounds.top) / bounds.height;
-          element.scrollTo({ top: fraction * element.scrollHeight });
+        // Throttle to one scroll update per frame so a fast drag doesn't flood the scroll container.
+        if (dragFrame.current !== null) {
+          cancelAnimationFrame(dragFrame.current);
+        }
+        dragFrame.current = requestAnimationFrame(() => {
+          dragFrame.current = null;
+          scrollToClientY(clientY, bounds);
+        });
+      }}
+      onPointerUp={(event) => {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
         }
       }}
     >
@@ -96,7 +152,7 @@ export function SeveritySpine({ events, scrollRef }: SeveritySpineProps) {
       ))}
       <div
         className="pointer-events-none absolute inset-x-0 border-y border-spine-viewport/60 bg-spine-viewport/10"
-        style={{ height: `${viewport.height}%`, top: `${viewport.top}%` }}
+        style={{ height: `${viewport.height}%`, top: `${viewport.top}%`, minHeight: "8px" }}
       />
     </div>
   );
@@ -112,15 +168,17 @@ function buildRuns(events: LogEvent[]): Run[] {
   const perSlice = events.length / sliceCount;
 
   for (const [index, event] of events.entries()) {
-    if (event.level !== "ERROR" && event.level !== "FATAL") {
+    const mark = LEVEL_MARK[event.level];
+
+    if (!mark) {
       continue;
     }
 
     const slice = Math.min(sliceCount - 1, Math.floor(index / perSlice));
 
-    // A lone FATAL must never be hidden by a neighbouring ERROR.
-    if (event.level === "FATAL" || slices[slice] === "none") {
-      slices[slice] = event.level === "FATAL" ? "fatal" : "error";
+    // A lone FATAL must never be hidden by a neighbouring ERROR or WARN.
+    if (MARK_RANK[mark] > MARK_RANK[slices[slice]]) {
+      slices[slice] = mark;
     }
   }
 

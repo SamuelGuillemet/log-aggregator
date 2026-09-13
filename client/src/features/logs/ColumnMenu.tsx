@@ -20,6 +20,11 @@ export function ColumnMenu({
   moveColumn,
   table,
 }: ColumnMenuProps) {
+  // oxlint-disable-next-line react/incompatible-library -- `table` is a stable object that
+  // TanStack mutates internally, so compiler memoization would miss state-only changes
+  // (e.g. column order) that don't change the `table` reference.
+  "use no memo";
+
   return (
     <Popover>
       <PopoverTrigger

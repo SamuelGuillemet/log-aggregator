@@ -8,6 +8,11 @@ interface LogTableHeaderProps {
 }
 
 export function LogTableHeader({ renderWidth, table, tableWidth }: LogTableHeaderProps) {
+  // oxlint-disable-next-line react/incompatible-library -- `table` is a stable object that
+  // TanStack mutates internally, so compiler memoization would miss state-only changes
+  // (e.g. column order) that don't change the `table` reference.
+  "use no memo";
+
   return (
     <div
       className="sticky top-0 z-20 flex h-7 items-stretch border-b border-line bg-panel"
