@@ -8,6 +8,7 @@
     "dev": "pnpm --parallel --stream --filter \"./shared\" --filter \"./server\" --filter \"./client\" run dev",
     "test": "pnpm -r test",
     "perf:logs": "node scripts/dev/generate-perf-logs.mjs",
+    "perf:logs:rotated": "node scripts/dev/generate-perf-logs.mjs --mode=size",
     "perf:logs:live": "node scripts/dev/generate-live-perf-logs.mjs",
     "lint": "oxlint --fix .",
     "format": "oxfmt --write .",

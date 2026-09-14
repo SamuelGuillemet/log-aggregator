@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit --pretty false",
     "dev": "tsx watch --conditions=development src/main.ts",
     "start": "node dist/main.js",
+    "flamegraph": "node --cpu-prof --cpu-prof-dir=profiles --import tsx scripts/flamegraph.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {

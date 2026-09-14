@@ -8,3 +8,4 @@ release/
 !sample-logs/**/*.log
 **/tsconfig.tsbuildinfo
 **/perf-cluster/
+server/profiles/
