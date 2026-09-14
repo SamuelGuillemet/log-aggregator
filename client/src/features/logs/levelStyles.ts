@@ -14,5 +14,13 @@ export function levelWash(level: LogLevel): string | undefined {
     return "color-mix(in srgb, var(--level-fatal) 13%, transparent)";
   }
 
-  return level === "ERROR" ? "color-mix(in srgb, var(--level-error) 10%, transparent)" : undefined;
+  if (level === "ERROR") {
+    return "color-mix(in srgb, var(--level-error) 10%, transparent)";
+  }
+
+  if (level === "WARN") {
+    return "color-mix(in srgb, var(--level-warn) 7%, transparent)";
+  }
+
+  return undefined;
 }
