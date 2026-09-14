@@ -25,35 +25,45 @@ export const MATCH_ALL: EventPredicate = () => true;
  * Events are kept oldest-first under the total order (timestampMs, sourceId,
  * sourceSeq). Queries walk backwards from a binary-searched anchor and stop as soon
  * as they have enough matches, so the buffer is never filtered or re-sorted in full.
+ *
+ * A cold load merges every rotation file of a selection at once, so out-of-order
+ * arrivals across files are common (not the exception the live tail sees). Those
+ * appends are pushed in O(1) and flagged dirty instead of insertion-sorted in place,
+ * so a first load of N events costs one O(N log N) sort instead of an O(N) shift per
+ * out-of-order event (O(N^2) overall).
  */
 export class EventBuffer {
   private readonly events: StoredEvent[] = [];
   private readonly evictChunk: number;
+  private sorted = true;
 
   constructor(private readonly capacity: number) {
     this.evictChunk = Math.max(1, Math.floor(capacity / 10));
   }
 
   get size(): number {
+    this.ensureSorted();
     return this.events.length;
   }
 
   clear(): void {
     this.events.length = 0;
+    this.sorted = true;
   }
 
   append(event: LogEvent): StoredEvent {
     const stored: StoredEvent = { event, lowerRaw: undefined };
     const last = this.events.at(-1);
 
-    // Appends dominate: a live tail is already in order, so the common case is O(1).
+    // Appends dominate: a live tail is already in order, so the common case is O(1)
+    // and eviction can run immediately without disturbing order.
     if (!last || compareEventsOldestFirst(last.event, event) <= 0) {
       this.events.push(stored);
+      this.evictOverflow();
     } else {
-      this.events.splice(this.insertionIndex(event), 0, stored);
+      this.events.push(stored);
+      this.sorted = false;
     }
-
-    this.evictOverflow();
 
     return stored;
   }
@@ -69,15 +79,32 @@ export class EventBuffer {
   }
 
   latest(limit: number, match: EventPredicate): LogPage {
+    this.ensureSorted();
+
     return this.collect(0, this.events.length, limit, match);
   }
 
   before(cursor: LogCursor, limit: number, match: EventPredicate): LogPage {
+    this.ensureSorted();
+
     return this.collect(0, this.cursorIndex(cursor), limit, match);
   }
 
   until(timestampMs: number, limit: number, match: EventPredicate): LogPage {
+    this.ensureSorted();
+
     return this.collect(this.timestampIndex(timestampMs), this.events.length, limit, match);
+  }
+
+  /** Applies every deferred out-of-order append at once, then evicts down to capacity. */
+  private ensureSorted(): void {
+    if (this.sorted) {
+      return;
+    }
+
+    this.events.sort((left, right) => compareEventsOldestFirst(left.event, right.event));
+    this.sorted = true;
+    this.evictOverflow();
   }
 
   /** Walks `[floor, end)` backwards, newest first, under a bounded scan budget. */
@@ -108,23 +135,6 @@ export class EventBuffer {
     }
 
     this.events.splice(0, this.events.length - this.capacity + this.evictChunk);
-  }
-
-  private insertionIndex(event: LogEvent): number {
-    let low = 0;
-    let high = this.events.length;
-
-    while (low < high) {
-      const middle = (low + high) >>> 1;
-
-      if (compareEventsOldestFirst(this.events[middle].event, event) <= 0) {
-        low = middle + 1;
-      } else {
-        high = middle;
-      }
-    }
-
-    return low;
   }
 
   /** First index at or after the cursor position. */
