@@ -18,6 +18,14 @@ import { send } from "./outbound.js";
 
 const EMPTY_PAGE: LogPage = { events: [], hasMore: false };
 
+/**
+ * A batch this far past the live cap is not ordinary lag, it is a backlog (a file
+ * that was only just discovered, e.g. a share that came back online). Reporting
+ * tens of thousands of "skipped" events the client can never usefully page back
+ * through one at a time serves it far worse than a single resynced snapshot.
+ */
+const BACKLOG_BATCH_FACTOR = 2;
+
 export interface SessionDeps {
   registry: StreamRegistry;
   schema: LogTableSchema;
@@ -144,6 +152,11 @@ export class Session {
     }
 
     if (events.length === 0) {
+      return;
+    }
+
+    if (events.length > this.deps.maxLiveBatch * BACKLOG_BATCH_FACTOR) {
+      this.sendSnapshot();
       return;
     }
 

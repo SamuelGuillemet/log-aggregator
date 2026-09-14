@@ -6,6 +6,9 @@ import { describe, logger } from "../util/logger.js";
 import { EventBuffer, type StoredEvent } from "./eventBuffer.js";
 import { listSelectionFiles } from "./sourceResolver.js";
 
+/** Above this, a tick is logged with a list/poll breakdown to find the slow part. */
+const SLOW_TICK_MS = 200;
+
 export interface LogStreamOptions {
   selection: SourceSelection;
   sources: LogSource[];
@@ -13,6 +16,8 @@ export interface LogStreamOptions {
   matcher: FileNameMatcher;
   capacity: number;
   pollIntervalMs: number;
+  /** A brand-new file beyond this size is tailed from the end instead of byte 0. */
+  maxBackfillBytes?: number;
 }
 
 export interface LogStreamListeners {
@@ -130,18 +135,31 @@ export class LogStream {
   }
 
   private async runTick(): Promise<void> {
+    const tickStartedAt = Date.now();
+    const listStartedAt = tickStartedAt;
     const files = await listSelectionFiles(
       this.options.sources,
       this.options.selection,
       this.options.matcher,
     );
+    const listMs = Date.now() - listStartedAt;
 
     this.syncTailers(files);
     this.lastErrorMessage = undefined;
 
+    const pollStartedAt = Date.now();
     const results = await Promise.all(
       [...this.tailers.values()].map(async (tailer) => tailer.poll()),
     );
+    const pollMs = Date.now() - pollStartedAt;
+
+    if (Date.now() - tickStartedAt >= SLOW_TICK_MS) {
+      logger.info(
+        `slow tick selection=${this.options.selection.project}@${this.options.selection.date} ` +
+          `totalMs=${Date.now() - tickStartedAt} listMs=${listMs} pollMs=${pollMs} ` +
+          `files=${files.length} tailers=${this.tailers.size}`,
+      );
+    }
 
     if (results.some((result) => result.restarted)) {
       await this.reprime();
@@ -191,7 +209,9 @@ export class LogStream {
       this.fileStates.set(file.filePath, state);
       this.tailers.set(
         file.filePath,
-        new FileTailer(file.filePath, (line) => this.ingest(state, line)),
+        new FileTailer(file.filePath, (line) => this.ingest(state, line), {
+          maxBackfillBytes: this.options.maxBackfillBytes,
+        }),
       );
       logger.debug(`stream watching ${file.filePath}`);
     }

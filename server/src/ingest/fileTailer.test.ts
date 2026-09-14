@@ -122,12 +122,60 @@ describe("FileTailer", () => {
     const filePath = join(directory, "app.log");
     const { lines, onLine } = collector();
     const tailer = new FileTailer(filePath, onLine);
-    const expected = Array.from({ length: 20_000 }, (_, index) => `line-${index}`);
+    const expected = Array.from({ length: 200_000 }, (_, index) => `line-${index}`);
 
     await writeFile(filePath, `${expected.join("\n")}\n`);
     assert.deepEqual(await tailer.poll(), { lines: expected.length, restarted: false });
     assert.deepEqual(lines, expected);
 
+    await tailer.close();
+  });
+
+  // Regression: close() (e.g. the stream is stopped while priming a large backlog)
+  // used to null the handle out from under a still-running poll(), which then threw
+  // a raw TypeError instead of just stopping.
+  it("does not throw when close() lands while poll() is still reading", async () => {
+    const filePath = join(directory, "app.log");
+    const { onLine } = collector();
+    const tailer = new FileTailer(filePath, onLine);
+    const expected = Array.from({ length: 200_000 }, (_, index) => `line-${index}`);
+
+    await writeFile(filePath, `${expected.join("\n")}\n`);
+
+    const polling = tailer.poll();
+    await tailer.close();
+
+    await assert.doesNotReject(polling);
+  });
+
+  // A huge pre-existing file on a slow network mount must not be read from byte 0:
+  // only the tail portion within the cap is backfilled, then live tailing continues.
+  it("backfills a file bigger than the cap only from its tail", async () => {
+    const filePath = join(directory, "app.log");
+    const { lines, onLine } = collector();
+    const tailer = new FileTailer(filePath, onLine, { maxBackfillBytes: 14 });
+
+    await writeFile(filePath, "one\ntwo\nthree\nfour\nfive\n");
+    await tailer.poll();
+
+    assert.deepEqual(lines, ["four", "five"]);
+
+    await writeFile(filePath, "one\ntwo\nthree\nfour\nfive\nsix\n");
+    await tailer.poll();
+    assert.deepEqual(lines, ["four", "five", "six"]);
+
+    await tailer.close();
+  });
+
+  it("reads a file smaller than the cap from the start", async () => {
+    const filePath = join(directory, "app.log");
+    const { lines, onLine } = collector();
+    const tailer = new FileTailer(filePath, onLine, { maxBackfillBytes: 1_024 });
+
+    await writeFile(filePath, "one\ntwo\n");
+    await tailer.poll();
+
+    assert.deepEqual(lines, ["one", "two"]);
     await tailer.close();
   });
 });

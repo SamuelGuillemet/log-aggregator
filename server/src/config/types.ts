@@ -23,4 +23,5 @@ export interface RuntimeOptions {
   pollIntervalMs: number;
   maxLiveBatch: number;
   streamLingerMs: number;
+  maxBackfillBytes: number;
 }

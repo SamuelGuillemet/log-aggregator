@@ -88,10 +88,10 @@ export function LogToolbar({
         <span
           className="data flex items-center gap-1 text-[11px] text-level-warn"
           role="status"
-          title="The live feed outran this tab. The skipped entries are still on the server; scroll back for them."
+          title="The live feed sent events faster than this tab could display them. Nothing was lost on the server: use \u201cJump to time\u201d or scroll back to load them."
         >
           <TriangleAlert size={12} />
-          {formatCount(droppedEvents)} skipped
+          {formatCount(droppedEvents)} not shown live
         </span>
       )}
 
