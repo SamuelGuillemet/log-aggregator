@@ -20,7 +20,10 @@ interface LogsStore {
   events: LogEvent[];
   /** Highest `seq` held, so a live batch can skip the de-duplication scan. */
   maxSeq: number;
-  hasMore: boolean;
+  /** More events exist below the loaded window (further into the past). */
+  hasMoreOlder: boolean;
+  /** More events exist above the loaded window (closer to "now"). */
+  hasMoreNewer: boolean;
   schema: LogTableSchema | undefined;
   status: StreamStatus;
   droppedEvents: number;
@@ -29,24 +32,35 @@ interface LogsStore {
   applySnapshot: (page: LogPage, schema: LogTableSchema, status: StreamStatus) => void;
   applyStatus: (status: StreamStatus) => void;
   applyLiveEvents: (events: LogEvent[], bufferedEvents: number) => void;
-  appendPage: (page: LogPage) => void;
+  appendPage: (page: LogPage, direction: "older" | "newer") => void;
+  /** Replaces the loaded window outright, for jumping to an arbitrary time. */
+  applyJump: (page: LogPage) => void;
   setLoadingPage: (loadingPage: boolean) => void;
   reportLag: (droppedEvents: number) => void;
   reset: () => void;
 }
 
 export const useLogsStore = create<LogsStore>((set) => ({
-  appendPage: (page) =>
+  appendPage: (page, direction) =>
     set((state) => {
       if (page.events.length === 0) {
-        return { hasMore: page.hasMore };
+        return direction === "older"
+          ? { hasMoreOlder: page.hasMore }
+          : { hasMoreNewer: page.hasMore };
       }
 
       const merged = mergeEvents(state.events, page.events, state.maxSeq);
 
+      // Eviction always drops from the tail (oldest first), regardless of which
+      // direction just grew the array, so it only ever tells us more about the
+      // older edge.
       return {
         events: merged.events,
-        hasMore: page.hasMore || merged.trimmed,
+        hasMoreNewer: direction === "newer" ? page.hasMore : state.hasMoreNewer,
+        hasMoreOlder:
+          direction === "older"
+            ? page.hasMore || merged.trimmed
+            : state.hasMoreOlder || merged.trimmed,
         maxSeq: merged.maxSeq,
       };
     }),
@@ -56,16 +70,30 @@ export const useLogsStore = create<LogsStore>((set) => ({
 
       return {
         events: merged.events,
-        hasMore: state.hasMore || merged.trimmed,
+        // A live batch is by definition the current edge, so nothing is newer.
+        hasMoreNewer: false,
+        hasMoreOlder: state.hasMoreOlder || merged.trimmed,
         maxSeq: merged.maxSeq,
         status: { ...state.status, bufferedEvents },
       };
+    }),
+  applyJump: (page) =>
+    set({
+      droppedEvents: 0,
+      events: page.events,
+      // Optimistic: a jump lands in the past, so newer data almost always exists.
+      // The next loadNewerLogs() call corrects this the moment it comes back empty.
+      hasMoreNewer: true,
+      hasMoreOlder: page.hasMore,
+      maxSeq: highestSeq(page.events, 0),
     }),
   applySnapshot: (page, schema, status) =>
     set({
       droppedEvents: 0,
       events: page.events,
-      hasMore: page.hasMore,
+      // A snapshot is the live edge itself, so there is nothing newer to page to.
+      hasMoreNewer: false,
+      hasMoreOlder: page.hasMore,
       maxSeq: highestSeq(page.events, 0),
       schema,
       status,
@@ -73,7 +101,8 @@ export const useLogsStore = create<LogsStore>((set) => ({
   applyStatus: (status) => set({ status }),
   droppedEvents: 0,
   events: [],
-  hasMore: false,
+  hasMoreNewer: false,
+  hasMoreOlder: false,
   loadingPage: false,
   maxSeq: 0,
   reportLag: (droppedEvents) =>
@@ -83,7 +112,8 @@ export const useLogsStore = create<LogsStore>((set) => ({
     set({
       droppedEvents: 0,
       events: [],
-      hasMore: false,
+      hasMoreNewer: false,
+      hasMoreOlder: false,
       loadingPage: false,
       maxSeq: 0,
       status: EMPTY_STATUS,

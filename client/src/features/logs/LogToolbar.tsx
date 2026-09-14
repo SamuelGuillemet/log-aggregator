@@ -1,13 +1,4 @@
-import {
-  ChevronsDown,
-  Clock,
-  Copy,
-  Pause,
-  Play,
-  SquareCheck,
-  TriangleAlert,
-  X,
-} from "lucide-react";
+import { Clock, Copy, Pause, Play, SquareCheck, TriangleAlert, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { formatCount } from "@/lib/format";
 import { useConnectionStore } from "@/state/connectionStore";
@@ -43,8 +34,16 @@ export function LogToolbar({
   const connected = useConnectionStore((state) => state.connected);
   const loaded = useLogsStore((state) => state.events.length);
   const paused = useLogsStore((state) => state.status.paused);
-  const hasMore = useLogsStore((state) => state.hasMore);
   const droppedEvents = useLogsStore((state) => state.droppedEvents);
+
+  const onJumpToTime = () => {
+    if (!paused) {
+      onTogglePause();
+    }
+    if (paging.timeInput) {
+      paging.jumpToTime();
+    }
+  };
 
   return (
     <div className="flex h-8 shrink-0 items-center gap-1.5 border-b border-line bg-panel px-2">
@@ -104,35 +103,25 @@ export function LogToolbar({
         </PopoverTrigger>
         <PopoverContent align="end" className="w-64 space-y-2 p-3">
           <label className="block space-y-1">
-            <span className="label-micro">Load back to</span>
+            <span className="label-micro">Time (this log's day)</span>
             <Input
-              aria-label="Load entries back to this time"
-              type="datetime-local"
+              aria-label="Jump to this time"
+              type="time"
+              step={1}
               className="data h-7 w-full rounded-sm border-line bg-surface text-[12px]"
-              value={paging.untilInput}
-              onChange={(event) => paging.setUntilInput(event.currentTarget.value)}
+              value={paging.timeInput}
+              onChange={(event) => paging.setTimeInput(event.currentTarget.value)}
             />
           </label>
           <Button
             className="h-7 w-full rounded-sm text-[11px]"
-            disabled={!paging.untilInput || paging.loading}
-            onClick={paging.loadUntil}
+            disabled={!paging.timeInput || paging.loading}
+            onClick={onJumpToTime}
           >
-            Load entries
+            Jump
           </Button>
         </PopoverContent>
       </Popover>
-
-      <Button
-        variant="ghost"
-        className={ACTION}
-        disabled={!hasMore || paging.loading}
-        onClick={() => void paging.loadOlder()}
-        title="Load the next page of older entries"
-      >
-        <ChevronsDown size={12} />
-        {paging.loading ? "Loading" : "Older"}
-      </Button>
 
       {columnMenu}
     </div>

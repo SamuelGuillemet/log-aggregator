@@ -107,13 +107,14 @@ async function writeAsync(stream, chunk) {
   }
 }
 
-/** Maps a [0, 1] progress fraction to a timestamp spanning the full day. */
+/** Maps a [0, 1] progress fraction to a timestamp spanning the full local day. */
 function timestampForProgress(date, progress) {
-  const dayStart = Date.parse(`${date}T00:00:00.000Z`);
+  const [year, month, day] = date.split("-").map(Number);
+  const dayStart = new Date(year, month - 1, day, 0, 0, 0, 0).getTime();
   const dayDurationMs = 24 * 60 * 60 * 1_000 - 1;
   const timestampMs = dayStart + Math.round(progress * dayDurationMs);
 
-  return `${date} ${new Date(timestampMs).toISOString().slice(11, 23).replace(".", ",")}`;
+  return `${date} ${formatLocalTime(new Date(timestampMs))}`;
 }
 
 async function runLinesMode() {
@@ -203,14 +204,28 @@ function buildDates(dateCount) {
   const now = new Date();
 
   for (let index = 0; index < dateCount; index += 1) {
-    const date = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - index),
-    );
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - index);
 
-    dates.push(date.toISOString().slice(0, 10));
+    dates.push(formatLocalDate(date));
   }
 
   return dates;
+}
+
+/**
+ * The parser has no offset support, so log timestamps mean the host's local time;
+ * generated fixtures must be anchored the same way or their day/hour silently drift.
+ */
+function formatLocalDate(date) {
+  const pad = (value) => String(value).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function formatLocalTime(date) {
+  const pad = (value, length = 2) => String(value).padStart(length, "0");
+
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())},${pad(date.getMilliseconds(), 3)}`;
 }
 
 function buildLogContent(app, date, linesPerFile) {

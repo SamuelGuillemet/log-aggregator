@@ -2,7 +2,7 @@
 import type { LogEvent } from "@log-aggregator/shared";
 import { type ColumnDef, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { compactSource, fieldValue, splitTimestamp } from "@/lib/format";
 import { useTableLayout } from "@/lib/tableLayout";
 import { useElementWidth } from "@/lib/useElementWidth";
@@ -23,6 +23,7 @@ const ROW_HEIGHT_PX = 24;
 interface LogTableProps {
   canControlStreaming: boolean;
   onTogglePause: () => void;
+  waiting: boolean;
 }
 
 export function LogTable({ canControlStreaming, onTogglePause }: LogTableProps) {
@@ -106,6 +107,38 @@ export function LogTable({ canControlStreaming, onTogglePause }: LogTableProps) 
     });
   }, []);
 
+  const topSeqRef = useRef<number | undefined>(undefined);
+
+  // New events are prepended (index 0 = newest). Left alone, that either strands a
+  // reader who scrolled into history on stale rows, or hides the fresh ones behind
+  // the browser's own scroll anchoring for a reader pinned to the top. Both cases are
+  // resolved explicitly here instead of relying on native anchoring.
+  useLayoutEffect(() => {
+    const element = scrollRef.current;
+    const previousTopSeq = topSeqRef.current;
+    const currentTopSeq = events[0]?.seq;
+
+    topSeqRef.current = currentTopSeq;
+
+    if (!element || previousTopSeq === undefined || previousTopSeq === currentTopSeq) {
+      return;
+    }
+
+    // Anything other than a small positive shift is a reset/jump, not a prepend; the
+    // scroll position from before it is meaningless and best left alone.
+    const insertedAbove = events.findIndex((event) => event.seq === previousTopSeq);
+
+    if (insertedAbove <= 0) {
+      return;
+    }
+
+    if (element.scrollTop <= ROW_HEIGHT_PX) {
+      element.scrollTop = 0;
+    } else {
+      element.scrollTop += insertedAbove * ROW_HEIGHT_PX;
+    }
+  }, [events]);
+
   useEffect(() => {
     // Reset selected sequences when the events change
     setSelectedSeqs(new Set());
@@ -146,6 +179,7 @@ export function LogTable({ canControlStreaming, onTogglePause }: LogTableProps) 
           ref={scrollRef}
           onScroll={paging.handleScroll}
           className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
+          style={{ overflowAnchor: "none" }}
         >
           <div style={{ minWidth: `${tableWidth}px` }}>
             <LogTableHeader renderWidth={renderWidth} table={table} tableWidth={tableWidth} />

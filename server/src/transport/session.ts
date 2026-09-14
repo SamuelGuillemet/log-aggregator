@@ -78,9 +78,15 @@ export class Session {
       return EMPTY_PAGE;
     }
 
-    return query.type === "before"
-      ? stream.buffer.before(query.cursor, query.limit, this.match)
-      : stream.buffer.until(query.timestampMs, query.limit, this.match);
+    if (query.type === "before") {
+      return stream.buffer.before(query.cursor, query.limit, this.match);
+    }
+
+    if (query.type === "after") {
+      return stream.buffer.after(query.cursor, query.limit, this.match);
+    }
+
+    return stream.buffer.until(query.timestampMs, query.limit, this.match);
   }
 
   close(): void {

@@ -109,6 +109,16 @@ describe("decodeHistoryQuery", () => {
     assert.equal(decoded.ok, true);
   });
 
+  it("decodes a forward cursor page", () => {
+    const decoded = decodeHistoryQuery({
+      cursor: { sourceId: "a", sourceSeq: 7, timestampMs: 1_000 },
+      limit: 50,
+      type: "after",
+    });
+
+    assert.equal(decoded.ok, true);
+  });
+
   it("rejects limits outside the allowed range", () => {
     for (const limit of [0, -1, 100_000, "50", Number.NaN]) {
       assert.equal(

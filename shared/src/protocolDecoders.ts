@@ -244,6 +244,11 @@ export function decodeHistoryQuery(value: unknown, path = "query"): Decoded<LogH
 
       return cursor.ok ? ok({ cursor: cursor.value, limit: limit.value, type: "before" }) : cursor;
     }
+    case "after": {
+      const cursor = decodeLogCursor(record.value.cursor, `${path}.cursor`);
+
+      return cursor.ok ? ok({ cursor: cursor.value, limit: limit.value, type: "after" }) : cursor;
+    }
     case "until": {
       const timestampMs = decodeInteger(
         record.value.timestampMs,
@@ -257,7 +262,7 @@ export function decodeHistoryQuery(value: unknown, path = "query"): Decoded<LogH
         : timestampMs;
     }
     default:
-      return fail(`${path}.type must be "before" or "until"`);
+      return fail(`${path}.type must be "before", "after" or "until"`);
   }
 }
 

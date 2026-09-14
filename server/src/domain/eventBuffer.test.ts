@@ -89,7 +89,7 @@ describe("EventBuffer", () => {
     assert.equal(buffer.latest(5, MATCH_ALL).hasMore, false);
   });
 
-  it("seeks back to a timestamp", () => {
+  it("seeks forward to a timestamp and reports whether older entries remain", () => {
     const buffer = new EventBuffer(100);
 
     for (let index = 1; index <= 6; index += 1) {
@@ -99,7 +99,33 @@ describe("EventBuffer", () => {
     const page = buffer.until(4_000, 100, MATCH_ALL);
 
     assert.deepEqual(seqs(page.events), [6, 5, 4]);
-    assert.equal(page.hasMore, false);
+    assert.equal(page.hasMore, true);
+  });
+
+  it("caps the window returned by until() to the requested limit", () => {
+    const buffer = new EventBuffer(100);
+
+    for (let index = 1; index <= 6; index += 1) {
+      buffer.append(event({ seq: index, timestampMs: index * 1_000 }));
+    }
+
+    const page = buffer.until(2_000, 2, MATCH_ALL);
+
+    assert.deepEqual(seqs(page.events), [3, 2]);
+    assert.equal(page.hasMore, true);
+  });
+
+  it("pages forward from a cursor without repeating the cursor event", () => {
+    const buffer = new EventBuffer(100);
+
+    for (let index = 1; index <= 10; index += 1) {
+      buffer.append(event({ seq: index, timestampMs: index * 1_000 }));
+    }
+
+    const page = buffer.after({ sourceId: "a", sourceSeq: 3, timestampMs: 3_000 }, 4, MATCH_ALL);
+
+    assert.deepEqual(seqs(page.events), [7, 6, 5, 4]);
+    assert.equal(page.hasMore, true);
   });
 
   it("evicts the oldest events once capacity is exceeded", () => {

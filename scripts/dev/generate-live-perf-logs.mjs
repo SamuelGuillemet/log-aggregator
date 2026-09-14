@@ -9,7 +9,7 @@ const intervalSeconds = clampInteger(args.interval, 2, 1, 3_600);
 const appCount = clampInteger(args.apps, 100, 1, 10_000);
 const eventsPerTick = clampInteger(args["events-per-tick"], 1, 1, 20_000);
 const outputRoot = path.resolve(repositoryRoot, args.output ?? "sample-logs/perf-cluster");
-const date = args.date ?? todayUtcDate();
+const date = args.date ?? todayLocalDate();
 
 const shares = ["perf-share-a", "perf-share-b", "perf-share-c"];
 const apps = buildApps(appCount);
@@ -85,8 +85,8 @@ function stop() {
 }
 
 function buildLogLine(app, now, tick, levels) {
-  const datePart = now.toISOString().slice(0, 10);
-  const timePart = now.toISOString().slice(11, 23).replace(".", ",");
+  const datePart = formatLocalDate(now);
+  const timePart = formatLocalTime(now);
   const level = levels[tick % levels.length];
   const loggerName = `${app.toLowerCase().replaceAll("-", ".")}.Service`;
   const requestId = `${app}-REQ-LIVE-${String(tick).padStart(6, "0")}`;
@@ -138,6 +138,22 @@ function buildApps(appCount) {
   );
 }
 
-function todayUtcDate() {
-  return new Date().toISOString().slice(0, 10);
+function todayLocalDate() {
+  return formatLocalDate(new Date());
+}
+
+/**
+ * The parser has no offset support, so log timestamps mean the host's local time;
+ * generated fixtures must be anchored the same way or their day/hour silently drift.
+ */
+function formatLocalDate(date) {
+  const pad = (value) => String(value).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function formatLocalTime(date) {
+  const pad = (value, length = 2) => String(value).padStart(length, "0");
+
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())},${pad(date.getMilliseconds(), 3)}`;
 }

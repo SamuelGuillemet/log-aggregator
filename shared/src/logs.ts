@@ -71,6 +71,7 @@ export const DEFAULT_PAGE_SIZE = 200;
 
 export type LogHistoryQuery =
   | { type: "before"; cursor: LogCursor; limit: number }
+  | { type: "after"; cursor: LogCursor; limit: number }
   | { type: "until"; timestampMs: number; limit: number };
 
 export interface LogPage {

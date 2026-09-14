@@ -62,8 +62,8 @@ export class EventBuffer {
       this.evictOverflow();
     } else {
       this.events.push(stored);
-      this.sorted = false;
     }
+    this.sorted = false;
 
     return stored;
   }
@@ -90,10 +90,23 @@ export class EventBuffer {
     return this.collect(0, this.cursorIndex(cursor), limit, match);
   }
 
+  /** The next events strictly after `cursor`, for paging forward toward "now". */
+  after(cursor: LogCursor, limit: number, match: EventPredicate): LogPage {
+    this.ensureSorted();
+
+    return this.collectForward(this.cursorIndex(cursor) + 1, this.events.length, limit, match);
+  }
+
+  /** A window anchored at `timestampMs`, for jumping straight to a point in the day. */
   until(timestampMs: number, limit: number, match: EventPredicate): LogPage {
     this.ensureSorted();
 
-    return this.collect(this.timestampIndex(timestampMs), this.events.length, limit, match);
+    const floor = this.timestampIndex(timestampMs);
+    const page = this.collectForward(floor, this.events.length, limit, match);
+
+    // hasMore here means "more older entries below the window", matching what before()
+    // means by it, so the client's generic "load older" affordance keeps working.
+    return { events: page.events, hasMore: floor > 0 };
   }
 
   /** Applies every deferred out-of-order append at once, then evicts down to capacity. */
@@ -127,6 +140,33 @@ export class EventBuffer {
     }
 
     return { events, hasMore: index >= floor };
+  }
+
+  /** Walks `[floor, end)` forwards, oldest first, then reverses to the newest-first contract. */
+  private collectForward(
+    floor: number,
+    end: number,
+    limit: number,
+    match: EventPredicate,
+  ): LogPage {
+    const events: LogEvent[] = [];
+    let index = floor;
+    let budget = Math.max(limit * 50, 10_000);
+
+    while (index < end && events.length < limit && budget > 0) {
+      const stored = this.events[index];
+      budget -= 1;
+
+      if (match(stored)) {
+        events.push(stored.event);
+      }
+
+      index += 1;
+    }
+
+    events.reverse();
+
+    return { events, hasMore: index < end };
   }
 
   private evictOverflow(): void {

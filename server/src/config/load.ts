@@ -60,7 +60,7 @@ export function readRuntimeOptions(): RuntimeOptions {
     maxLiveBatch: readNumber("LOG_AGGREGATOR_MAX_LIVE_BATCH", 5_000, 1, 50_000),
     pollIntervalMs: readNumber("LOG_AGGREGATOR_POLL_INTERVAL_MS", 250, 25, 60_000),
     port: readNumber("PORT", 3_000, 1, 65_535),
-    streamLingerMs: readNumber("LOG_AGGREGATOR_STREAM_LINGER_MS", 15_000, 0, 600_000),
+    streamLingerMs: readNumber("LOG_AGGREGATOR_STREAM_LINGER_MS", 0 /* 15_000 */, 0, 600_000),
   };
 }
 

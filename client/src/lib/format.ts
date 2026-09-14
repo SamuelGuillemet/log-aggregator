@@ -61,13 +61,13 @@ export function compactSource(sourceName: string): string {
   return compact || sourceName;
 }
 
-/** `datetime-local` input value (`YYYY-MM-DDTHH:mm`) to epoch millis. */
-export function parseLocalDateTime(value: string): number | undefined {
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(value)) {
+/** `time` input value (`HH:mm` or `HH:mm:ss`) combined with the stream's day. */
+export function parseLocalTimeOnDate(date: string, time: string): number | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}(?::\d{2})?$/.test(time)) {
     return undefined;
   }
 
-  const parsed = new Date(value).getTime();
+  const parsed = new Date(`${date}T${time}`).getTime();
 
   return Number.isNaN(parsed) ? undefined : parsed;
 }
