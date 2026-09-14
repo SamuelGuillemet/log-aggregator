@@ -1,6 +1,6 @@
 import type { LogEvent, LogSource, SourceSelection } from "@log-aggregator/shared";
 import type { FileNameMatcher } from "../ingest/fileNameMatcher.js";
-import { FileTailer } from "../ingest/fileTailer.js";
+import { FileTailer, type PollResult } from "../ingest/fileTailer.js";
 import type { LogParser } from "../ingest/parser.js";
 import { describe, logger } from "../util/logger.js";
 import { EventBuffer, type StoredEvent } from "./eventBuffer.js";
@@ -16,8 +16,6 @@ export interface LogStreamOptions {
   matcher: FileNameMatcher;
   capacity: number;
   pollIntervalMs: number;
-  /** A brand-new file beyond this size is tailed from the end instead of byte 0. */
-  maxBackfillBytes?: number;
 }
 
 export interface LogStreamListeners {
@@ -148,9 +146,15 @@ export class LogStream {
     this.lastErrorMessage = undefined;
 
     const pollStartedAt = Date.now();
-    const results = await Promise.all(
-      [...this.tailers.values()].map(async (tailer) => tailer.poll()),
-    );
+    const results: PollResult[] = [];
+
+    // Sequential, not Promise.all: these files sit behind the same slow UNC link,
+    // which serialises concurrent reads anyway (see docs/timings/Logs.log) — reading
+    // them one at a time costs nothing in practice and keeps timings legible.
+    for (const tailer of this.tailers.values()) {
+      results.push(await tailer.poll());
+    }
+
     const pollMs = Date.now() - pollStartedAt;
 
     if (Date.now() - tickStartedAt >= SLOW_TICK_MS) {
@@ -209,9 +213,7 @@ export class LogStream {
       this.fileStates.set(file.filePath, state);
       this.tailers.set(
         file.filePath,
-        new FileTailer(file.filePath, (line) => this.ingest(state, line), {
-          maxBackfillBytes: this.options.maxBackfillBytes,
-        }),
+        new FileTailer(file.filePath, (line) => this.ingest(state, line)),
       );
       logger.debug(`stream watching ${file.filePath}`);
     }

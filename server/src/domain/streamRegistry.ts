@@ -92,7 +92,6 @@ export class StreamRegistry {
     const stream = new LogStream({
       capacity: this.deps.options.maxEventsPerStream,
       matcher: this.deps.matcher,
-      maxBackfillBytes: this.deps.options.maxBackfillBytes,
       parser: this.deps.parser,
       pollIntervalMs: this.deps.options.pollIntervalMs,
       selection,

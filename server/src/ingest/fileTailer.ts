@@ -1,25 +1,26 @@
-import { type FileHandle, open, stat } from "node:fs/promises";
+import { createReadStream, type ReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
 import { StringDecoder } from "node:string_decoder";
 import { logger } from "../util/logger.js";
 
-// A high-latency mount (a Windows UNC share) pays a round trip per read call
-// regardless of size, so priming a large backlog is dominated by the number of
-// reads, not their total size. 64 KiB meant ~7,500 reads per 500 MB backlog.
-const CHUNK_SIZE = 1_024 * 1_024;
 /** A file with no newline at all must not grow an unbounded carry buffer. */
 const MAX_CARRY_LENGTH = 4 * 1_024 * 1_024;
 /** Above this, a single poll() is logged with a phase breakdown to find the slow part. */
 const SLOW_POLL_MS = 200;
+/**
+ * `fs.createReadStream`'s default `highWaterMark` is 64 KiB, so on a high-latency
+ * mount a naive read pays one round trip per 64 KiB. This makes each read as big
+ * as the file itself so there is at most one round trip per poll — measured to
+ * make no difference on the real slow share (a single ~3.4 MB read still took
+ * ~7s, same throughput as 53 small reads), which means round-trip count was
+ * never the bottleneck; a large value is kept anyway since it cannot hurt.
+ */
+const READ_HIGH_WATER_MARK = 8 * 1_024 * 1_024;
 
 export interface PollResult {
   lines: number;
   /** The file was replaced or truncated, so previously emitted lines are stale. */
   restarted: boolean;
-}
-
-export interface FileTailerOptions {
-  /** A fresh file bigger than this is tailed from the end instead of byte 0. */
-  maxBackfillBytes?: number;
 }
 
 /**
@@ -33,21 +34,17 @@ export interface FileTailerOptions {
  *    as if it were complete.
  */
 export class FileTailer {
-  private handle: FileHandle | undefined;
   private position = 0;
   private inode: number | undefined;
   private carry = "";
   private decoder = new StringDecoder("utf8");
-  private readonly chunk = Buffer.allocUnsafe(CHUNK_SIZE);
+  private activeStream: ReadStream | undefined;
   /** `close()` can land while a poll's read loop is still awaiting a chunk. */
   private closed = false;
-  /** Set right after a backfill seek, until the partial line at the seek point is dropped. */
-  private discardingSeekFragment = false;
 
   constructor(
     readonly filePath: string,
     private readonly onLine: (line: string) => void,
-    private readonly options: FileTailerOptions = {},
   ) {}
 
   /** Reads everything appended since the last call. */
@@ -69,7 +66,7 @@ export class FileTailer {
       ((stats.ino > 0 && stats.ino !== this.inode) || stats.size < this.position);
 
     if (rotated) {
-      await this.reset();
+      this.reset();
       this.inode = stats.ino;
 
       return { lines: 0, restarted: true };
@@ -77,89 +74,59 @@ export class FileTailer {
 
     this.inode = stats.ino;
 
-    if (this.position === 0) {
-      const maxBackfillBytes = this.options.maxBackfillBytes;
-
-      if (maxBackfillBytes !== undefined && stats.size > maxBackfillBytes) {
-        const skippedBytes = stats.size - maxBackfillBytes;
-
-        this.position = skippedBytes;
-        this.discardingSeekFragment = true;
-        logger.info(
-          `skipping backfill file=${this.filePath} skippedBytes=${skippedBytes} keepBytes=${maxBackfillBytes}`,
-        );
-      }
-    }
-
-    if (stats.size <= this.position) {
+    if (this.closed || stats.size <= this.position) {
       return { lines: 0, restarted: false };
     }
 
-    let openMs = 0;
-
-    if (!this.handle) {
-      const openStartedAt = Date.now();
-      const opened = await open(this.filePath, "r");
-      openMs = Date.now() - openStartedAt;
-
-      // close() landed while `open` was in flight: do not resurrect a torn-down tailer.
-      if (this.closed) {
-        await opened.close();
-
-        return { lines: 0, restarted: false };
-      }
-
-      this.handle = opened;
-    }
-
-    const handle = this.handle;
+    const start = this.position;
+    const readStartedAt = Date.now();
     let lines = 0;
     let chunks = 0;
     let bytesReadTotal = 0;
-    let readMs = 0;
 
-    while (this.position < stats.size) {
-      // close() can land between two awaited reads of the same poll; stop rather
-      // than reading through a handle that was just closed out from under us.
-      if (this.handle !== handle) {
-        break;
-      }
+    const stream = createReadStream(this.filePath, {
+      start,
+      end: stats.size - 1,
+      highWaterMark: READ_HIGH_WATER_MARK,
+    });
 
-      const wanted = Math.min(CHUNK_SIZE, stats.size - this.position);
-      const readStartedAt = Date.now();
-      const { bytesRead } = await handle.read(this.chunk, 0, wanted, this.position);
-      readMs += Date.now() - readStartedAt;
+    this.activeStream = stream;
 
-      if (bytesRead <= 0) {
-        break;
-      }
-
-      chunks += 1;
-      bytesReadTotal += bytesRead;
-      this.position += bytesRead;
-
-      let text = this.decoder.write(this.chunk.subarray(0, bytesRead));
-
-      if (this.discardingSeekFragment) {
-        const newlineIndex = text.indexOf("\n");
-
-        if (newlineIndex === -1) {
-          continue;
+    try {
+      for await (const chunk of stream) {
+        // close() can land between two awaited chunks of the same poll; stop rather
+        // than keep consuming a stream that was just torn down out from under us.
+        if (this.closed) {
+          break;
         }
 
-        text = text.slice(newlineIndex + 1);
-        this.discardingSeekFragment = false;
+        chunks += 1;
+        bytesReadTotal += chunk.length;
+        lines += this.consume(this.decoder.write(chunk));
       }
+    } catch (error) {
+      // destroy() during an in-flight iteration surfaces as a premature-close error;
+      // that is expected teardown, not a real read failure.
+      if (!this.closed) {
+        throw error;
+      }
+    } finally {
+      stream.destroy();
 
-      lines += this.consume(text);
+      if (this.activeStream === stream) {
+        this.activeStream = undefined;
+      }
     }
 
+    this.position = start + bytesReadTotal;
+
+    const readMs = Date.now() - readStartedAt;
     const totalMs = Date.now() - pollStartedAt;
 
     if (totalMs >= SLOW_POLL_MS) {
       logger.info(
         `slow tail read file=${this.filePath} totalMs=${totalMs} statMs=${statMs} ` +
-          `openMs=${openMs} readMs=${readMs} chunks=${chunks} bytes=${bytesReadTotal} lines=${lines}`,
+          `readMs=${readMs} chunks=${chunks} bytes=${bytesReadTotal} lines=${lines}`,
       );
     }
 
@@ -168,19 +135,17 @@ export class FileTailer {
 
   async close(): Promise<void> {
     this.closed = true;
-    await this.reset();
+    this.activeStream?.destroy();
+    this.reset();
     this.inode = undefined;
   }
 
-  private async reset(): Promise<void> {
-    const handle = this.handle;
-    this.handle = undefined;
+  private reset(): void {
+    this.activeStream?.destroy();
+    this.activeStream = undefined;
     this.position = 0;
     this.carry = "";
     this.decoder = new StringDecoder("utf8");
-    this.discardingSeekFragment = false;
-
-    await handle?.close();
   }
 
   private consume(text: string): number {

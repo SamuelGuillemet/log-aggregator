@@ -22,8 +22,8 @@ const directoryFailures = new Map<string, number>();
 
 /**
  * Reads one directory in isolation: a failure here (an offline UNC path, a
- * permission error) must never take down the other, healthy, directories that
- * happen to be read in the same `Promise.all`.
+ * permission error) must never stop the other, healthy, directories from
+ * being read in turn.
  */
 async function readDirectorySafely<T>(
   directory: string,
@@ -92,69 +92,73 @@ export async function listSelectionFiles(
   selection: SourceSelection,
   matcher: FileNameMatcher,
 ): Promise<SelectionFile[]> {
-  const perSource = await Promise.all(
-    sources.map(async (source) => {
-      const entries = await readDirectorySafely<Dirent>(source.directory, () =>
-        readdir(source.directory, { withFileTypes: true }),
-      );
-      const files: SelectionFile[] = [];
+  const files: SelectionFile[] = [];
 
-      for (const entry of entries) {
-        if (!entry.isFile() || !isPlainFileName(entry.name)) {
-          continue;
-        }
+  // Sequential, not Promise.all: these directories live behind the same slow UNC
+  // link, which serialises concurrent requests anyway (see docs/timings/Logs.log) —
+  // reading them one at a time costs nothing in practice and keeps timings legible.
+  for (const source of sources) {
+    const entries = await readDirectorySafely<Dirent>(source.directory, () =>
+      readdir(source.directory, { withFileTypes: true }),
+    );
 
-        const match = matcher.matches(entry.name, selection.project, selection.date);
-
-        if (match) {
-          files.push({
-            displayName: match.kind ? `${source.name} (${match.kind})` : source.name,
-            filePath: join(source.directory, entry.name),
-            source,
-          });
-        }
+    for (const entry of entries) {
+      if (!entry.isFile() || !isPlainFileName(entry.name)) {
+        continue;
       }
 
-      return files;
-    }),
-  );
+      const match = matcher.matches(entry.name, selection.project, selection.date);
 
-  return perSource.flat();
+      if (match) {
+        files.push({
+          displayName: match.kind ? `${source.name} (${match.kind})` : source.name,
+          filePath: join(source.directory, entry.name),
+          source,
+        });
+      }
+    }
+  }
+
+  return files;
 }
 
 export async function buildSourceOptions(
   configs: LogSourceConfig[],
   matcher: FileNameMatcher,
 ): Promise<SourceOptions> {
-  return {
-    sources: await Promise.all(
-      configs.map(async (config): Promise<LogSourceOption> => ({
-        applications: await listApplications(config.directories, matcher),
-        group: config.group,
-        id: config.id,
-        name: config.name,
-      })),
-    ),
-  };
+  const sources: LogSourceOption[] = [];
+
+  for (const config of configs) {
+    sources.push({
+      applications: await listApplications(config.directories, matcher),
+      group: config.group,
+      id: config.id,
+      name: config.name,
+    });
+  }
+
+  return { sources };
 }
 
 async function listApplications(
   directories: string[],
   matcher: FileNameMatcher,
 ): Promise<string[]> {
-  const perDirectory = await Promise.all(
-    directories.map(async (directory) => {
-      const entries = await readDirectorySafely<string>(directory, () => readdir(directory));
+  const applications = new Set<string>();
 
-      return entries.flatMap((entry) => {
-        const match = matcher.discover(entry);
+  for (const directory of directories) {
+    const entries = await readDirectorySafely<string>(directory, () => readdir(directory));
 
-        return match ? [match.project] : [];
-      });
-    }),
-  );
+    for (const entry of entries) {
+      const match = matcher.discover(entry);
 
-  return [...new Set(perDirectory.flat())].sort((left, right) => left.localeCompare(right));
+      if (match) {
+        applications.add(match.project);
+      }
+    }
+  }
+
+  return [...applications].sort((left, right) => left.localeCompare(right));
 }
 
 /** Defence in depth: directory entries are bare names, never path fragments. */

@@ -56,12 +56,6 @@ export function readRuntimeOptions(): RuntimeOptions {
         .filter(Boolean),
     ],
     host: process.env.HOST ?? "127.0.0.1",
-    maxBackfillBytes: readNumber(
-      "LOG_AGGREGATOR_MAX_BACKFILL_BYTES",
-      20 * 1_024 * 1_024,
-      0,
-      10 * 1_024 * 1_024 * 1_024,
-    ),
     maxEventsPerStream: readNumber("LOG_AGGREGATOR_MAX_EVENTS", 800_000, 1_000, 20_000_000),
     maxLiveBatch: readNumber("LOG_AGGREGATOR_MAX_LIVE_BATCH", 5_000, 1, 50_000),
     pollIntervalMs: readNumber("LOG_AGGREGATOR_POLL_INTERVAL_MS", 250, 25, 60_000),
