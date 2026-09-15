@@ -15,7 +15,7 @@ export function LogDetailDialog({ event, onClose }: LogDetailDialogProps) {
   return (
     <Dialog open={Boolean(event)} onOpenChange={onClose}>
       <DialogContent
-        className="flex max-h-[80vh] flex-col gap-3 overflow-hidden rounded-md sm:max-w-5xl"
+        className="flex max-h-[80vh] flex-col gap-3 overflow-hidden rounded-md sm:max-w-[95vw]"
         showCloseButton
       >
         <DialogHeader className="gap-1">
@@ -42,7 +42,7 @@ export function LogDetailDialog({ event, onClose }: LogDetailDialogProps) {
         </DialogHeader>
 
         <div className="flex-1 overflow-auto border border-line bg-surface p-3">
-          <pre className="data m-0 text-[12px] leading-relaxed whitespace-pre-wrap">{message}</pre>
+          <pre className="data m-0 w-max min-w-full text-[12px] leading-relaxed whitespace-pre">{message}</pre>
         </div>
       </DialogContent>
     </Dialog>
