@@ -10,6 +10,7 @@ import { MAX_CLIENT_EVENTS } from "@/lib/env";
 
 const EMPTY_STATUS: StreamStatus = {
   bufferedEvents: 0,
+  matchedEvents: 0,
   paused: false,
   selection: undefined,
   sources: [],

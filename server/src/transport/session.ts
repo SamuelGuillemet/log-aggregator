@@ -189,6 +189,7 @@ export class Session {
   private status(stream: LogStream | undefined): StreamStatus {
     return {
       bufferedEvents: stream?.buffer.size ?? 0,
+      matchedEvents: stream?.buffer.count(this.match) ?? 0,
       paused: this.paused,
       selection: stream?.selection,
       sources: stream?.sources ?? [],

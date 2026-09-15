@@ -48,8 +48,7 @@ export class EventBuffer {
   }
 
   get size(): number {
-    this.ensureSorted();
-    return this.events.length;
+    this.ensureSorted();    return this.events.length;
   }
 
   clear(): void {
@@ -82,6 +81,25 @@ export class EventBuffer {
   update(stored: StoredEvent, event: LogEvent): void {
     stored.event = event;
     stored.lowerRaw = undefined;
+  }
+
+  /**
+   * Counts every matching event in the buffer, not just a page of them. A full scan,
+   * so callers only run it where the cost is already paid elsewhere: a filter change,
+   * a subscribe, or a pause/resume -- never per live batch.
+   */
+  count(match: EventPredicate): number {
+    this.ensureSorted();
+
+    let total = 0;
+
+    for (const stored of this.events) {
+      if (match(stored)) {
+        total += 1;
+      }
+    }
+
+    return total;
   }
 
   latest(limit: number, match: EventPredicate): LogPage {

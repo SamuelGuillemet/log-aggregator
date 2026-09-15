@@ -1,7 +1,9 @@
+import { isEmptyFilter } from "@log-aggregator/shared";
 import { StreamPicker } from "@/features/sources/StreamPicker";
 import { formatCount } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useConnectionStore } from "@/state/connectionStore";
+import { useFilterStore } from "@/state/filterStore";
 import { useLogsStore } from "@/state/logsStore";
 
 interface StatusBarProps {
@@ -13,6 +15,8 @@ export function StatusBar({ onStart, onStop }: StatusBarProps) {
   const connected = useConnectionStore((state) => state.connected);
   const loaded = useLogsStore((state) => state.events.length);
   const buffered = useLogsStore((state) => state.status.bufferedEvents);
+  const matched = useLogsStore((state) => state.status.matchedEvents);
+  const filtered = useFilterStore((state) => !isEmptyFilter(state.filter));
   const sourceCount = useLogsStore((state) => state.status.sources.length);
   const paused = useLogsStore((state) => state.status.paused);
 
@@ -27,6 +31,12 @@ export function StatusBar({ onStart, onStop }: StatusBarProps) {
       )}
 
       <div className="flex-1" />
+
+      {filtered && (
+        <span className="data text-[11px] text-mute" title="Buffered events matching the current filter">
+          <span className="text-fg">{formatCount(matched)}</span> matched
+        </span>
+      )}
 
       <span className="data text-[11px] text-mute">
         <span className="text-fg">{formatCount(loaded)}</span> loaded of {formatCount(buffered)}

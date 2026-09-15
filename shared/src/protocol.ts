@@ -45,6 +45,8 @@ export interface StreamStatus {
   sources: LogSource[];
   /** Events currently held by the shared buffer backing this stream. */
   bufferedEvents: number;
+  /** Of those, how many match the requesting session's current filter. */
+  matchedEvents: number;
   paused: boolean;
 }
 
