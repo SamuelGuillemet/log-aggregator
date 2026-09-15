@@ -78,3 +78,21 @@ export function splitTerms(value: string): string[] {
     .map((term) => term.trim())
     .filter(Boolean);
 }
+
+/** `450` -> `"450ms"`, `12_340` -> `"12.34s"`, `125_000` -> `"2m 5s"`. */
+export function formatDurationMs(ms: number): string {
+  const abs = Math.abs(ms);
+
+  if (abs < 1_000) {
+    return `${ms}ms`;
+  }
+
+  if (abs < 60_000) {
+    return `${(ms / 1_000).toFixed(2)}s`;
+  }
+
+  const minutes = Math.trunc(ms / 60_000);
+  const seconds = Math.abs(Math.round((ms % 60_000) / 1_000));
+
+  return `${minutes}m ${seconds}s`;
+}

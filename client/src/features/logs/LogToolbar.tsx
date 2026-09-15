@@ -1,3 +1,4 @@
+import type { LogEvent } from "@log-aggregator/shared";
 import { Check, Clock, Copy, Pause, Play, SquareCheck, TriangleAlert, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -8,6 +9,7 @@ import { useLogsStore } from "@/state/logsStore";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover";
+import { SelectionTiming } from "./SelectionTiming";
 import type { useLogPaging } from "./useLogPaging";
 
 interface LogToolbarProps {
@@ -19,6 +21,7 @@ interface LogToolbarProps {
   onTogglePause: () => void;
   paging: ReturnType<typeof useLogPaging>;
   selectedCount: number;
+  selectedEvents: LogEvent[];
 }
 
 const ACTION = "data h-6 gap-1 rounded-sm px-2 text-[11px]";
@@ -32,6 +35,7 @@ export function LogToolbar({
   onTogglePause,
   paging,
   selectedCount,
+  selectedEvents,
 }: LogToolbarProps) {
   const connected = useConnectionStore((state) => state.connected);
   const loaded = useLogsStore((state) => state.events.length);
@@ -88,7 +92,11 @@ export function LogToolbar({
         <>
           <Button
             variant="ghost"
-            className={cn("transition-all", ACTION, copied && "border-green-500 bg-green-100 text-green-700")}
+            className={cn(
+              "transition-all",
+              ACTION,
+              copied && "border-green-500 bg-green-100 text-green-700",
+            )}
             onClick={handleCopySelected}
             title={copied ? "Copied!" : "Copy selected rows"}
           >
@@ -112,6 +120,8 @@ export function LogToolbar({
           {formatCount(droppedEvents)} skipped
         </span>
       )}
+
+      {selectedCount > 0 && <SelectionTiming events={selectedEvents} />}
 
       <div className="flex-1" />
 

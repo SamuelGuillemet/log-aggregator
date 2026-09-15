@@ -86,16 +86,17 @@ export function compileFilter(filter: LogFilter): CompiledFilter {
 }
 
 /**
- * The raw line already contains the timestamp, level, parsed fields and message, so
- * matching it directly avoids building and lowercasing a joined string per event per
- * query the way v1's `buildFullText` did.
+ * The raw line already contains the timestamp, level, parsed fields and message, and
+ * the source name is prefixed so a filter term can also match the originating file
+ * (e.g. "perf-share-a"), letting text/include/exclude filters double as a source filter.
  */
 function searchText(stored: StoredEvent, caseSensitive: boolean): string {
   if (caseSensitive) {
-    return stored.event.raw;
+    return `${stored.event.filePath} ${stored.event.sourceName} ${stored.event.raw}`;
   }
 
-  stored.lowerRaw ??= stored.event.raw.toLowerCase();
+  stored.lowerRaw ??=
+    `${stored.event.filePath} ${stored.event.sourceName} ${stored.event.raw}`.toLowerCase();
 
   return stored.lowerRaw;
 }

@@ -109,6 +109,11 @@ export function LogTable({ canControlStreaming, onTogglePause, waiting }: LogTab
     });
   }, []);
 
+  const selectedEvents = useMemo(
+    () => events.filter((event) => selectedSeqs.has(event.seq)),
+    [events, selectedSeqs],
+  );
+
   useTableScroll(scrollRef, events);
 
   useEffect(() => {
@@ -131,17 +136,13 @@ export function LogTable({ canControlStreaming, onTogglePause, waiting }: LogTab
         }
         onClearSelection={() => setSelectedSeqs(new Set())}
         onCopySelected={() => {
-          void navigator.clipboard?.writeText(
-            events
-              .filter((event) => selectedSeqs.has(event.seq))
-              .map((event) => event.raw)
-              .join("\n"),
-          );
+          void navigator.clipboard?.writeText(selectedEvents.map((event) => event.raw).join("\n"));
         }}
         onSelectAll={() => setSelectedSeqs(new Set(events.map((event) => event.seq)))}
         onTogglePause={onTogglePause}
         paging={paging}
         selectedCount={selectedSeqs.size}
+        selectedEvents={selectedEvents}
       />
 
       <div className="flex min-h-0">
