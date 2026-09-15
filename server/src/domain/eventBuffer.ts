@@ -120,17 +120,13 @@ export class EventBuffer {
     this.evictOverflow();
   }
 
-  /** Walks `[floor, end)` backwards, newest first, under a bounded scan budget. */
+  /** Walks `[floor, end)` backwards, newest first. */
   private collect(floor: number, end: number, limit: number, match: EventPredicate): LogPage {
     const events: LogEvent[] = [];
     let index = end - 1;
-    // Caps the work a single highly selective query can do, so a filter that matches
-    // nothing cannot walk millions of events on the event loop.
-    let budget = Math.max(limit * 50, 10_000);
 
-    while (index >= floor && events.length < limit && budget > 0) {
+    while (index >= floor && events.length < limit) {
       const stored = this.events[index];
-      budget -= 1;
 
       if (match(stored)) {
         events.push(stored.event);
@@ -151,11 +147,9 @@ export class EventBuffer {
   ): LogPage {
     const events: LogEvent[] = [];
     let index = floor;
-    let budget = Math.max(limit * 50, 10_000);
 
-    while (index < end && events.length < limit && budget > 0) {
+    while (index < end && events.length < limit) {
       const stored = this.events[index];
-      budget -= 1;
 
       if (match(stored)) {
         events.push(stored.event);
