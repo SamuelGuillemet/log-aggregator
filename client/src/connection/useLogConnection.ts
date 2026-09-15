@@ -4,6 +4,7 @@ import { FILTER_DEBOUNCE_MS } from "@/lib/env";
 import { useConnectionStore } from "@/state/connectionStore";
 import { useFilterStore } from "@/state/filterStore";
 import { useLogsStore } from "@/state/logsStore";
+import { useObservabilityStore } from "@/state/observabilityStore";
 import { useSourceStore } from "@/state/sourceStore";
 import { LogSocket } from "./socket";
 
@@ -26,6 +27,7 @@ export function useLogConnection(): LogConnection {
   const socketRef = useRef<LogSocket | undefined>(undefined);
   const filter = useFilterStore((state) => state.filter);
   const connected = useConnectionStore((state) => state.connected);
+  const observabilityScope = useObservabilityStore((state) => state.scope);
 
   useEffect(() => {
     const socket: LogSocket = new LogSocket({
@@ -57,17 +59,27 @@ export function useLogConnection(): LogConnection {
     return () => window.clearTimeout(timer);
   }, [connected, filter]);
 
+  useEffect(() => {
+    if (!connected) {
+      return;
+    }
+
+    socketRef.current?.send({ scope: observabilityScope, type: "observabilityScope" });
+  }, [connected, observabilityScope]);
+
   const send = (message: ClientMessage) => socketRef.current?.send(message);
 
   return {
     startStream: () => {
       useLogsStore.getState().reset();
+      useObservabilityStore.getState().reset();
       useLogsStore.getState().setStreamLoading(true);
       send({ selection: useSourceStore.getState().startStream(), type: "subscribe" });
     },
     stopStream: () => {
       useSourceStore.getState().stopStream();
       useLogsStore.getState().reset();
+      useObservabilityStore.getState().reset();
       send({ type: "unsubscribe" });
     },
     togglePause: () => {
@@ -100,6 +112,9 @@ function routeMessage(message: ServerMessage, socket: LogSocket): void {
     case "logs":
       logs.applyLiveEvents(message.events, message.bufferedEvents);
       return;
+    case "observability":
+      useObservabilityStore.getState().apply(message.stats, message.urlKeys);
+      return;
     case "lagged":
       logs.reportLag(message.droppedEvents);
       return;
@@ -117,6 +132,7 @@ function replayDesiredState(socket: LogSocket): void {
   const active = useSourceStore.getState().active;
 
   socket.send({ filter: useFilterStore.getState().filter, type: "filter" });
+  socket.send({ scope: useObservabilityStore.getState().scope, type: "observabilityScope" });
 
   if (active) {
     socket.send({ selection: active, type: "subscribe" });

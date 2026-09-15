@@ -43,12 +43,17 @@ export class EventBuffer {
   private readonly evictChunk: number;
   private sorted = true;
 
-  constructor(private readonly capacity: number) {
+  constructor(
+    private readonly capacity: number,
+    /** Fires once per event actually dropped, oldest first, before it's gone. */
+    private readonly onEvicted?: (stored: StoredEvent) => void,
+  ) {
     this.evictChunk = Math.max(1, Math.floor(capacity / 10));
   }
 
   get size(): number {
-    this.ensureSorted();    return this.events.length;
+    this.ensureSorted();
+    return this.events.length;
   }
 
   clear(): void {
@@ -71,6 +76,15 @@ export class EventBuffer {
     this.sorted = false;
 
     return stored;
+  }
+
+  /** A full pass over every stored event, oldest first. For rebuilds, not hot paths. */
+  forEachStored(visit: (stored: StoredEvent) => void): void {
+    this.ensureSorted();
+
+    for (const stored of this.events) {
+      visit(stored);
+    }
   }
 
   /**
@@ -224,7 +238,15 @@ export class EventBuffer {
       return;
     }
 
-    this.events.splice(0, this.events.length - this.capacity + this.evictChunk);
+    const dropCount = this.events.length - this.capacity + this.evictChunk;
+
+    if (this.onEvicted) {
+      for (let index = 0; index < dropCount; index += 1) {
+        this.onEvicted(this.events[index]);
+      }
+    }
+
+    this.events.splice(0, dropCount);
   }
 
   /** First index at or after the cursor position. */

@@ -7,6 +7,7 @@ import {
   type LogHistoryQuery,
   type LogPage,
   type LogTableSchema,
+  type ObservabilityScope,
   type StreamStatus,
 } from "@log-aggregator/shared";
 import type { WebSocket } from "ws";
@@ -36,6 +37,7 @@ export class Session {
   private paused = false;
   private handle: StreamHandle | undefined;
   private detach: (() => void) | undefined;
+  private observabilityScope: ObservabilityScope | undefined;
 
   constructor(
     private readonly socket: WebSocket,
@@ -53,6 +55,10 @@ export class Session {
         return;
       case "filter":
         this.setFilter(message.filter);
+        return;
+      case "observabilityScope":
+        this.observabilityScope = message.scope;
+        this.sendObservability(this.handle?.stream);
         return;
       case "pause":
         this.paused = true;
@@ -95,6 +101,7 @@ export class Session {
 
   private subscribe(message: Extract<ClientMessage, { type: "subscribe" }>): void {
     this.detachStream();
+    this.observabilityScope = undefined;
 
     const handle = this.deps.registry.acquire(message.selection);
 
@@ -169,6 +176,8 @@ export class Session {
         type: "lagged",
       });
     }
+
+    this.sendObservability(stream);
   }
 
   private sendSnapshot(): void {
@@ -180,10 +189,29 @@ export class Session {
       status: this.status(stream),
       type: "snapshot",
     });
+    this.sendObservability(stream);
   }
 
   private sendStatus(): void {
-    send(this.socket, { status: this.status(this.handle?.stream), type: "status" });
+    const stream = this.handle?.stream;
+
+    send(this.socket, { status: this.status(stream), type: "status" });
+    this.sendObservability(stream);
+  }
+
+  private sendObservability(stream: LogStream | undefined): void {
+    if (!stream?.observability.enabled) {
+      return;
+    }
+
+    send(this.socket, {
+      stats: stream.observability.snapshot(
+        (visit) => stream.buffer.forEachStored(visit),
+        this.observabilityScope,
+      ),
+      type: "observability",
+      urlKeys: stream.observability.urlKeys(),
+    });
   }
 
   private status(stream: LogStream | undefined): StreamStatus {

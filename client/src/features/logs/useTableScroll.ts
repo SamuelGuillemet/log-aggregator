@@ -17,7 +17,10 @@ const ROW_HEIGHT_PX = 24;
  *   asks for an explicit position through the store's one-shot `scrollIntent`, since
  *   there is no previous top row in the new window to diff against.
  */
-export function useTableScroll(scrollRef: RefObject<HTMLDivElement | null>, events: LogEvent[]): void {
+export function useTableScroll(
+  scrollRef: RefObject<HTMLDivElement | null>,
+  events: LogEvent[],
+): void {
   const topSeqRef = useRef<number | undefined>(undefined);
   const scrollIntent = useLogsStore((state) => state.scrollIntent);
   const consumeScrollIntent = useLogsStore((state) => state.consumeScrollIntent);

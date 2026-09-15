@@ -18,6 +18,7 @@ import {
   type LogLevel,
   MAX_PAGE_SIZE,
 } from "./logs.js";
+import type { ObservabilityScope } from "./observability.js";
 import type { ClientMessage } from "./protocol.js";
 import type { SourceSelection } from "./sources.js";
 
@@ -178,9 +179,42 @@ export function decodeClientMessage(raw: string): Decoded<ClientMessage> {
 
       return filter.ok ? ok({ filter: filter.value, type: "filter" }) : filter;
     }
+    case "observabilityScope": {
+      const scope = decodeObservabilityScope(record.value.scope);
+
+      return scope.ok ? ok({ scope: scope.value, type: "observabilityScope" }) : scope;
+    }
     default:
       return fail(`unknown message type: ${describeType(record.value.type)}`);
   }
+}
+
+function decodeObservabilityScope(value: unknown): Decoded<ObservabilityScope | undefined> {
+  if (value === undefined || value === null) {
+    return ok(undefined);
+  }
+
+  const record = decodeRecord(value, "scope");
+
+  if (!record.ok) {
+    return record;
+  }
+
+  const url = decodeString(record.value.url, "scope.url", 2_048);
+
+  if (!url.ok) {
+    return url;
+  }
+
+  const method = decodeOptional<string | undefined>(record.value.method, undefined, (present) =>
+    decodeString(present, "scope.method", 32),
+  );
+
+  if (!method.ok) {
+    return method;
+  }
+
+  return ok({ method: method.value, url: url.value });
 }
 
 export function decodeLogCursor(value: unknown, path = "cursor"): Decoded<LogCursor> {

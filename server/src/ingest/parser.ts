@@ -9,6 +9,8 @@ import { parseTimestamp } from "./timestamp.js";
 
 const BASE_FIELDS = new Set(["timestamp", "level", "message"]);
 const KNOWN_LEVELS = new Set<string>(LOG_LEVELS);
+/** Matches tokens like `status=[200]` or `timeTakenMs=[7]` anywhere in a message. */
+const MESSAGE_FIELD_PATTERN = /([A-Za-z0-9_-]{1,64})=\[([^[\]]{0,4096})\]/g;
 
 export interface ParsedLine {
   /** Undefined when the timestamp token is unparseable; the caller supplies a fallback. */
@@ -31,6 +33,10 @@ export class LogParser {
     this.extraFields = Object.keys(config.groups).filter((field) => !BASE_FIELDS.has(field));
   }
 
+  get observability(): ParserConfig["observability"] {
+    return this.config.observability;
+  }
+
   parse(line: string): ParsedLine | undefined {
     const match = this.linePattern.exec(line);
 
@@ -40,11 +46,23 @@ export class LogParser {
 
     const timestampText = this.groupValue(match.groups, "timestamp");
     const level = this.groupValue(match.groups, "level").toUpperCase();
+    const messageOffset = this.messageOffset(match);
+    const fields = this.readExtraFields(match.groups);
+
+    if (this.config.messageFields) {
+      // Named groups win: a line's structured columns are more trustworthy than a
+      // same-named token that happens to appear in free-form message text.
+      for (const [key, value] of extractMessageFields(line.slice(messageOffset))) {
+        if (!(key in fields)) {
+          fields[key] = value;
+        }
+      }
+    }
 
     return {
-      fields: this.readExtraFields(match.groups),
+      fields,
       level: KNOWN_LEVELS.has(level) ? (level as LogLevel) : "UNKNOWN",
-      messageOffset: this.messageOffset(match),
+      messageOffset,
       timestampMs: parseTimestamp(timestampText),
       timestampText,
     };
@@ -102,6 +120,11 @@ function baseColumn(
   hideable: boolean,
 ): LogTableColumn {
   return { field, groupId: "base", groupLabel: "Base", hideable, id: field, label, width };
+}
+
+/** Every `key=[value]` token in `message`, in order of appearance. */
+function extractMessageFields(message: string): Array<[string, string]> {
+  return [...message.matchAll(MESSAGE_FIELD_PATTERN)].map((match) => [match[1], match[2]]);
 }
 
 function toLabel(field: string): string {

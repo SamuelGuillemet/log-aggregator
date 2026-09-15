@@ -4,6 +4,7 @@ import { FileTailer } from "../ingest/fileTailer.js";
 import type { LogParser } from "../ingest/parser.js";
 import { describe, logger } from "../util/logger.js";
 import { EventBuffer, type StoredEvent } from "./eventBuffer.js";
+import { ObservabilityAggregator } from "./observability.js";
 import { listSelectionFiles } from "./sourceResolver.js";
 
 export interface LogStreamOptions {
@@ -40,6 +41,7 @@ interface FileState {
  */
 export class LogStream {
   readonly buffer: EventBuffer;
+  readonly observability: ObservabilityAggregator;
 
   private readonly tailers = new Map<string, FileTailer>();
   private readonly fileStates = new Map<string, FileState>();
@@ -56,7 +58,8 @@ export class LogStream {
   private lastErrorMessage: string | undefined;
 
   constructor(private readonly options: LogStreamOptions) {
-    this.buffer = new EventBuffer(options.capacity);
+    this.observability = new ObservabilityAggregator(options.parser.observability);
+    this.buffer = new EventBuffer(options.capacity, (stored) => this.observability.forget(stored));
   }
 
   get selection(): SourceSelection {
@@ -98,6 +101,7 @@ export class LogStream {
     this.tailers.clear();
     this.fileStates.clear();
     this.buffer.clear();
+    this.observability.clear();
 
     await Promise.allSettled(tailers.map((tailer) => tailer.close()));
   }
@@ -214,6 +218,7 @@ export class LogStream {
     this.fileStates.clear();
     this.sourceSequences.clear();
     this.buffer.clear();
+    this.observability.clear();
     this.batch = [];
     this.batchGeneration += 1;
     this.primed = false;
@@ -250,6 +255,7 @@ export class LogStream {
     };
 
     state.lastStored = this.buffer.append(event);
+    this.observability.record(state.lastStored);
     state.lastTimestampMs = timestampMs;
     this.pushToBatch(state, state.lastStored);
   }

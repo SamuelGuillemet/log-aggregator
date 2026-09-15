@@ -182,7 +182,7 @@ export function LogTable({ canControlStreaming, onTogglePause, waiting }: LogTab
 function EmptyState({ streaming, waiting }: { streaming: boolean; waiting: boolean }) {
   if (waiting) {
     return (
-      <p className="data flex items-center gap-2 px-4 py-10 text-[12px] text-mute" role="status">
+      <p className="data flex items-center gap-2 p-4 text-[12px] text-mute" role="status">
         <Loader2 size={13} className="animate-spin" aria-hidden />
         Loading stream…
       </p>
@@ -190,7 +190,7 @@ function EmptyState({ streaming, waiting }: { streaming: boolean; waiting: boole
   }
 
   return (
-    <p className="data px-4 py-10 text-[12px] text-mute">
+    <p className="data p-4 text-[12px] text-mute">
       {streaming
         ? "No entries match these filters."
         : "No stream yet. Pick a source, application and date to start reading."}

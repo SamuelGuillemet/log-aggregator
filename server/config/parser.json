@@ -7,5 +7,12 @@
     "logger": "logger",
     "message": "message"
   },
-  "logFileName": "^{project}-(?<kind>serveur)\\.{date}-\\d+\\.log$"
+  "logFileName": "^{project}-(?<kind>serveur)\\.{date}-\\d+\\.log$",
+  "messageFields": true,
+  "observability": {
+    "statusField": "status",
+    "durationField": "timeTakenMs",
+    "urlField": "url",
+    "methodField": "method"
+  }
 }

@@ -94,7 +94,13 @@ socket.on("message", async (raw) => {
         }),
       });
       const older = await res.json();
-      console.log("page /api/logs:", res.status, older.events?.length, "hasMore", older.hasMoreOlder);
+      console.log(
+        "page /api/logs:",
+        res.status,
+        older.events?.length,
+        "hasMore",
+        older.hasMoreOlder,
+      );
 
       const bad = await fetch(`http://127.0.0.1:${port}/api/logs`, {
         method: "POST",

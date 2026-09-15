@@ -42,7 +42,9 @@ export function LogDetailDialog({ event, onClose }: LogDetailDialogProps) {
         </DialogHeader>
 
         <div className="flex-1 overflow-auto border border-line bg-surface p-3">
-          <pre className="data m-0 w-max min-w-full text-[12px] leading-relaxed whitespace-pre">{message}</pre>
+          <pre className="data m-0 w-max min-w-full text-[12px] leading-relaxed whitespace-pre">
+            {message}
+          </pre>
         </div>
       </DialogContent>
     </Dialog>

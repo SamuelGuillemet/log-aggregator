@@ -1,4 +1,5 @@
 import type { LogEvent, LogFilter, LogPage } from "./logs.js";
+import type { ObservabilityScope, ObservabilityStats, UrlKeyStats } from "./observability.js";
 import type { LogSource, SourceOptions, SourceSelection } from "./sources.js";
 import type { LogTableSchema } from "./table.js";
 
@@ -56,6 +57,8 @@ export type ClientMessage =
   | { type: "pause" }
   | { type: "resume" }
   | { type: "filter"; filter: LogFilter }
+  /** Narrows the `observability` message to one `method`+`url` pair; `undefined` scope means the whole stream. */
+  | { type: "observabilityScope"; scope: ObservabilityScope | undefined }
   | { type: "ping" };
 
 export type ServerMessage =
@@ -74,6 +77,12 @@ export type ServerMessage =
     }
   | { type: "logs"; events: LogEvent[]; bufferedEvents: number }
   | { type: "status"; status: StreamStatus }
+  /**
+   * Stats over the whole stream buffer (not the requesting session's filter, which
+   * would multiply aggregation cost per connection). Only sent for a source whose
+   * parser config maps observability fields; a stream without them never emits this.
+   */
+  | { type: "observability"; stats: ObservabilityStats; urlKeys: UrlKeyStats[] }
   /** Live events were skipped because the socket could not keep up. */
   | { type: "lagged"; droppedEvents: number }
   | { type: "error"; message: string; details?: string }

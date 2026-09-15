@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useLogConnection } from "@/connection/useLogConnection";
 import { FilterRail } from "@/features/filters/FilterRail";
 import { LogTable } from "@/features/logs/LogTable";
+import { ObservabilityView } from "@/features/observability/ObservabilityView";
 import { StatusBar } from "@/features/shell/StatusBar";
 import { cn } from "@/lib/utils";
 import { useConnectionStore } from "@/state/connectionStore";
@@ -11,11 +13,12 @@ export function App() {
   const error = useConnectionStore((state) => state.error);
   const compatibility = useConnectionStore((state) => state.compatibility);
   const streamLoading = useLogsStore((state) => state.streamLoading);
+  const [view, setView] = useState<"logs" | "observability">("logs");
 
   return (
     <main className="grid h-dvh min-h-0 grid-rows-[auto_auto_auto_minmax(0,1fr)] overflow-hidden">
-      <StatusBar onStart={startStream} onStop={stopStream} />
-      <FilterRail />
+      <StatusBar onStart={startStream} onStop={stopStream} onViewChange={setView} view={view} />
+      {view === "logs" ? <FilterRail /> : <div />}
 
       {error || compatibility.message ? (
         <div className="flex flex-col">
@@ -30,11 +33,15 @@ export function App() {
         <div />
       )}
 
-      <LogTable
-        canControlStreaming={compatibility.features.has("stream-control")}
-        onTogglePause={togglePause}
-        waiting={streamLoading}
-      />
+      {view === "logs" ? (
+        <LogTable
+          canControlStreaming={compatibility.features.has("stream-control")}
+          onTogglePause={togglePause}
+          waiting={streamLoading}
+        />
+      ) : (
+        <ObservabilityView />
+      )}
     </main>
   );
 }

@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 import {
   type Decoded,
   decodeArray,
+  decodeBoolean,
+  decodeOptional,
   decodeRecord,
   decodeString,
   decodeStringMap,
@@ -11,7 +13,12 @@ import {
   type LogSourceConfig,
   ok,
 } from "@log-aggregator/shared";
-import type { ParserConfig, RuntimeOptions, ServerConfig } from "./types.js";
+import type {
+  ObservabilityFieldMapping,
+  ParserConfig,
+  RuntimeOptions,
+  ServerConfig,
+} from "./types.js";
 
 const serverRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const defaultSourcesFile = resolve(serverRoot, "config/sources.json");
@@ -138,10 +145,72 @@ export function decodeParserConfig(value: unknown): Decoded<ParserConfig> {
     return fail(`parser.linePattern is not a valid regex: ${String(error)}`);
   }
 
+  const messageFields = decodeOptional(record.value.messageFields, false, (present) =>
+    decodeBoolean(present, "parser.messageFields"),
+  );
+
+  if (!messageFields.ok) {
+    return messageFields;
+  }
+
+  const observability = decodeOptional<ObservabilityFieldMapping | undefined>(
+    record.value.observability,
+    undefined,
+    (present) => decodeObservabilityFieldMapping(present, "parser.observability"),
+  );
+
+  if (!observability.ok) {
+    return observability;
+  }
+
   return ok({
     groups: groups.value,
     linePattern: linePattern.value,
     logFileName: logFileName.value,
+    messageFields: messageFields.value,
+    observability: observability.value,
+  });
+}
+
+function decodeObservabilityFieldMapping(
+  value: unknown,
+  path: string,
+): Decoded<ObservabilityFieldMapping> {
+  const record = decodeRecord(value, path);
+
+  if (!record.ok) {
+    return record;
+  }
+
+  const statusField = decodeString(record.value.statusField, `${path}.statusField`, 128);
+
+  if (!statusField.ok) {
+    return statusField;
+  }
+
+  const durationField = decodeString(record.value.durationField, `${path}.durationField`, 128);
+
+  if (!durationField.ok) {
+    return durationField;
+  }
+
+  const urlField = decodeString(record.value.urlField, `${path}.urlField`, 128);
+
+  if (!urlField.ok) {
+    return urlField;
+  }
+
+  const methodField = decodeString(record.value.methodField, `${path}.methodField`, 128);
+
+  if (!methodField.ok) {
+    return methodField;
+  }
+
+  return ok({
+    durationField: durationField.value,
+    methodField: methodField.value,
+    statusField: statusField.value,
+    urlField: urlField.value,
   });
 }
 

@@ -5,10 +5,9 @@ import { levelColor } from "./levelStyles";
 /** Fine enough to place a single error, coarse enough to stay cheap to rebuild. */
 const SLICE_COUNT = 400;
 
-type Mark = "none" | "warn" | "error" | "fatal";
+type Mark = "none" | "error" | "fatal";
 
 const MARK_LEVEL: Record<Exclude<Mark, "none">, LogLevel> = {
-  warn: "WARN",
   error: "ERROR",
   fatal: "FATAL",
 };
@@ -16,13 +15,11 @@ const MARK_LEVEL: Record<Exclude<Mark, "none">, LogLevel> = {
 /** Higher rank must never be overwritten by a lower one when slices collide. */
 const MARK_RANK: Record<Mark, number> = {
   none: 0,
-  warn: 1,
   error: 2,
   fatal: 3,
 };
 
 const LEVEL_MARK: Partial<Record<LogLevel, Mark>> = {
-  WARN: "warn",
   ERROR: "error",
   FATAL: "fatal",
 };

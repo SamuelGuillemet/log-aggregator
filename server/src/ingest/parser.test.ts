@@ -47,6 +47,37 @@ describe("LogParser", () => {
     assert.ok(parsed);
     assert.deepEqual(parsed.fields, {});
   });
+
+  it("leaves the message untouched when messageFields is off", () => {
+    const line =
+      "2026-09-12 23:04:01,123 INFO [main] app.Trace - HttpTrace status=[200] timeTakenMs=[7]";
+
+    assert.deepEqual(parser.parse(line)?.fields, { logger: "app.Trace", thread: "main" });
+  });
+
+  it("extracts key=[value] tokens from the message when messageFields is on", () => {
+    const tokenParser = new LogParser({ ...config, messageFields: true });
+    const line =
+      "2026-09-12 23:04:01,123 INFO [main] app.Trace - HttpTrace status=[200] timeTakenMs=[7]";
+
+    assert.deepEqual(tokenParser.parse(line)?.fields, {
+      logger: "app.Trace",
+      status: "200",
+      thread: "main",
+      timeTakenMs: "7",
+    });
+  });
+
+  it("lets a named group win over a same-named message token", () => {
+    const tokenParser = new LogParser({
+      ...config,
+      groups: { ...config.groups, thread: "thread" },
+      messageFields: true,
+    });
+    const line = "2026-09-12 23:04:01,123 INFO [worker-1] app.Trace - thread=[worker-9999]";
+
+    assert.equal(tokenParser.parse(line)?.fields.thread, "worker-1");
+  });
 });
 
 describe("FileNameMatcher", () => {
