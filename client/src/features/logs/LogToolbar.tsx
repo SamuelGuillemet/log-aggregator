@@ -1,6 +1,8 @@
-import { Clock, Copy, Pause, Play, SquareCheck, TriangleAlert, X } from "lucide-react";
+import { Check, Clock, Copy, Pause, Play, SquareCheck, TriangleAlert, X } from "lucide-react";
 import type { ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatCount } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { useConnectionStore } from "@/state/connectionStore";
 import { useLogsStore } from "@/state/logsStore";
 import { Button } from "@/ui/button";
@@ -35,6 +37,18 @@ export function LogToolbar({
   const loaded = useLogsStore((state) => state.events.length);
   const paused = useLogsStore((state) => state.status.paused);
   const droppedEvents = useLogsStore((state) => state.droppedEvents);
+
+  const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(copiedTimerRef.current), []);
+
+  const handleCopySelected = () => {
+    onCopySelected();
+    setCopied(true);
+    window.clearTimeout(copiedTimerRef.current);
+    copiedTimerRef.current = window.setTimeout(() => setCopied(false), 2_000);
+  };
 
   const onJumpToTime = () => {
     if (!paused) {
@@ -72,9 +86,14 @@ export function LogToolbar({
 
       {selectedCount > 0 && (
         <>
-          <Button variant="ghost" className={ACTION} onClick={onCopySelected}>
-            <Copy size={12} />
-            Copy {formatCount(selectedCount)}
+          <Button
+            variant="ghost"
+            className={cn("transition-all", ACTION, copied && "border-green-500 bg-green-100 text-green-700")}
+            onClick={handleCopySelected}
+            title={copied ? "Copied!" : "Copy selected rows"}
+          >
+            {copied ? <Check size={12} /> : <Copy size={12} />}
+            {copied ? "Copied!" : `Copy ${formatCount(selectedCount)}`}
           </Button>
           <Button variant="ghost" className={ACTION} onClick={onClearSelection}>
             <X size={12} />
