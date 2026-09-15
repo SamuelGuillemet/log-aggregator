@@ -62,6 +62,7 @@ export function useLogConnection(): LogConnection {
   return {
     startStream: () => {
       useLogsStore.getState().reset();
+      useLogsStore.getState().setStreamLoading(true);
       send({ selection: useSourceStore.getState().startStream(), type: "subscribe" });
     },
     stopStream: () => {
@@ -104,6 +105,7 @@ function routeMessage(message: ServerMessage, socket: LogSocket): void {
       return;
     case "error":
       connection.setError(message.message);
+      logs.setStreamLoading(false);
       return;
     case "pong":
       return;

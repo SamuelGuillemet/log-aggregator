@@ -4,11 +4,13 @@ import { LogTable } from "@/features/logs/LogTable";
 import { StatusBar } from "@/features/shell/StatusBar";
 import { cn } from "@/lib/utils";
 import { useConnectionStore } from "@/state/connectionStore";
+import { useLogsStore } from "@/state/logsStore";
 
 export function App() {
   const { startStream, stopStream, togglePause } = useLogConnection();
   const error = useConnectionStore((state) => state.error);
   const compatibility = useConnectionStore((state) => state.compatibility);
+  const streamLoading = useLogsStore((state) => state.streamLoading);
 
   return (
     <main className="grid h-dvh min-h-0 grid-rows-[auto_auto_auto_minmax(0,1fr)] overflow-hidden">
@@ -31,6 +33,7 @@ export function App() {
       <LogTable
         canControlStreaming={compatibility.features.has("stream-control")}
         onTogglePause={togglePause}
+        waiting={streamLoading}
       />
     </main>
   );

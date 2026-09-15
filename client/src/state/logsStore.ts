@@ -29,6 +29,8 @@ interface LogsStore {
   droppedEvents: number;
   /** A history page is in flight; also the re-entrancy guard for paging. */
   loadingPage: boolean;
+  /** A stream was just subscribed to and the first snapshot has not arrived yet. */
+  streamLoading: boolean;
   applySnapshot: (page: LogPage, schema: LogTableSchema, status: StreamStatus) => void;
   applyStatus: (status: StreamStatus) => void;
   applyLiveEvents: (events: LogEvent[], bufferedEvents: number) => void;
@@ -36,6 +38,7 @@ interface LogsStore {
   /** Replaces the loaded window outright, for jumping to an arbitrary time. */
   applyJump: (page: LogPage) => void;
   setLoadingPage: (loadingPage: boolean) => void;
+  setStreamLoading: (streamLoading: boolean) => void;
   reportLag: (droppedEvents: number) => void;
   reset: () => void;
 }
@@ -97,6 +100,7 @@ export const useLogsStore = create<LogsStore>((set) => ({
       maxSeq: highestSeq(page.events, 0),
       schema,
       status,
+      streamLoading: false,
     }),
   applyStatus: (status) => set({ status }),
   droppedEvents: 0,
@@ -108,6 +112,7 @@ export const useLogsStore = create<LogsStore>((set) => ({
   reportLag: (droppedEvents) =>
     set((state) => ({ droppedEvents: state.droppedEvents + droppedEvents })),
   setLoadingPage: (loadingPage) => set({ loadingPage }),
+  setStreamLoading: (streamLoading) => set({ streamLoading }),
   reset: () =>
     set({
       droppedEvents: 0,
@@ -117,9 +122,11 @@ export const useLogsStore = create<LogsStore>((set) => ({
       loadingPage: false,
       maxSeq: 0,
       status: EMPTY_STATUS,
+      streamLoading: false,
     }),
   schema: undefined,
   status: EMPTY_STATUS,
+  streamLoading: false,
 }));
 
 interface MergeResult {

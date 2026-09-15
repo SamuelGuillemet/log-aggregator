@@ -2,6 +2,7 @@
 import type { LogEvent } from "@log-aggregator/shared";
 import { type ColumnDef, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { compactSource, fieldValue, splitTimestamp } from "@/lib/format";
 import { useTableLayout } from "@/lib/tableLayout";
@@ -26,7 +27,7 @@ interface LogTableProps {
   waiting: boolean;
 }
 
-export function LogTable({ canControlStreaming, onTogglePause }: LogTableProps) {
+export function LogTable({ canControlStreaming, onTogglePause, waiting }: LogTableProps) {
   const events = useLogsStore((state) => state.events);
   const schema = useLogsStore((state) => state.schema);
   const streaming = useSourceStore((state) => Boolean(state.active));
@@ -184,7 +185,7 @@ export function LogTable({ canControlStreaming, onTogglePause }: LogTableProps) 
           <div style={{ minWidth: `${tableWidth}px` }}>
             <LogTableHeader renderWidth={renderWidth} table={table} tableWidth={tableWidth} />
             {events.length === 0 ? (
-              <EmptyState streaming={streaming} />
+              <EmptyState streaming={streaming} waiting={waiting} />
             ) : (
               <LogRows
                 onInspect={setInspected}
@@ -206,7 +207,16 @@ export function LogTable({ canControlStreaming, onTogglePause }: LogTableProps) 
   );
 }
 
-function EmptyState({ streaming }: { streaming: boolean }) {
+function EmptyState({ streaming, waiting }: { streaming: boolean; waiting: boolean }) {
+  if (waiting) {
+    return (
+      <p className="data flex items-center gap-2 px-4 py-10 text-[12px] text-mute" role="status">
+        <Loader2 size={13} className="animate-spin" aria-hidden />
+        Loading stream…
+      </p>
+    );
+  }
+
   return (
     <p className="data px-4 py-10 text-[12px] text-mute">
       {streaming
