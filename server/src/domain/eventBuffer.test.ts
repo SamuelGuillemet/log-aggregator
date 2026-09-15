@@ -34,7 +34,7 @@ describe("EventBuffer", () => {
     const page = buffer.latest(3, MATCH_ALL);
 
     assert.deepEqual(seqs(page.events), [5, 4, 3]);
-    assert.equal(page.hasMore, true);
+    assert.equal(page.hasMoreOlder, true);
   });
 
   it("orders an out-of-order insert by timestamp", () => {
@@ -77,7 +77,7 @@ describe("EventBuffer", () => {
 
     assert.deepEqual(seqs(first.events), [10, 9, 8, 7]);
     assert.deepEqual(seqs(second.events), [6, 5, 4, 3]);
-    assert.equal(second.hasMore, true);
+    assert.equal(second.hasMoreOlder, true);
   });
 
   it("reports hasMore false once the oldest event is reached", () => {
@@ -86,33 +86,51 @@ describe("EventBuffer", () => {
     buffer.append(event({ seq: 1, timestampMs: 1_000 }));
     buffer.append(event({ seq: 2, timestampMs: 2_000 }));
 
-    assert.equal(buffer.latest(5, MATCH_ALL).hasMore, false);
+    assert.equal(buffer.latest(5, MATCH_ALL).hasMoreOlder, false);
   });
 
-  it("seeks forward to a timestamp and reports whether older entries remain", () => {
+  it("until() splits the window around the timestamp, newer half first", () => {
     const buffer = new EventBuffer(100);
 
-    for (let index = 1; index <= 6; index += 1) {
+    for (let index = 1; index <= 10; index += 1) {
       buffer.append(event({ seq: index, timestampMs: index * 1_000 }));
     }
 
-    const page = buffer.until(4_000, 100, MATCH_ALL);
+    const page = buffer.until(5_000, 4, MATCH_ALL);
 
-    assert.deepEqual(seqs(page.events), [6, 5, 4]);
-    assert.equal(page.hasMore, true);
+    assert.deepEqual(seqs(page.events), [6, 5, 4, 3]);
+    assert.equal(page.hasMoreNewer, true);
+    assert.equal(page.hasMoreOlder, true);
   });
 
-  it("caps the window returned by until() to the requested limit", () => {
+  it("until() gives the older half's spare budget to the newer half when the anchor is at the start", () => {
     const buffer = new EventBuffer(100);
 
-    for (let index = 1; index <= 6; index += 1) {
+    for (let index = 1; index <= 10; index += 1) {
       buffer.append(event({ seq: index, timestampMs: index * 1_000 }));
     }
 
-    const page = buffer.until(2_000, 2, MATCH_ALL);
+    // Every stored event is newer than this, so there is nothing older to contribute.
+    const page = buffer.until(0, 4, MATCH_ALL);
 
-    assert.deepEqual(seqs(page.events), [3, 2]);
-    assert.equal(page.hasMore, true);
+    assert.deepEqual(seqs(page.events), [4, 3, 2, 1]);
+    assert.equal(page.hasMoreNewer, true);
+    assert.equal(page.hasMoreOlder, false);
+  });
+
+  it("until() gives the newer half's spare budget to the older half when the anchor is past the end", () => {
+    const buffer = new EventBuffer(100);
+
+    for (let index = 1; index <= 10; index += 1) {
+      buffer.append(event({ seq: index, timestampMs: index * 1_000 }));
+    }
+
+    // Every stored event is older than this, so there is nothing newer to contribute.
+    const page = buffer.until(1_000_000, 4, MATCH_ALL);
+
+    assert.deepEqual(seqs(page.events), [10, 9, 8, 7]);
+    assert.equal(page.hasMoreNewer, false);
+    assert.equal(page.hasMoreOlder, true);
   });
 
   it("pages forward from a cursor without repeating the cursor event", () => {
@@ -125,7 +143,7 @@ describe("EventBuffer", () => {
     const page = buffer.after({ sourceId: "a", sourceSeq: 3, timestampMs: 3_000 }, 4, MATCH_ALL);
 
     assert.deepEqual(seqs(page.events), [7, 6, 5, 4]);
-    assert.equal(page.hasMore, true);
+    assert.equal(page.hasMoreNewer, true);
   });
 
   it("evicts the oldest events once capacity is exceeded", () => {

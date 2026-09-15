@@ -38,7 +38,7 @@ socket.on("message", async (raw) => {
 
   // Page all the way back and count what is actually retrievable.
   let events = [...message.page.events];
-  let hasMore = message.page.hasMore;
+  let hasMore = message.page.hasMoreOlder;
   let requests = 0;
 
   while (hasMore && requests < 5000) {
@@ -59,7 +59,7 @@ socket.on("message", async (raw) => {
     const page = await response.json();
     requests += 1;
     events = events.concat(page.events);
-    hasMore = page.hasMore;
+    hasMore = page.hasMoreOlder;
 
     if (page.events.length === 0) {
       break;

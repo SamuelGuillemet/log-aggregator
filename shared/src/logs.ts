@@ -76,7 +76,10 @@ export type LogHistoryQuery =
 
 export interface LogPage {
   events: LogEvent[];
-  hasMore: boolean;
+  /** More matching events exist further into the past. */
+  hasMoreOlder: boolean;
+  /** More matching events exist closer to "now". */
+  hasMoreNewer: boolean;
 }
 
 export interface LogFilter {

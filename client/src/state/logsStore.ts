@@ -15,6 +15,17 @@ const EMPTY_STATUS: StreamStatus = {
   sources: [],
 };
 
+/**
+ * A one-shot instruction for the table to reposition its scroll, consumed and reset
+ * back to "none" by whichever effect applies it. Keeping this in the store (rather
+ * than inferring it from an events-array diff) is what lets a full replace (jump,
+ * snapshot) request an exact position instead of the incremental "rows were added
+ * above/below" adjustment a live batch needs.
+ */
+export type ScrollIntent = { type: "none" } | { type: "top" | "middle" | "bottom" };
+
+const NO_SCROLL_INTENT: ScrollIntent = { type: "none" };
+
 interface LogsStore {
   /** Newest first. Bounded by MAX_CLIENT_EVENTS. */
   events: LogEvent[];
@@ -31,6 +42,8 @@ interface LogsStore {
   loadingPage: boolean;
   /** A stream was just subscribed to and the first snapshot has not arrived yet. */
   streamLoading: boolean;
+  /** Where the table should scroll to next; "none" once applied. */
+  scrollIntent: ScrollIntent;
   applySnapshot: (page: LogPage, schema: LogTableSchema, status: StreamStatus) => void;
   applyStatus: (status: StreamStatus) => void;
   applyLiveEvents: (events: LogEvent[], bufferedEvents: number) => void;
@@ -39,6 +52,7 @@ interface LogsStore {
   applyJump: (page: LogPage) => void;
   setLoadingPage: (loadingPage: boolean) => void;
   setStreamLoading: (streamLoading: boolean) => void;
+  consumeScrollIntent: () => void;
   reportLag: (droppedEvents: number) => void;
   reset: () => void;
 }
@@ -48,8 +62,8 @@ export const useLogsStore = create<LogsStore>((set) => ({
     set((state) => {
       if (page.events.length === 0) {
         return direction === "older"
-          ? { hasMoreOlder: page.hasMore }
-          : { hasMoreNewer: page.hasMore };
+          ? { hasMoreOlder: page.hasMoreOlder }
+          : { hasMoreNewer: page.hasMoreNewer };
       }
 
       const merged = mergeEvents(state.events, page.events, state.maxSeq);
@@ -59,10 +73,10 @@ export const useLogsStore = create<LogsStore>((set) => ({
       // older edge.
       return {
         events: merged.events,
-        hasMoreNewer: direction === "newer" ? page.hasMore : state.hasMoreNewer,
+        hasMoreNewer: direction === "newer" ? page.hasMoreNewer : state.hasMoreNewer,
         hasMoreOlder:
           direction === "older"
-            ? page.hasMore || merged.trimmed
+            ? page.hasMoreOlder || merged.trimmed
             : state.hasMoreOlder || merged.trimmed,
         maxSeq: merged.maxSeq,
       };
@@ -84,11 +98,10 @@ export const useLogsStore = create<LogsStore>((set) => ({
     set({
       droppedEvents: 0,
       events: page.events,
-      // Optimistic: a jump lands in the past, so newer data almost always exists.
-      // The next loadNewerLogs() call corrects this the moment it comes back empty.
-      hasMoreNewer: true,
-      hasMoreOlder: page.hasMore,
+      hasMoreNewer: page.hasMoreNewer,
+      hasMoreOlder: page.hasMoreOlder,
       maxSeq: highestSeq(page.events, 0),
+      scrollIntent: jumpScrollIntent(page),
     }),
   applySnapshot: (page, schema, status) =>
     set({
@@ -96,13 +109,17 @@ export const useLogsStore = create<LogsStore>((set) => ({
       events: page.events,
       // A snapshot is the live edge itself, so there is nothing newer to page to.
       hasMoreNewer: false,
-      hasMoreOlder: page.hasMore,
+      hasMoreOlder: page.hasMoreOlder,
       maxSeq: highestSeq(page.events, 0),
       schema,
+      // The live edge is always shown from its top, whether this is the first
+      // snapshot of a new stream or the one a resume replaces the view with.
+      scrollIntent: { type: "top" },
       status,
       streamLoading: false,
     }),
   applyStatus: (status) => set({ status }),
+  consumeScrollIntent: () => set({ scrollIntent: NO_SCROLL_INTENT }),
   droppedEvents: 0,
   events: [],
   hasMoreNewer: false,
@@ -111,6 +128,7 @@ export const useLogsStore = create<LogsStore>((set) => ({
   maxSeq: 0,
   reportLag: (droppedEvents) =>
     set((state) => ({ droppedEvents: state.droppedEvents + droppedEvents })),
+  scrollIntent: NO_SCROLL_INTENT,
   setLoadingPage: (loadingPage) => set({ loadingPage }),
   setStreamLoading: (streamLoading) => set({ streamLoading }),
   reset: () =>
@@ -121,6 +139,7 @@ export const useLogsStore = create<LogsStore>((set) => ({
       hasMoreOlder: false,
       loadingPage: false,
       maxSeq: 0,
+      scrollIntent: NO_SCROLL_INTENT,
       status: EMPTY_STATUS,
       streamLoading: false,
     }),
@@ -201,4 +220,20 @@ function mergeNewestFirst(left: LogEvent[], right: LogEvent[]): LogEvent[] {
 
 function highestSeq(events: LogEvent[], initial: number): number {
   return events.reduce((highest, event) => Math.max(highest, event.seq), initial);
+}
+
+/**
+ * Mirrors the 3-way split the buffer used to build a jump's page: centred when both
+ * edges still have more beyond the window, otherwise pinned to whichever edge it hit.
+ */
+function jumpScrollIntent(page: LogPage): ScrollIntent {
+  if (!page.hasMoreOlder) {
+    return { type: "bottom" };
+  }
+
+  if (!page.hasMoreNewer) {
+    return { type: "top" };
+  }
+
+  return { type: "middle" };
 }

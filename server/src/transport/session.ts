@@ -16,7 +16,7 @@ import type { LogStream } from "../domain/logStream.js";
 import type { StreamHandle, StreamRegistry } from "../domain/streamRegistry.js";
 import { send } from "./outbound.js";
 
-const EMPTY_PAGE: LogPage = { events: [], hasMore: false };
+const EMPTY_PAGE: LogPage = { events: [], hasMoreNewer: false, hasMoreOlder: false };
 
 export interface SessionDeps {
   registry: StreamRegistry;

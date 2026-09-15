@@ -63,7 +63,7 @@ socket.on("message", async (raw) => {
       "page",
       page.events.length,
       "hasMore",
-      page.hasMore,
+      page.hasMoreOlder,
     );
     const newest = page.events[0];
     const oldest = page.events.at(-1);
@@ -94,7 +94,7 @@ socket.on("message", async (raw) => {
         }),
       });
       const older = await res.json();
-      console.log("page /api/logs:", res.status, older.events?.length, "hasMore", older.hasMore);
+      console.log("page /api/logs:", res.status, older.events?.length, "hasMore", older.hasMoreOlder);
 
       const bad = await fetch(`http://127.0.0.1:${port}/api/logs`, {
         method: "POST",

@@ -19,6 +19,12 @@ export type EventPredicate = (stored: StoredEvent) => boolean;
 
 export const MATCH_ALL: EventPredicate = () => true;
 
+/** Result of a single directional scan, before it is translated into a public LogPage. */
+interface ScanResult {
+  events: LogEvent[];
+  hasMore: boolean;
+}
+
 /**
  * Bounded, ordered event store.
  *
@@ -81,32 +87,64 @@ export class EventBuffer {
   latest(limit: number, match: EventPredicate): LogPage {
     this.ensureSorted();
 
-    return this.collect(0, this.events.length, limit, match);
+    const page = this.collect(0, this.events.length, limit, match);
+
+    // The live edge: nothing is newer than "now".
+    return { events: page.events, hasMoreNewer: false, hasMoreOlder: page.hasMore };
   }
 
   before(cursor: LogCursor, limit: number, match: EventPredicate): LogPage {
     this.ensureSorted();
 
-    return this.collect(0, this.cursorIndex(cursor), limit, match);
+    const page = this.collect(0, this.cursorIndex(cursor), limit, match);
+
+    // The cursor's own event (and everything above it) is always newer than this window.
+    return { events: page.events, hasMoreNewer: true, hasMoreOlder: page.hasMore };
   }
 
   /** The next events strictly after `cursor`, for paging forward toward "now". */
   after(cursor: LogCursor, limit: number, match: EventPredicate): LogPage {
     this.ensureSorted();
 
-    return this.collectForward(this.cursorIndex(cursor) + 1, this.events.length, limit, match);
+    const page = this.collectForward(
+      this.cursorIndex(cursor) + 1,
+      this.events.length,
+      limit,
+      match,
+    );
+
+    // The cursor's own event (and everything below it) is always older than this window.
+    return { events: page.events, hasMoreNewer: page.hasMore, hasMoreOlder: true };
   }
 
-  /** A window anchored at `timestampMs`, for jumping straight to a point in the day. */
+  /**
+   * A window centred on `timestampMs`, for jumping straight to a point in time instead
+   * of paging into it. Splits `limit` evenly between the newer and older halves; if one
+   * side runs dry (the anchor sits at either edge of the buffer) the other side takes
+   * the leftover, so a jump into empty space still returns up to `limit` events from
+   * whichever edge is closest.
+   */
   until(timestampMs: number, limit: number, match: EventPredicate): LogPage {
     this.ensureSorted();
 
-    const floor = this.timestampIndex(timestampMs);
-    const page = this.collectForward(floor, this.events.length, limit, match);
+    const anchor = this.timestampIndex(timestampMs);
+    const newerLimit = Math.ceil(limit / 2);
+    const olderLimit = limit - newerLimit;
 
-    // hasMore here means "more older entries below the window", matching what before()
-    // means by it, so the client's generic "load older" affordance keeps working.
-    return { events: page.events, hasMore: floor > 0 };
+    const newer = this.collectForward(anchor, this.events.length, newerLimit, match);
+    const olderBudget = olderLimit + (newerLimit - newer.events.length);
+    const older = this.collect(0, anchor, olderBudget, match);
+    const newerSpare = olderBudget - older.events.length;
+    const filledNewer =
+      newerSpare > 0
+        ? this.collectForward(anchor, this.events.length, newerLimit + newerSpare, match)
+        : newer;
+
+    return {
+      events: [...filledNewer.events, ...older.events],
+      hasMoreNewer: filledNewer.hasMore,
+      hasMoreOlder: older.hasMore,
+    };
   }
 
   /** Applies every deferred out-of-order append at once, then evicts down to capacity. */
@@ -121,7 +159,7 @@ export class EventBuffer {
   }
 
   /** Walks `[floor, end)` backwards, newest first. */
-  private collect(floor: number, end: number, limit: number, match: EventPredicate): LogPage {
+  private collect(floor: number, end: number, limit: number, match: EventPredicate): ScanResult {
     const events: LogEvent[] = [];
     let index = end - 1;
 
@@ -144,7 +182,7 @@ export class EventBuffer {
     end: number,
     limit: number,
     match: EventPredicate,
-  ): LogPage {
+  ): ScanResult {
     const events: LogEvent[] = [];
     let index = floor;
 
