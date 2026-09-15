@@ -206,9 +206,7 @@ function decodeObservabilityScope(value: unknown): Decoded<ObservabilityScope | 
     return url;
   }
 
-  const method = decodeOptional<string | undefined>(record.value.method, undefined, (present) =>
-    decodeString(present, "scope.method", 32),
-  );
+  const method = decodeString(record.value.method, "scope.method", 32);
 
   if (!method.ok) {
     return method;
