@@ -1,6 +1,7 @@
 import type { ObservabilityScope } from "@log-aggregator/shared";
 import { useMemo } from "react";
 import { formatCount, formatDurationMs } from "@/lib/format";
+import { useConnectionStore } from "@/state/connectionStore";
 import { useObservabilityStore } from "@/state/observabilityStore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 
@@ -19,6 +20,8 @@ export function ObservabilityView() {
   const scope = useObservabilityStore((state) => state.scope);
   const setScope = useObservabilityStore((state) => state.setScope);
 
+  const compatibility = useConnectionStore((state) => state.compatibility);
+
   const keysByValue = useMemo(() => {
     const map = new Map<string, ObservabilityScope>();
 
@@ -28,6 +31,10 @@ export function ObservabilityView() {
 
     return map;
   }, [urlKeys]);
+
+  if (!compatibility?.features.has("observability")) {
+    return <EmptyState message="Observability is not supported by the connected server." />;
+  }
 
   if (!received) {
     return <EmptyState message="Not configured for this stream, or no stream is active yet." />;

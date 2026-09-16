@@ -12,7 +12,7 @@ import type { LogTableSchema } from "./table.js";
  * This constant has exactly one definition. v1 duplicated it into the server as a
  * literal to work around packaging, which is a drift bug waiting to happen.
  */
-export const PROTOCOL_VERSION = 5;
+export const PROTOCOL_VERSION = 6;
 
 /** Oldest backend this frontend build still talks to. */
 export const MIN_SUPPORTED_PROTOCOL_VERSION = 5;
@@ -38,6 +38,23 @@ export const COMPATIBILITY_TABLE: readonly CompatibilityEntry[] = [
       "lag-reporting",
     ],
     protocolVersion: 5,
+  },
+  {
+    features: [
+      "subscribe",
+      "history-pagination",
+      "favorites",
+      "configured-sources",
+      "source-groups",
+      "source-config-reload",
+      "application-autocomplete",
+      "stream-control",
+      "batched-live-streaming",
+      "shared-streams",
+      "lag-reporting",
+      "observability",
+    ],
+    protocolVersion: 6,
   },
 ];
 
