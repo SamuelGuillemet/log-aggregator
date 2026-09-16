@@ -86,7 +86,7 @@ export function SelectionTiming({ events }: SelectionTimingProps) {
                     : "text-fg",
                 )}
               >
-                {row.gapToNextMs !== undefined ? `+${formatDurationMs(row.gapToNextMs)}` : ""}
+                {row.gapToNextMs !== undefined ? `->${formatDurationMs(row.gapToNextMs)}` : ""}
               </span>
               <span className="truncate text-mute" title={logEventMessage(row.event)}>
                 {previewMessage(row.event)}
@@ -100,7 +100,11 @@ export function SelectionTiming({ events }: SelectionTimingProps) {
 }
 
 function buildTimingRows(events: LogEvent[]): TimingRow[] {
-  const sorted = [...events].sort((left, right) => left.timestampMs - right.timestampMs);
+  // Break same-millisecond ties by seq (the table's own order) instead of leaving them
+  // in whatever order the selection happened to be gathered in.
+  const sorted = [...events].sort(
+    (left, right) => left.timestampMs - right.timestampMs || left.seq - right.seq,
+  );
 
   return sorted.map((event, index) => ({
     event,
