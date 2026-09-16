@@ -56,6 +56,7 @@ export class LogStream {
   private ticking = false;
   private timer: NodeJS.Timeout | undefined;
   private lastErrorMessage: string | undefined;
+  private tickPromise: Promise<void> | undefined;
 
   constructor(private readonly options: LogStreamOptions) {
     this.observability = new ObservabilityAggregator(options.parser.observability);
@@ -97,6 +98,13 @@ export class LogStream {
       this.timer = undefined;
     }
 
+    // A tick already in flight may still be opening file handles (via syncTailers +
+    // tailer.poll()); wait for it to settle so the close pass below actually sees
+    // every handle instead of leaving stragglers to leak until garbage collection.
+    if (this.tickPromise) {
+      await this.tickPromise.catch(() => undefined);
+    }
+
     const tailers = [...this.tailers.values()];
     this.tailers.clear();
     this.fileStates.clear();
@@ -123,14 +131,18 @@ export class LogStream {
 
     this.ticking = true;
 
-    try {
-      await this.runTick();
-    } catch (error) {
-      this.reportError(`Failed to read logs: ${describe(error)}`);
-    } finally {
-      this.ticking = false;
-      this.scheduleTick(this.options.pollIntervalMs);
-    }
+    const tickPromise = this.runTick()
+      .catch((error: unknown) => {
+        this.reportError(`Failed to read logs: ${describe(error)}`);
+      })
+      .finally(() => {
+        this.ticking = false;
+        this.scheduleTick(this.options.pollIntervalMs);
+      });
+
+    this.tickPromise = tickPromise;
+    await tickPromise;
+    this.tickPromise = undefined;
   }
 
   private async runTick(): Promise<void> {
