@@ -54,7 +54,7 @@ export function ObservabilityView() {
         >
           <SelectTrigger
             aria-label="Observability scope"
-            className="data h-7 w-80 rounded-sm border-line bg-surface text-[12px]"
+            className="data h-7 w-200 rounded-sm border-line bg-surface text-[12px]"
           >
             <SelectValue placeholder="All requests">
               {scope ? `${scope.method}${scope.url}` : "All requests"}
